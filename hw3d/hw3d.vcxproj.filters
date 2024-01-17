@@ -1,0 +1,171 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="WinMainOri.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WindowsMessageMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WinMain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Logging.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Support\TraceLoggingDynamic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\chrono.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\compile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\format.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\format-inl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\locale.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\os.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\ostream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\printf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\ranges.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\std.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="spdlog\fmt\bundled\xchar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Appenders\AndroidAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Appenders\ArduinoAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Appenders\ColorConsoleAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Appenders\ConsoleAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Appenders\DebugOutputAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Appenders\DynamicAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Appenders\EventLogAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Appenders\IAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Appenders\RollingFileAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Converters\NativeEOLConverter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Converters\UTF8Converter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Formatters\CsvFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Formatters\FuncMessageFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Formatters\MessageOnlyFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Formatters\TxtFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Helpers\AscDump.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Helpers\HexDump.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Helpers\PrintVar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Initializers\ConsoleInitializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Initializers\RollingFileInitializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Init.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Record.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Severity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\Util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plog\WinApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowsMessageMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AtumWindows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Logging.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
