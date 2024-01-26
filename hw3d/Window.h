@@ -5,8 +5,7 @@ class Window
 {
 private:
 	// singleton
-	class WindowClass
-	{
+	class WindowClass {
 	public:
 		static const LPCWSTR GetName() noexcept;
 		static HINSTANCE GetInstance() noexcept;
@@ -22,12 +21,13 @@ private:
 public:
 	Window(int width, int height, const LPCWSTR name) noexcept;
 	~Window();
+	HWND GetHandle() const;
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
 private:
 	static LRESULT CALLBACK HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	static LRESULT CALLBACK HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-	LRESULT HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+	static LRESULT CALLBACK HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 private:
 	int width{};
 	int height{};

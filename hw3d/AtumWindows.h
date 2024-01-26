@@ -1,71 +1,73 @@
 #pragma once
+#define ATUMWINDOWS
+//#define CALLTRACING
 
-//
-// NTDDI version constants
-//
-#define TARGET_WIN7					0x06010000
-#define TARGET_WIN8                 0x06020000
-#define TARGET_WINBLUE              0x06030000
-#define TARGET_WINTHRESHOLD         0x0A000000  /* ABRACADABRA_THRESHOLD */
-#define TARGET_WIN10                0x0A000000  /* ABRACADABRA_THRESHOLD */
-#define TARGET_WIN10_TH2            0x0A000001  /* ABRACADABRA_WIN10_TH2 */
-#define TARGET_WIN10_RS1            0x0A000002  /* ABRACADABRA_WIN10_RS1 */
-#define TARGET_WIN10_RS2            0x0A000003  /* ABRACADABRA_WIN10_RS2 */
-#define TARGET_WIN10_RS3            0x0A000004  /* ABRACADABRA_WIN10_RS3 */
-#define TARGET_WIN10_RS4            0x0A000005  /* ABRACADABRA_WIN10_RS4 */
-#define TARGET_WIN10_RS5            0x0A000006  /* ABRACADABRA_WIN10_RS5 */
-#define TARGET_WIN10_19H1           0x0A000007  /* ABRACADABRA_WIN10_19H1*/
+#define NTDDI_VERSION NTDDI_WIN10
+#define _WIN32_WINNT _WIN32_WINNT_WIN10
 
-#define WINDOWS_TARGET_VERSION      TARGET_WIN10 /* ABRACADABRA_THRESHOLD */
-
-//
-// masks for version macros
-//
-#define OSVERSION_MASK      0xFFFF0000
-#define SPVERSION_MASK      0x0000FF00
-#define SUBVERSION_MASK     0x000000FF
-
-//
-// macros to extract various version fields from the NTDDI version
-//
-#define OSVERSION(Version)  (((Version) & OSVERSION_MASK) >> 16)
-#define SPVERSION(Version)  ((((Version) & SPVERSION_MASK) << 8) >> 16)
-#define SUBVERION(Version)	((((Version) & SUBVERSION_MASK) << 16) >> 16)
-
-#define WINVER OSVERSION(WINDOWS_TARGET_VERSION)
-#define _WIN32_WINNT OSVERSION(WINDOWS_TARGET_VERSION)
-//#include <sdkddkver.h>
-
+// Windows.h macro defines
 #define WIN32_LEAN_AND_MEAN
-#define NOGDICAPMASKS
-#define NOSYSMETRICS
-#define NOMENUS
-#define NOICONS
-#define NOSYSCOMMANDS
-#define NORASTEROPS
-#define OEMRESOURCE
-#define NOATOM
-#define NOCLIPBOARD
-#define NOCOLOR
-#define NOCTLMGR
-#define NODRAWTEXT
-#define NOKERNEL
-#define NONLS
-#define NOMEMMGR
-#define NOMETAFILE
-#define NOMINMAX
-#define NOOPENFILE
-#define NOSCROLL
-#define NOSERVICE
-#define NOSOUND
-#define NOTEXTMETRIC
-#define NOWH
-#define NOCOMM
-#define NOKANJI
-#define NOHELP
-#define NOPROFILER
-#define NODEFERWINDOWPOS
-#define NOMCX
+#define NOGDICAPMASKS // - CC_*, LC_*, PC_*, CP_*, TC_*, RC_
+#ifndef ATUMWINDOWS
+#define NOVIRTUALKEYCODES // - VK_ *
+#define NOWINMESSAGES // - WM_*, EM_*, LB_*, CB_*
+#define NOWINSTYLES // -  WS_*, CS_*, ES_*, LBS_*, SBS_*, CBS_*
+#endif // ATUMWINDOWS
+#define NOSYSMETRICS // - SM_ *
+#ifndef ATUMWINDOWS // !NOMENUS Required for GetSystemMenu
+#define NOMENUS // - MF_ *
+#endif // ATUMWINDOWS
+#define NOICONS // - IDI_ *
+#ifndef ATUMWINDOWS
+#define NOKEYSTATES // - MK_ *
+#endif // ATUMWINDOWS
+#ifndef ATUMWINDOWS // !NOSYSCOMMANDS Required for EnableMenuItem
+#define NOSYSCOMMANDS // - SC_ *
+#endif // ATUMWINDOWS
+#define NORASTEROPS // - Binary and Tertiary raster ops
+#ifndef ATUMWINDOWS
+#define NOSHOWWINDOW // - SW_ *
+#endif // ATUMWINDOWS
+#define OEMRESOURCE // - OEM Resource values
+#define NOATOM // - Atom Manager routines
+#define NOCLIPBOARD // - Clipboard routines
+#define NOCOLOR // - Screen colors
+//#ifndef ATUMWINDOWS // !NOCTLMGR Required for SetWindowSubclass
+#define NOCTLMGR // - Control and Dialog routines
+//#endif // ATUMWINDOWS
+#define NODRAWTEXT // - DrawText() and DT_ *
+#ifndef ATUMWINDOWS
+#define NOGDI // - All GDI defines and routines
+#endif // ATUMWINDOWS
+#define NOKERNEL // - All KERNEL defines and routines
+#ifndef ATUMWINDOWS
+#define NOUSER // - All USER defines and routines
+#endif // ATUMWINDOWS
+#define NONLS // - All NLS defines and routines
+#ifndef ATUMWINDOWS
+#define NOMB // - MB_ * and MessageBox()
+#endif // ATUMWINDOWS
+#define NOMEMMGR // - GMEM_*, LMEM_*, GHND, LHND, associated routines
+#define NOMETAFILE // - typedef METAFILEPICT
+#define NOMINMAX // - Macros min(a, b) and max(a, b)
+#ifndef ATUMWINDOWS
+#define NOMSG // - typedef MSG and associated routines
+#endif // ATUMWINDOWS
+#define NOOPENFILE // - OpenFile(), OemToAnsi, AnsiToOem, and OF_*
+#define NOSCROLL // - SB_ * and scrolling routines
+#define NOSERVICE // - All Service Controller routines, SERVICE_ equates, etc.
+#define NOSOUND // - Sound driver routines
+#define NOTEXTMETRIC // - typedef TEXTMETRIC and associated routines
+#define NOWH // - SetWindowsHook and WH_ *
+#ifndef ATUMWINDOWS
+#define NOWINOFFSETS // - GWL_*, GCL_*, associated routines
+#endif // ATUMWINDOWS
+#define NOCOMM // - COMM driver routines
+#define NOKANJI // - Kanji support stuff.
+#define NOHELP // - Help engine interface.
+#define NOPROFILER // - Profiler interface.
+#define NODEFERWINDOWPOS // - DeferWindowPos routines
+#define NOMCX // - Modem Configuration Extensions
 #define NORPC
 #define NOPROXYSTUB
 #define NOIMAGE
@@ -74,3 +76,35 @@
 #define STRICT
 
 #include <Windows.h>
+
+//#include <WinUser.h>
+
+// CommCtrl.h macro defines
+#define NOTOOLBAR			// - Customizable bitmap-button toolbar control.
+#define NOUPDOWN			// - Up and Down arrow increment/decrement control.
+#define NOSTATUSBAR			// - Status bar control.
+#define NOMENUHELP			// - APIs to help manage menus, especially with a status bar.
+#define NOTRACKBAR			// - Customizable column-width tracking control.
+#define NODRAGLIST			// - APIs to make a listbox source and sink drag&drop actions.
+#define NOPROGRESS			// - Progress gas gauge.
+#define NOHOTKEY			// - HotKey control
+#define NOHEADER			// - Header bar control.
+#define NOIMAGEAPIS			// - ImageList apis.
+#define NOLISTVIEW			// - ListView control.
+#define NOTREEVIEW			// - TreeView control.
+#define NOTABCONTROL		// - Tab control.
+#define NOANIMATE			// - Animate control.
+#define NOBUTTON			// - Button control.
+#define NOSTATIC			// - Static control.
+#define NOEDIT				// - Edit control.
+#define NOLISTBOX			// - Listbox control.
+#define NOCOMBOBOX			// - Combobox control.
+#define NOSCROLLBAR			// - Scrollbar control.
+#define NOTASKDIALOG		// - Task Dialog.
+#define NOMUI				// - MUI APIs.
+#define NOTRACKMOUSEEVENT	// - TrackMouseEvent API.
+#define NOFLATSBAPIS		// - Flat SB APIs. (Disable LPSCROLLINFO requrements)
+
+//#include <CommCtrl.h>
+//#pragma comment(lib,"comctl32.lib")
+//#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
