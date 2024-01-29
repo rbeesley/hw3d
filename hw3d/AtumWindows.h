@@ -1,6 +1,11 @@
 #pragma once
 #define ATUMWINDOWS
 //#define CALLTRACING
+#ifdef CALLTRACING
+#define TRACE OutputDebugString((std::string(typeid(*this).name()) + "::" + __FUNCTION__ + "()\n").c_str())
+#define TRACESTATIC OutputDebugString(TEXT(__FUNCTION__)"()\n")
+#endif
+#define REMOVE
 
 #define NTDDI_VERSION NTDDI_WIN10
 #define _WIN32_WINNT _WIN32_WINNT_WIN10

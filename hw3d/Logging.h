@@ -38,9 +38,10 @@ public:
 	//inline void InitLogger(plog::Severity maxSeverity);
 	//template<int instanceId>
 	//inline void RemoveLogger();
+
 	void InitConsole(plog::Severity maxSeverity);
-	void InitDebugOutput(plog::Severity maxSeverity);
 	void RemoveConsole();
+	void InitDebugOutput(plog::Severity maxSeverity);
 	void RemoveDebugOutput();
 private:
 	plog::Severity maxSeverity;

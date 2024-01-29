@@ -2,6 +2,8 @@
 #include "Console.h"
 #include "Logging.h"
 
+#define TRACESTATIC OutputDebugString(TEXT(__FUNCTION__)"()\n")
+
 // Global Variables:
 HINSTANCE g_hInst; // current instance
 
@@ -11,18 +13,24 @@ int APIENTRY WinMain(
 	_In_     LPSTR lpCmdLine,
 	_In_     int nCmdShow)
 {
+	TRACESTATIC;
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 	g_hInst = hInstance;
 
 	// Initialize logging
 	Logging log(plog::verbose);
+
+	// Set up DebugOutput Logger
 	//log.InitDebugOutput(plog::info);
 	log.InitDebugOutput(plog::verbose);
 
+#ifdef _DEBUG
 	// Create Console
 	PLOGI << "Creating Debug Console";
 	Console console(L"Atum D3D Debug Console");
+
+	// Set up Console Logger
 	//log.InitConsole(plog::debug);
 	log.InitConsole(plog::verbose);
 
@@ -33,6 +41,7 @@ int APIENTRY WinMain(
 	PLOG_WARNING << "This is a WARNING message";
 	PLOG_ERROR << "This is an ERROR message";
 	PLOG_FATAL << "This is a FATAL message";
+#endif // _DEBUG
 
 	// Create Window
 	PLOGI << "Creating Window";
