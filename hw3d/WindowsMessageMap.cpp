@@ -3,10 +3,12 @@
 #include <sstream>
 #include <iomanip>
 
+#define ALLMESSAGES FALSE
+#define ALLMOUSEMESSAGES ALLMESSAGES | TRUE
+
 WindowsMessageMap::WindowsMessageMap()
 	:
 	map({
-		{0x0,"WM_NULL"},
 		{0x1,"WM_CREATE"},
 		{0x2,"WM_DESTROY"},
 		{0x3,"WM_MOVE"},
@@ -28,8 +30,10 @@ WindowsMessageMap::WindowsMessageMap()
 		{0x15,"WM_SYSCOLORCHANGE"},
 		{0x16,"WM_ENDSESSION"},
 		{0x18,"WM_SHOWWINDOW"},
+		// Adding WM_CTLCOLOR
 		{0x19,"WM_CTLCOLOR"},
 		{0x1A,"WM_WININICHANGE"},
+		// Missing WM_SETTINGCHANGE
 		{0x1B,"WM_DEVMODECHANGE"},
 		{0x1C,"WM_ACTIVATEAPP"},
 		{0x1D,"WM_FONTCHANGE"},
@@ -40,6 +44,7 @@ WindowsMessageMap::WindowsMessageMap()
 		{0x22,"WM_CHILDACTIVATE"},
 		{0x23,"WM_QUEUESYNC"},
 		{0x24,"WM_GETMINMAXINFO"},
+		// Adding WM_PAINTICON
 		{0x26,"WM_PAINTICON"},
 		{0x27,"WM_ICONERASEBKGND"},
 		{0x28,"WM_NEXTDLGCTL"},
@@ -85,12 +90,16 @@ WindowsMessageMap::WindowsMessageMap()
 		{0x86,"WM_NCACTIVATE"},
 		{0x87,"WM_GETDLGCODE"},
 		{0x88,"WM_SYNCPAINT"},
+
+		// "Secret"
 		{0x90,"WM_UAHDESTROYWINDOW"},
 		{0x91,"WM_UAHDRAWMENU"},
 		{0x92,"WM_UAHDRAWMENUITEM"},
 		{0x93,"WM_UAHINITMENU"},
 		{0x94,"WM_UAHMEASUREMENUITEM"},
 		{0x95,"WM_UAHNCPAINTMEUNPOPUP"},
+
+#if ALLMOUSEMESSAGES
 		{0xA0,"WM_NCMOUSEMOVE"},
 		{0xA1,"WM_NCLBUTTONDOWN"},
 		{0xA2,"WM_NCLBUTTONUP"},
@@ -104,6 +113,10 @@ WindowsMessageMap::WindowsMessageMap()
 		{0xAB,"WM_NCXBUTTONDOWN"},
 		{0xAC,"WM_NCXBUTTONUP"},
 		{0xAD,"WM_NCXBUTTONDBLCLK"},
+#endif // ALLMOUSEMESSAGES
+
+		// Adding
+#if ALLMESSAGES
 		{0xB0,"EM_GETSEL"},
 		{0xB1,"EM_SETSEL"},
 		{0xB2,"EM_GETRECT"},
@@ -163,7 +176,9 @@ WindowsMessageMap::WindowsMessageMap()
 		{0xF6,"BM_GETIMAGE"},
 		{0xF7,"BM_SETIMAGE"},
 		{0xF8,"BM_SETDONTCLICK"},
-		{0xFF,"WM_INPUT"},
+#endif // ALLMESSAGES
+
+		{ 0xFF,"WM_INPUT" },
 		{0x100,"WM_KEYDOWN"},
 		{0x100,"WM_KEYFIRST"},
 		{0x101,"WM_KEYUP"},
@@ -210,6 +225,8 @@ WindowsMessageMap::WindowsMessageMap()
 		{0x136,"WM_CTLCOLORDLG"},
 		{0x137,"WM_CTLCOLORSCROLLBAR"},
 		{0x138,"WM_CTLCOLORSTATIC"},
+
+#if ALLMESSAGES
 		{0x140,"CB_GETEDITSEL"},
 		{0x141,"CB_LIMITTEXT"},
 		{0x142,"CB_SETEDITSEL"},
@@ -247,7 +264,10 @@ WindowsMessageMap::WindowsMessageMap()
 		{0x163,"CB_MULTIPLEADDSTRING"},
 		{0x164,"CB_GETCOMBOBOXINFO"},
 		{0x165,"CB_MSGMAX"},
-		{0x200,"WM_MOUSEFIRST"},
+#endif // ALLMESSAGES
+
+#if ALLMOUSEMESSAGES
+		//{0x200,"WM_MOUSEFIRST"},
 		{0x200,"WM_MOUSEMOVE"},
 		{0x201,"WM_LBUTTONDOWN"},
 		{0x202,"WM_LBUTTONUP"},
@@ -258,12 +278,14 @@ WindowsMessageMap::WindowsMessageMap()
 		{0x207,"WM_MBUTTONDOWN"},
 		{0x208,"WM_MBUTTONUP"},
 		{0x209,"WM_MBUTTONDBLCLK"},
-		{0x209,"WM_MOUSELAST"},
+		//{0x209,"WM_MOUSELAST"},
 		{0x20A,"WM_MOUSEWHEEL"},
 		{0x20B,"WM_XBUTTONDOWN"},
 		{0x20C,"WM_XBUTTONUP"},
 		{0x20D,"WM_XBUTTONDBLCLK"},
 		{0x20E,"WM_MOUSEHWHEEL"},
+#endif // ALLMOUSEMESSAGES
+
 		{0x210,"WM_PARENTNOTIFY"},
 		{0x211,"WM_ENTERMENULOOP"},
 		{0x212,"WM_EXITMENULOOP"},
@@ -300,10 +322,14 @@ WindowsMessageMap::WindowsMessageMap()
 		{0x290,"WM_IME_KEYDOWN"},
 		{0x291,"WM_IMEKEYUP"},
 		{0x291,"WM_IME_KEYUP"},
+
+#if ALLMOUSEMESSAGES
 		{0x2A0,"WM_NCMOUSEHOVER"},
 		{0x2A1,"WM_MOUSEHOVER"},
 		{0x2A2,"WM_NCMOUSELEAVE"},
 		{0x2A3,"WM_MOUSELEAVE"},
+#endif // ALLMOUSEMESSAGES
+
 		{0x300,"WM_CUT"},
 		{0x301,"WM_COPY"},
 		{0x302,"WM_PASTE"},
@@ -327,6 +353,8 @@ WindowsMessageMap::WindowsMessageMap()
 		{0x318,"WM_PRINTCLIENT"},
 		{0x319,"WM_APPCOMMAND"},
 		{0x31F,"WM_DWMNCRENDERINGCHANGED"},
+
+#if ALLMESSAGES
 		{0x358,"WM_HANDHELDFIRST"},
 		{0x35F,"WM_HANDHELDLAST"},
 		{0x360,"WM_AFXFIRST"},
@@ -1072,6 +1100,7 @@ WindowsMessageMap::WindowsMessageMap()
 		{0x2210,"OCM_PARENTNOTIFY"},
 		{0x8000,"WM_APP"},
 		{0xCCCD,"WM_RASDIALEVENT"},
+#endif // ALLMESSAGES
 		})
 {}
 
