@@ -26,7 +26,7 @@ public:
 	~Console() noexcept;
 	Console(const Console&) = delete;
 	Console& operator=(const Console&) = delete;
-	HWND GetWindow() noexcept;
+	HWND GetWindow() const noexcept;
 private:
 	HWND hWnd;
 	FILE* pCin = nullptr;

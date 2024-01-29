@@ -3,10 +3,7 @@
 #include "Logging.h"
 
 static plog::DynamicAppender dynamicAppender;
-//static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
-//static plog::ColorConsoleAppender<plog::FuncMessageFormatter> consoleAppender;
-//static plog::DebugOutputAppender<plog::TxtFormatter> debugOutputAppender;
-static Logging* Logger;
+inline static Logging* logging;
 
 plog::ColorConsoleAppender<plog::FuncMessageFormatter>& Logging::Console::Instance() {
 	static plog::ColorConsoleAppender<plog::FuncMessageFormatter> consoleAppender;
@@ -20,10 +17,6 @@ plog::DebugOutputAppender<plog::TxtFormatter>& Logging::DebugOutput::Instance() 
 }
 Logging::DebugOutput::DebugOutput() { PLOGV << "DebugOutput Initialied"; };
 
-//Logging::Logging() noexcept
-//	: maxSeverity(plog::none)
-//{}
-
 Logging::Logging(plog::Severity maxSeverity) noexcept
 	: maxSeverity(maxSeverity)
 {
@@ -33,76 +26,23 @@ Logging::Logging(plog::Severity maxSeverity) noexcept
 		plog::init(this->maxSeverity, &dynamicAppender);
 	}
 
-	Logger = this;
+	logging = this;
 }
 
-Logging::~Logging() noexcept {}
-
-//std::ostream& operator<< (std::ostream& out, Logging::InstanceId instanceId)
-//{
-//	switch (instanceId)
-//	{
-//	case Logging::InstanceId::Console: return out << "Console";
-//	case Logging::InstanceId::DebugOutput: return out << "DebugOutput";
-//	};
-//	return out << static_cast<int>(instanceId);
-//}
-
-Logging* Logging::GetLogger() noexcept {
-	return Logger;
+Logging::~Logging() noexcept {
+	logging = nullptr;
 }
 
-// Private
-//template<Logging::InstanceId instanceId>
-//void Logging::InitDebugOutput(plog::Severity maxSeverity) noexcept {
-//	PLOGV << "Initializing DebugOutput Logger";
-//
-//	plog::init<instanceId>(maxSeverity, &debugOutputAppender);
-//
-//
-//	PLOGV << "Logging Initialized with instanceId: " << instanceId;
-//}
-
-//template<Logging::InstanceId instanceId>
-//template<int instanceId>
-//inline void Logging::InitLogger(plog::Severity maxSeverity) {
-//	PLOGV << "Initializing Logger with instanceId: " << instanceId;
-//	switch (instanceId) {
-//	case Logging::kConsole:
-//		plog::init<Logging::kConsole>(maxSeverity, &Logging::consoleAppender);
-//		dynamicAppender.addAppender(&consoleAppender);
-//		break;
-//	case Logging::kDebugOutput:
-//		plog::init<Logging::kDebugOutput>(maxSeverity, &Logging::debugOutputAppender);
-//		dynamicAppender.addAppender(&debugOutputAppender);
-//		break;
-//	}
-//	PLOGV << "Initialized " << instanceId << " Logger";
-//}
-
-//template<Logging::InstanceId instanceId>
-//template<int instanceId>
-//inline void Logging::RemoveLogger() {
-//	PLOGV << "Removing Logger with instanceId: " << instanceId;
-//	plog::Logger<PLOG_DEFAULT_INSTANCE_ID>* logger = plog::get();
-//	if (logger != nullptr) {
-//		dynamicAppender.removeAppender(plog::get<instanceId>());
-//	}
-//	else {
-//		PLOGW << "Can't remove logger with instanceId: " << instanceId;
-//	}
-//}
+Logging* Logging::get() noexcept {
+	return logging;
+}
 
 void Logging::InitConsole(plog::Severity maxSeverity) {
-	//plog::init<Logging::kConsole>(maxSeverity, &consoleAppender);
-	//dynamicAppender.addAppender(&consoleAppender);
 	plog::init<Logging::kConsole>(maxSeverity, &Logging::Console::Instance());
 	dynamicAppender.addAppender(&Logging::Console::Instance());
 }
 
 void Logging::InitDebugOutput(plog::Severity maxSeverity) {
-	//plog::init<Logging::kDebugOutput>(maxSeverity, &debugOutputAppender);
-	//dynamicAppender.addAppender(&debugOutputAppender);
 	plog::init<Logging::kDebugOutput>(maxSeverity, &Logging::DebugOutput::Instance());
 	dynamicAppender.addAppender(&Logging::DebugOutput::Instance());
 }

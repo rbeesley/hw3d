@@ -33,12 +33,7 @@ public:
 	~Logging() noexcept;
 	Logging(const Logging&) = delete;
 	Logging& operator=(const Logging&) = delete;
-	static Logging* GetLogger() noexcept;
-	//template<int instanceId>
-	//inline void InitLogger(plog::Severity maxSeverity);
-	//template<int instanceId>
-	//inline void RemoveLogger();
-
+	static Logging* get() noexcept;
 	void InitConsole(plog::Severity maxSeverity);
 	void RemoveConsole();
 	void InitDebugOutput(plog::Severity maxSeverity);

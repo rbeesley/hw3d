@@ -2,8 +2,6 @@
 #include "Console.h"
 #include "Logging.h"
 
-#define TRACESTATIC OutputDebugString(TEXT(__FUNCTION__)"()\n")
-
 // Global Variables:
 HINSTANCE g_hInst; // current instance
 
@@ -13,7 +11,6 @@ int APIENTRY WinMain(
 	_In_     LPSTR lpCmdLine,
 	_In_     int nCmdShow)
 {
-	TRACESTATIC;
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 	g_hInst = hInstance;
@@ -45,7 +42,7 @@ int APIENTRY WinMain(
 
 	// Create Window
 	PLOGI << "Creating Window";
-	Window wnd(800, 300, L"Atum D3D Window");
+	Window wnd(640, 360, L"Atum D3D Window");
 	if (!wnd.GetHandle())
 	{
 		PLOGF << "Failed to create Window";
@@ -60,7 +57,6 @@ int APIENTRY WinMain(
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
-		//console.RunMessagePump();
 	}
 
 	if (gResult == -1)

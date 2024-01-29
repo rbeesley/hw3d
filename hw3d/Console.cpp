@@ -77,10 +77,10 @@ Console::~Console() noexcept
 #ifdef CALLTRACING
 	OutputDebugString(L" ** Console::~Console()\n");
 #endif // CALLTRACING
-	Logging::GetLogger()->RemoveConsole();
+	Logging::get()->RemoveConsole();
 }
 
-HWND Console::GetWindow() noexcept {
+HWND Console::GetWindow() const noexcept {
 	return this->hWnd;
 }
 

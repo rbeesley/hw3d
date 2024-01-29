@@ -159,7 +159,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AtumException.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Logging.cpp" />
     <ClCompile Include="Window.cpp" />

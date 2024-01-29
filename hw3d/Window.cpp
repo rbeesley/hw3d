@@ -101,7 +101,7 @@ Window::~Window()
 #ifdef CALLTRACING
 	OutputDebugString(L" ** Window::~Window()\n");
 #endif // CALLTRACING
-	Logging::GetLogger()->RemoveDebugOutput();
+	Logging::get()->RemoveDebugOutput();
 	DestroyWindow(hWnd);
 }
 
