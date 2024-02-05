@@ -7,6 +7,9 @@
 #endif
 #define REMOVE
 
+//#define _WIN32_WINNT 0x0A00
+//#include <sdkddkver.h>
+
 #define NTDDI_VERSION NTDDI_WIN10
 #define _WIN32_WINNT _WIN32_WINNT_WIN10
 
@@ -18,7 +21,7 @@
 #define NOWINMESSAGES // - WM_*, EM_*, LB_*, CB_*
 #define NOWINSTYLES // -  WS_*, CS_*, ES_*, LBS_*, SBS_*, CBS_*
 #endif // ATUMWINDOWS
-#define NOSYSMETRICS // - SM_ *
+//#define NOSYSMETRICS // - SM_ * !NOSYSMETRICS Required for GetSystemMetrics() for icons
 #ifndef ATUMWINDOWS // !NOMENUS Required for GetSystemMenu
 #define NOMENUS // - MF_ *
 #endif // ATUMWINDOWS
@@ -48,7 +51,9 @@
 #ifndef ATUMWINDOWS
 #define NOUSER // - All USER defines and routines
 #endif // ATUMWINDOWS
+#ifndef ATUMWINDOWS // !NONLS Required for MultiByteToWideChar()
 #define NONLS // - All NLS defines and routines
+#endif // ATUMWINDOWS
 #ifndef ATUMWINDOWS
 #define NOMB // - MB_ * and MessageBox()
 #endif // ATUMWINDOWS
@@ -82,6 +87,7 @@
 
 #include <Windows.h>
 
+#if FALSE
 //#include <WinUser.h>
 
 // CommCtrl.h macro defines
@@ -113,3 +119,6 @@
 //#include <CommCtrl.h>
 //#pragma comment(lib,"comctl32.lib")
 //#pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
+#endif
+
+//#include "AtumException.h"

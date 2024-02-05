@@ -1,6 +1,7 @@
 #include "Window.h"
 #include "Console.h"
 #include "Logging.h"
+#include <tchar.h>
 
 // Global Variables:
 HINSTANCE g_hInst; // current instance
@@ -13,57 +14,74 @@ int APIENTRY WinMain(
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
-	g_hInst = hInstance;
+	try
+	{
+		g_hInst = hInstance;
 
-	// Initialize logging
-	Logging log(plog::verbose);
+		// Initialize logging
+		//Logging log(plog::info);
+		Logging log(plog::debug);
+		//Logging log(plog::verbose);
 
-	// Set up DebugOutput Logger
-	//log.InitDebugOutput(plog::info);
-	log.InitDebugOutput(plog::verbose);
+		// Set up DebugOutput Logger
+		//log.InitDebugOutput(plog::info);
+		log.InitDebugOutput(plog::debug);
+		//log.InitDebugOutput(plog::verbose);
 
 #ifdef _DEBUG
-	// Create Console
-	PLOGI << "Creating Debug Console";
-	Console console(L"Atum D3D Debug Console");
+		// Create Console
+		PLOGI << "Creating Debug Console";
+		Console console(TEXT("Atum D3D Debug Console"));
 
-	// Set up Console Logger
-	//log.InitConsole(plog::debug);
-	log.InitConsole(plog::verbose);
+		// Set up Console Logger
+		//log.InitConsole(plog::info);
+		//log.InitConsole(plog::debug);
+		log.InitConsole(plog::verbose);
 
-	// Check Logging
-	PLOG_VERBOSE << "This is a VERBOSE message";
-	PLOG_DEBUG << "This is a DEBUG message";
-	PLOG_INFO << "This is an INFO message";
-	PLOG_WARNING << "This is a WARNING message";
-	PLOG_ERROR << "This is an ERROR message";
-	PLOG_FATAL << "This is a FATAL message";
+		// Check Logging
+		PLOG_VERBOSE << "This is a VERBOSE message";
+		PLOG_DEBUG << "This is a DEBUG message";
+		PLOG_INFO << "This is an INFO message";
+		PLOG_WARNING << "This is a WARNING message";
+		PLOG_ERROR << "This is an ERROR message";
+		PLOG_FATAL << "This is a FATAL message";
 #endif // _DEBUG
 
-	// Create Window
-	PLOGI << "Creating Window";
-	Window wnd(640, 360, L"Atum D3D Window");
-	if (!wnd.GetHandle())
-	{
-		PLOGF << "Failed to create Window";
-		return -2;
-	}
+		// Create Window
+		PLOGI << "Creating Window";
+		Window wnd(640, 360, TEXT("Atum D3D Window"));
+		if (!wnd.GetHandle())
+		{
+			PLOGF << "Failed to create Window";
+			return -2;
+		}
 
-	// Start Window Message Pump
-	PLOGI << "Starting Message Pump";
-	MSG msg;
-	BOOL gResult;
-	while ((gResult = GetMessage(&msg, nullptr, 0, 0)) > 0)
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
+		// Start Window Message Pump
+		PLOGI << "Starting Message Pump";
+		MSG msg;
+		BOOL gResult;
+		while ((gResult = GetMessage(&msg, nullptr, 0, 0)) > 0)
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
 
-	if (gResult == -1)
-	{
-		return -1;
-	}
+		if (gResult == -1)
+		{
+			return -1;
+		}
 
-	PLOGI << "Closing application";
-	return static_cast<int>(msg.wParam);
+		PLOGI << "Closing application";
+		return static_cast<int>(msg.wParam);
+	}
+	catch (const AtumException& e) {
+		MessageBoxA(nullptr, e.what(), e.GetType(), MB_OK | MB_ICONEXCLAMATION);
+	}
+	catch (const std::exception& e) {
+		MessageBoxA(nullptr, e.what(), "Standard Exception", MB_OK | MB_ICONEXCLAMATION);
+	}
+	catch (...) {
+		MessageBox(nullptr, TEXT("No details available"), TEXT("Unknown Exception"), MB_OK | MB_ICONEXCLAMATION);
+	}
+	return -1;
 }
