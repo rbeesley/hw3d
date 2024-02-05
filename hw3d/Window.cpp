@@ -2,16 +2,7 @@
 #include "WindowsMessageMap.h"
 #include "Logging.h"
 #include "resource.h"
-
-#define USE_SYSTEMERROR
-#ifdef USE_SYSTEMERROR
 #include <system_error>
-#endif // USE_SYSTEMERROR
-
-//#define USE_FORMATMESSAGE_H
-#ifdef USE_FORMATMESSAGE_H
-#include <FormatMessage.h>
-#endif // USE_FORMATMESSAGE_H
 
 Window::WindowClass Window::WindowClass::wndClass;
 const static WindowsMessageMap wmm;
@@ -176,9 +167,6 @@ LRESULT CALLBACK Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
 			return DefWindowProc(hWnd, msg, wParam, lParam);
 		}
 		break;
-	//case WM_DESTROY:
-	//	PostQuitMessage(0);
-	//	break;
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		return 0;
@@ -213,48 +201,8 @@ const char* Window::Exception::GetType() const noexcept
 
 std::string Window::Exception::TranslateErrorCode(HRESULT hresult) noexcept
 {
-#ifdef USE_SYSTEMERROR
 	std::string message = std::system_category().message(hresult);
 	return message;
-#endif // USE_SYSTEMERROR
-
-#ifdef USE_FORMATMESSAGE_H
-	std::string s;
-#ifdef UNICODE
-	std::wstring w;
-	w = CFormatMessage(hresult).MessageText();
-	s = std::string(w.begin(), w.end());
-#else
-	s = CFormatMessage(hresult).MessageText();
-#endif
-	return s;
-#endif // USE_FORMATMESSAGE_H
-
-#if !(defined(USE_SYSTEMERROR) || defined(USE_FORMATMESSAGE_H))
-	char* pMsgBuf = nullptr;
-	DWORD nMsgLen = FormatMessage(
-		// use system message tables to retrieve error text
-		FORMAT_MESSAGE_ALLOCATE_BUFFER |
-		// allocate buffer on local heap for error text
-		FORMAT_MESSAGE_FROM_SYSTEM |
-		// Important! will fail otherwise, since we're not (and CANNOT) pass insertion parameters
-		FORMAT_MESSAGE_IGNORE_INSERTS |
-		// ignore regular line breaks in the message definition text
-		FORMAT_MESSAGE_MAX_WIDTH_MASK,
-		nullptr,
-		hresult,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		reinterpret_cast<LPWSTR>(pMsgBuf),
-		0,
-		nullptr
-	);
-	if (nMsgLen == 0) {
-		return "Unidetified error code";
-	}
-	std::string errorString = pMsgBuf;
-	LocalFree(pMsgBuf);
-	return errorString;
-#endif // !defined(USE_SYSTEMERROR) || !defined(USE_FORMATMESSAGE_H)
 }
 
 HRESULT Window::Exception::GetErrorCode() const noexcept

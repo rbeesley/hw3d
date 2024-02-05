@@ -1,8 +1,6 @@
 #pragma once
 #include "AtumWindows.h"
 #include <cstdio>
-//#include <memory>
-//#include <signal.h>
 
 class Console {
 public:
