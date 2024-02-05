@@ -1,4 +1,3 @@
-#include "AtumWindows.h"
 #include "Console.h"
 #include "Logging.h"
 
