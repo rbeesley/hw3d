@@ -1,7 +1,7 @@
 #include "Window.h"
 #include "WindowsMessageMap.h"
 #include "Logging.h"
-#include "resource.h"
+#include "Resources/resource.h"
 #include <system_error>
 
 window::window_class window::window_class::window_class_;

@@ -25,12 +25,12 @@ int APIENTRY WinMain(
 		//logging log(plog::verbose);
 
 		// Set up DebugOutput Logger
-		//log.init_debug_output(plog::fatal);
-		//log.init_debug_output(plog::error);
-		log.init_debug_output(plog::warning);
-		//log.init_debug_output(plog::info);
-		//log.init_debug_output(plog::debug);
-		//log.init_debug_output(plog::verbose);
+		//logging::init_debug_output(plog::fatal);
+		//logging::init_debug_output(plog::error);
+		logging::init_debug_output(plog::warning);
+		//logging::init_debug_output(plog::info);
+		//logging::init_debug_output(plog::debug);
+		//logging::init_debug_output(plog::verbose);
 
 		// Create Window
 		PLOGI << "Creating Window";
@@ -51,9 +51,9 @@ int APIENTRY WinMain(
 		}
 
 		// Set up Console Logger
-		//log.init_console(plog::info);
-		log.init_console(plog::debug);
-		//log.init_console(plog::verbose);
+		//logging::init_console(plog::info);
+		logging::init_console(plog::debug);
+		//logging::init_console(plog::verbose);
 
 		// Check Logging
 		PLOG_VERBOSE << "This is a VERBOSE message";
@@ -62,7 +62,7 @@ int APIENTRY WinMain(
 		PLOG_WARNING << "This is a WARNING message";
 		PLOG_ERROR << "This is an ERROR message";
 		PLOG_FATAL << "This is a FATAL message";
-		PLOG_NONE << "This is a NONE message";
+		//PLOG_NONE << "This is a NONE message";
 #endif // _DEBUG
 
 		// Start Window Message Pump
@@ -85,12 +85,18 @@ int APIENTRY WinMain(
 	}
 	//BUGBUG : Should be using MessageBox and adjusting text based on target encoding. Currently assuming ASCII to match output of exception.what().
 	catch (const atum_exception& e) {
+		PLOGF << e.get_type() << ":";
+		PLOGF << "    " << e.what();
 		MessageBoxA(nullptr, e.what(), e.get_type(), MB_OK | MB_ICONEXCLAMATION);
 	}
 	catch (const std::exception& e) {
+		PLOGF << "Standard Exception:";
+		PLOGF << "    " << e.what();
 		MessageBoxA(nullptr, e.what(), "Standard Exception", MB_OK | MB_ICONEXCLAMATION);
 	}
 	catch (...) {
+		PLOGF << "Unknown Exception:";
+		PLOGF << "No further details about the exception are available.";
 		MessageBox(nullptr, TEXT("No details available"), TEXT("Unknown Exception"), MB_OK | MB_ICONEXCLAMATION);
 	}
 	return -1;
