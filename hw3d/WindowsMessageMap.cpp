@@ -6,9 +6,9 @@
 #define ALLMESSAGES FALSE
 #define ALLMOUSEMESSAGES ALLMESSAGES | TRUE
 
-WindowsMessageMap::WindowsMessageMap()
+windows_message_map::windows_message_map()
 	:
-	map({
+	map_({
 		{0x1,"WM_CREATE"},
 		{0x2,"WM_DESTROY"},
 		{0x3,"WM_MOVE"},
@@ -1104,30 +1104,30 @@ WindowsMessageMap::WindowsMessageMap()
 		})
 {}
 
-std::string WindowsMessageMap::operator()(DWORD msg, LPARAM lp, WPARAM wp) const
+std::string windows_message_map::operator()(const DWORD msg, const LPARAM l_param, const WPARAM w_param) const
 {
-	constexpr int firstColWidth = 25;
-	const auto i = map.find(msg);
+	constexpr int first_col_width = 25;
+	const auto i = map_.find(msg);
 
-	std::ostringstream oss;
-	if (i != map.end())
+	std::ostringstream out;
+	if (i != map_.end())
 	{
-		oss << std::left << std::setw(firstColWidth) << i->second << std::right;
+		out << std::left << std::setw(first_col_width) << i->second << std::right;
 	}
 	//else if (0xC000 <= msg && msg <= 0xFFFF)
 	//{
-	//	std::ostringstream padss;
-	//	padss << " RegisterWindowMessage rtn: 0x" << std::hex << std::setfill('0') << std::setw(4) << msg;
-	//	oss << std::left << std::setw(firstColWidth) << padss.str() << std::right;
+	//	std::ostringstream pad;
+	//	pad << " RegisterWindowMessage rtn: 0x" << std::hex << std::setfill('0') << std::setw(4) << msg;
+	//	out << std::left << std::setw(firstColWidth) << pad.str() << std::right;
 	//}
 	else
 	{
-		std::ostringstream padss;
-		padss << " Unknown message: 0x" << std::hex << std::setfill('0') << std::setw(4) << msg;
-		oss << std::left << std::setw(firstColWidth) << padss.str() << std::right;
+		std::ostringstream pad;
+		pad << " Unknown message: 0x" << std::hex << std::setfill('0') << std::setw(4) << msg;
+		out << std::left << std::setw(first_col_width) << pad.str() << std::right;
 	}
-	oss << "  LP: 0x" << std::hex << std::setfill('0') << std::setw(16) << lp;
-	oss << "  WP: 0x" << std::hex << std::setfill('0') << std::setw(16) << wp;
+	out << "  LP: 0x" << std::hex << std::setfill('0') << std::setw(16) << l_param;
+	out << "  WP: 0x" << std::hex << std::setfill('0') << std::setw(16) << w_param;
 	
-	return oss.str();
+	return out.str();
 }

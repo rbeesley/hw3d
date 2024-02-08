@@ -4,167 +4,136 @@
 #include "resource.h"
 #include <system_error>
 
-Window::WindowClass Window::WindowClass::wndClass;
-const static WindowsMessageMap wmm;
+window::window_class window::window_class::window_class_;
+const static windows_message_map windows_message_map;
 
-Window::WindowClass::WindowClass() noexcept
+window::window_class::window_class() noexcept
 	:
-	hInst(GetModuleHandle(nullptr))
+	instance_handle_(GetModuleHandle(nullptr))
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Window::WindowClass::WindowClass()\n");
-#endif // CALLTRACING
 	WNDCLASSEX wcex = {
 		.style = CS_OWNDC,
-		.lpfnWndProc = HandleMsgSetup,
+		.lpfnWndProc = handle_msg_setup,
 		.cbClsExtra = 0,
 		.cbWndExtra = 0,
-		.hInstance = GetInstance(),
-		.hIcon = static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, ::GetSystemMetrics(SM_CXICON), ::GetSystemMetrics(SM_CYICON), 0)),
+		.hInstance = get_instance(),
+		.hIcon = static_cast<HICON>(LoadImage(instance_handle_, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, ::GetSystemMetrics(SM_CXICON), ::GetSystemMetrics(SM_CYICON), 0)),
 		.hCursor = nullptr,
 		.hbrBackground = nullptr,
 		.lpszMenuName = nullptr,
-		.lpszClassName = GetName(),
-		.hIconSm = static_cast<HICON>(LoadImage(hInst, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0))
+		.lpszClassName = get_name(),
+		.hIconSm = static_cast<HICON>(LoadImage(instance_handle_, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0))
 	};
 	wcex.cbSize = sizeof(wcex);
 
 	RegisterClassEx(&wcex);
 }
 
-Window::WindowClass::~WindowClass()
+window::window_class::~window_class()
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Window::WindowClass::~WindowClass()\n");
-#endif // CALLTRACING
-	PLOGV << "Window::WindowClass::~WindowClass()";
-	UnregisterClass(wndClassName, GetInstance());
+	UnregisterClass(window_class_name, get_instance());
 }
 
-const LPCWSTR Window::WindowClass::GetName() noexcept
+LPCWSTR window::window_class::get_name() noexcept
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Window::WindowClass::GetName()\n");
-#endif // CALLTRACING
-	return wndClassName;
+	return window_class_name;
 }
 
-HINSTANCE Window::WindowClass::GetInstance() noexcept
+HINSTANCE window::window_class::get_instance() noexcept
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Window::WindowClass::GetInstance()\n");
-#endif // CALLTRACING
-	return wndClass.hInst;
+	return window_class_.instance_handle_;
 }
 
-Window::Window(int width, int height, const LPCWSTR name)
+window::window(const int width, const int height, const LPCWSTR name)
+	:
+	width_(width),
+	height_(height)
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Window::Window()\n");
-#endif // CALLTRACING
-	RECT wr {
-		.left = 100,
-		.top = 100,
-		.right = width + wr.left,
-		.bottom = height + wr.top
-	};
+	RECT window_rect;
+	window_rect.left = 100;
+	window_rect.top = 100;
+	window_rect.right = width_ + window_rect.left;
+	window_rect.bottom = height_ + window_rect.top;
 
-	if (!AdjustWindowRect(&wr, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE))
+	if (!AdjustWindowRect(&window_rect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE))
 	{
 		throw ATUM_WND_LAST_EXCEPT();
-	};
+	}
 
-	hWnd = CreateWindowEx(
+	window_handle = CreateWindowEx(
 		0,
-		WindowClass::GetName(),
+		window_class::get_name(),
 		name,
 		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
-		wr.right - wr.left,
-		wr.bottom - wr.top,
+		window_rect.right - window_rect.left,
+		window_rect.bottom - window_rect.top,
 		nullptr,
 		nullptr,
-		WindowClass::GetInstance(),
+		window_class::get_instance(),
 		this
 	);
 
-	if (nullptr == hWnd)
+	if (nullptr == window_handle)
 	{
 		throw ATUM_WND_LAST_EXCEPT();
 	}
 
 	// Show Window
-	ShowWindow(hWnd, SW_SHOWDEFAULT);
+	ShowWindow(window_handle, SW_SHOWDEFAULT);
 }
 
-HWND Window::GetHandle() const
+HWND window::get_handle() const
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Window::GetHandle()\n");
-#endif // CALLTRACING
-	return hWnd;
+	return window_handle;
 }
 
-Window::~Window()
+window::~window()
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Window::~Window()\n");
-#endif // CALLTRACING
-	Logging::get()->RemoveDebugOutput();
-	DestroyWindow(hWnd);
+	logging::remove_debug_output();
+	DestroyWindow(window_handle);
 }
 
-LRESULT CALLBACK Window::HandleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
+LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Window::HandleMsgSetup()\n");
-#endif // CALLTRACING
-	//PLOGV_(Logging::kConsole) << wmm(msg, lParam, wParam).c_str();
-	PLOGV << wmm(msg, lParam, wParam).c_str();
+	PLOGV << windows_message_map(msg, l_param, w_param).c_str();
 
 	if (msg == WM_NCCREATE)
 	{
-		const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);
-		Window* const pWnd = static_cast<Window*>(pCreate->lpCreateParams);
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWnd));
-		SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::HandleMsgThunk));
-		return pWnd->HandleMsg(hWnd, msg, wParam, lParam);
+		const CREATESTRUCTW* const p_create = reinterpret_cast<CREATESTRUCTW*>(l_param);
+		window* const p_wnd = static_cast<window*>(p_create->lpCreateParams);
+		SetWindowLongPtr(window_handle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(p_wnd));
+		SetWindowLongPtr(window_handle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&window::handle_msg_thunk));
+		return handle_msg(window_handle, msg, w_param, l_param);
 	}
-	return DefWindowProc(hWnd, msg, wParam, lParam);
+	return DefWindowProc(window_handle, msg, w_param, l_param);
 }
 
-LRESULT CALLBACK Window::HandleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
+LRESULT CALLBACK window::handle_msg_thunk(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Window::HandleMsgThunk()\n");
-#endif // CALLTRACING
-	Window* const pWnd = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-	return pWnd->HandleMsg(hWnd, msg, wParam, lParam);
+	reinterpret_cast<window*>(GetWindowLongPtr(window_handle, GWLP_USERDATA));
+	return handle_msg(window_handle, msg, w_param, l_param);
 }
 
-LRESULT CALLBACK Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
+LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Window::HandleMsg()\n");
-#endif // CALLTRACING
-	int wmId, wmEvent;
+	int window_message_id, window_message_event;
 
-	//PLOGV_(Logging::kConsole) << wmm(msg, lParam, wParam).c_str();
-	PLOGV << wmm(msg, lParam, wParam).c_str();
+	PLOGV << windows_message_map(msg, l_param, w_param).c_str();
 
 	switch (msg)
 	{
 	case WM_CREATE:
 		break;
 	case WM_COMMAND:
-		wmId = LOWORD(wParam);
-		wmEvent = HIWORD(wParam);
-		switch (wmId)
+		window_message_id = LOWORD(w_param);
+		window_message_event = HIWORD(w_param);
+		switch (window_message_id)
 		{
 		case 0:
 		default:
-			return DefWindowProc(hWnd, msg, wParam, lParam);
+			return DefWindowProc(window_handle, msg, w_param, l_param);
 		}
 		break;
 	case WM_CLOSE:
@@ -172,45 +141,45 @@ LRESULT CALLBACK Window::HandleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lP
 		return 0;
 		break;
 	default:
-		return DefWindowProc(hWnd, msg, wParam, lParam);
+		return DefWindowProc(window_handle, msg, w_param, l_param);
 	}
 	return 0;
 }
 
-Window::Exception::Exception(int line, const char* file, HRESULT hresult) noexcept
+window::exception::exception(const int line, const char* file, const HRESULT result) noexcept
 	:
-	AtumException(line, file),
-	hresult(hresult)
+	atum_exception(line, file),
+	result_(result)
 {}
 
-const char* Window::Exception::what() const noexcept
+const char* window::exception::what() const noexcept
 {
 	std::ostringstream out;
-	out << GetType() << "\n"
-		<< "[Error Code] " << GetErrorCode() << "\n"
-		<< "[Description] " << GetErrorString() << "\n"
-		<< GetOriginString();
-	whatBuffer = out.str();
-	return whatBuffer.c_str();
+	out << get_type() << "\n"
+		<< "[Error Code] " << get_error_code() << "\n"
+		<< "[Description] " << get_error_string() << "\n"
+		<< get_origin_string();
+	what_buffer_ = out.str();
+	return what_buffer_.c_str();
 }
 
-const char* Window::Exception::GetType() const noexcept
+const char* window::exception::get_type() const noexcept
 {
 	return "Atum Window Exception";
 }
 
-std::string Window::Exception::TranslateErrorCode(HRESULT hresult) noexcept
+std::string window::exception::translate_error_code(const HRESULT result) noexcept
 {
-	std::string message = std::system_category().message(hresult);
+	std::string message = std::system_category().message(result);
 	return message;
 }
 
-HRESULT Window::Exception::GetErrorCode() const noexcept
+HRESULT window::exception::get_error_code() const noexcept
 {
-	return hresult;
+	return result_;
 }
 
-std::string Window::Exception::GetErrorString() const noexcept
+std::string window::exception::get_error_string() const noexcept
 {
-	return TranslateErrorCode(hresult);
+	return translate_error_code(result_);
 }

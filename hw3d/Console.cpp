@@ -1,51 +1,41 @@
 #include "Console.h"
 #include "Logging.h"
 
-Console::ConsoleClass Console::ConsoleClass::conClass;
+console::console_class console::console_class::console_class_;
 
-Console::ConsoleClass::ConsoleClass() noexcept
-	:hInst(GetModuleHandle(nullptr))
-{
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Console::ConsoleClass::ConsoleClass()\n");
-#endif // CALLTRACING
-}
+console::console_class::console_class() noexcept
+	:instance_handle_(GetModuleHandle(nullptr))
+{}
 
-Console::ConsoleClass::~ConsoleClass()
+console::console_class::~console_class()
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Console::ConsoleClass::~ConsoleClass()\n");
-#endif // CALLTRACING
 	FreeConsole();
 }
 
-const LPCWSTR Console::ConsoleClass::GetName() noexcept
+LPCWSTR console::console_class::get_name() noexcept
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Console::ConsoleClass::GetName()\n");
-#endif // CALLTRACING
-	return conClassName;
+	return console_class_name;
 }
 
-HINSTANCE Console::ConsoleClass::GetInstance() noexcept
+HINSTANCE console::console_class::get_instance() noexcept
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Console::ConsoleClass::GetInstance()\n");
-#endif // CALLTRACING
-	return conClass.hInst;
+	return console_class_.instance_handle_;
 }
 
-Console::Console(const LPCWSTR name) noexcept {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Console::Console()\n");
-#endif // CALLTRACING
+console::console(const LPCWSTR name) noexcept {
 	AllocConsole();
-	hWnd = GetConsoleWindow();
+	window_handle = GetConsoleWindow();
 
 	PLOGV << "Initialize STD File Streams";
-	freopen_s((FILE**)stdin, "CONIN$", "r", stdin);
-	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
-	freopen_s((FILE**)stderr, "CONOUT$", "w", stderr);
+	errno_t result = 0;
+	result |= freopen_s(reinterpret_cast<FILE**>(stdin), "CONIN$", "r", stdin);
+	result |= freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
+	result |= freopen_s(reinterpret_cast<FILE**>(stderr), "CONOUT$", "w", stderr);
+
+	if(result)
+	{
+		PLOGW << "Error initializing STD File Streams: " << result;
+	}
 
 	// Set Console Window Title
 	PLOGV << "Set Console Window Title";
@@ -53,43 +43,37 @@ Console::Console(const LPCWSTR name) noexcept {
 
 	// Disable System Close Button and Menu Item
 	PLOGV << "Disable Console Window System Close Button and Menu Item";
-	auto hmenu = GetSystemMenu(hWnd, FALSE);
-	EnableMenuItem(hmenu, SC_CLOSE, MF_GRAYED);
+	const auto menu = GetSystemMenu(window_handle, FALSE);
+	EnableMenuItem(menu, SC_CLOSE, MF_GRAYED);
 
 
 	PLOGV << "Enable Console Window Handlers";
 	// Enable Ctrl Handler
-	SetConsoleCtrlHandler(CtrlHandler, TRUE);
+	SetConsoleCtrlHandler(ctrl_handler, TRUE);
 
 	// Enable mouse input
-	HANDLE hInput = GetStdHandle(STD_INPUT_HANDLE);
-	DWORD dwMode = 0;
-	GetConsoleMode(hInput, &dwMode);
-	SetConsoleMode(hInput, dwMode | ENABLE_MOUSE_INPUT | ENABLE_QUICK_EDIT_MODE | ENABLE_EXTENDED_FLAGS);
+	const HANDLE input = GetStdHandle(STD_INPUT_HANDLE);
+	DWORD mode = 0;
+	GetConsoleMode(input, &mode);
+	SetConsoleMode(input, mode | ENABLE_MOUSE_INPUT | ENABLE_QUICK_EDIT_MODE | ENABLE_EXTENDED_FLAGS);
 
 	PLOGV << "Show the Console Window";
 	ShowWindow(GetConsoleWindow(), SW_SHOW);
 }
 
-Console::~Console() noexcept
+console::~console() noexcept
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Console::~Console()\n");
-#endif // CALLTRACING
-	Logging::get()->RemoveConsole();
+	logging::remove_console();
 }
 
-HWND Console::GetWindow() const noexcept {
-	return this->hWnd;
+HWND console::get_window_handle() const noexcept {
+	return this->window_handle;
 }
 
-BOOL Console::CtrlHandler(DWORD fdwCtrlType) noexcept
+BOOL console::ctrl_handler(const DWORD ctrl_type) noexcept
 {
-#ifdef CALLTRACING
-	OutputDebugString(L" ** Console::CtrlHandler()\n");
-#endif // CALLTRACING
-	Console* conptr = (Console*)GetWindowLongPtr(GetConsoleWindow(), GWLP_USERDATA);
-	switch (fdwCtrlType)
+	reinterpret_cast<console*>(GetWindowLongPtr(GetConsoleWindow(), GWLP_USERDATA));
+	switch (ctrl_type)
 	{
 	case CTRL_C_EVENT:
 		PLOGV << "Ctrl-C event";

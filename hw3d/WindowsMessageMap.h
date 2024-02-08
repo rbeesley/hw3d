@@ -3,11 +3,11 @@
 #include <Windows.h>
 #include <string>
 
-class WindowsMessageMap
+class windows_message_map
 {
 public:
-	WindowsMessageMap();
-	std::string operator()(DWORD msg, LPARAM lp, WPARAM wp) const;
+	windows_message_map();
+	std::string operator()(DWORD msg, LPARAM l_param, WPARAM w_param) const;
 private:
-	const std::unordered_map<DWORD, std::string> map;
+	const std::unordered_map<DWORD, std::string> map_;
 };

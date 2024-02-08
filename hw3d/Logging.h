@@ -1,4 +1,5 @@
 #pragma once
+// ReSharper disable CppUnusedIncludeDirective
 #include <plog/Log.h>
 #include <plog/Init.h>
 #include <plog/Formatters/FuncMessageFormatter.h>
@@ -6,39 +7,41 @@
 #include <plog/Appenders/ColorConsoleAppender.h>
 #include <plog/Appenders/DebugOutputAppender.h>
 #include <plog/Appenders/DynamicAppender.h>
+// ReSharper restore CppUnusedIncludeDirective
 
-class Logging
+class logging
 {
 public:
-	class Console {
+	class console {
 	public:
-		static plog::ColorConsoleAppender<plog::FuncMessageFormatter>& Instance();
+		static plog::ColorConsoleAppender<plog::FuncMessageFormatter>& instance();
 	private:
-		Console();
+		console();
 	};
 
-	class DebugOutput {
+	class debug_output {
 	public:
-		static plog::DebugOutputAppender<plog::TxtFormatter>& Instance();
+		static plog::DebugOutputAppender<plog::TxtFormatter>& instance();
 	private:
-		DebugOutput();
+		debug_output();
 	};
 
 	enum {
-		kConsole = 1,
-		kDebugOutput
+		CONSOLE = 1,
+		DEBUG_OUTPUT
 	};
 
-	Logging(plog::Severity maxSeverity) noexcept;
-	~Logging() noexcept;
-	Logging(const Logging&) = delete;
-	Logging& operator=(const Logging&) = delete;
-	static Logging* get() noexcept;
-	void InitConsole(plog::Severity maxSeverity);
-	void RemoveConsole();
-	void InitDebugOutput(plog::Severity maxSeverity);
-	void RemoveDebugOutput();
+	explicit logging(plog::Severity max_severity) noexcept;
+	logging(const logging&) = delete;
+	logging& operator=(const logging&) = delete;
+	logging(const logging&&) = delete;
+	logging& operator=(const logging&&) = delete;
+	static void init_console(plog::Severity max_severity);
+	static void remove_console();
+	static void init_debug_output(plog::Severity max_severity);
+	static void remove_debug_output();
 private:
-	plog::Severity maxSeverity;
+	plog::Severity max_severity_;
+	static plog::DynamicAppender dynamic_appender_;
 };
 

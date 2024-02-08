@@ -2,34 +2,38 @@
 #include "AtumWindows.h"
 #include <cstdio>
 
-class Console {
+class console {
 public:
 	// singleton
-	class ConsoleClass {
+	class console_class {
 	public:
-		static const LPCWSTR GetName() noexcept;
-		static HINSTANCE GetInstance() noexcept;
+		static LPCWSTR get_name() noexcept;
+		static HINSTANCE get_instance() noexcept;
+		console_class(const console_class&) = delete;
+		console_class& operator=(const console_class&) = delete;
+		console_class(const console_class&&) = delete;
+		console_class& operator=(const console_class&&) = delete;
 	private:
-		ConsoleClass() noexcept;
-		~ConsoleClass();
-		ConsoleClass(const ConsoleClass&) = delete;
-		ConsoleClass& operator=(const ConsoleClass&) = delete;
-		static constexpr LPCWSTR conClassName = L"Atum.D3D.Console";
-		static ConsoleClass conClass;
-		HINSTANCE hInst;
+		console_class() noexcept;
+		~console_class();
+		static constexpr LPCWSTR console_class_name = L"Atum.D3D.Console";
+		static console_class console_class_;
+		HINSTANCE instance_handle_;
 	};
 
 public:
-	Console(const LPCWSTR name) noexcept;
-	~Console() noexcept;
-	Console(const Console&) = delete;
-	Console& operator=(const Console&) = delete;
-	HWND GetWindow() const noexcept;
+	HWND get_window_handle() const noexcept;
+	explicit console(LPCWSTR name) noexcept;
+	~console() noexcept;
+	console(const console&) = delete;
+	console& operator=(const console&) = delete;
+	console(const console&&) = delete;
+	console& operator=(const console&&) = delete;
 private:
-	HWND hWnd;
-	FILE* pCin = nullptr;
-	FILE* pCout = nullptr;
-	FILE* pCerr = nullptr;
-	static WNDPROC glpfnConsoleWindow;
-	static BOOL CALLBACK CtrlHandler(DWORD fdwCtrlType) noexcept;
+	HWND window_handle;
+	FILE* p_cin_ = nullptr;
+	FILE* p_cout_ = nullptr;
+	FILE* p_cerr_ = nullptr;
+	static WNDPROC console_window_proc_;
+	static BOOL CALLBACK ctrl_handler(DWORD ctrl_type) noexcept;
 };

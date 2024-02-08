@@ -4,39 +4,56 @@
 #include <tchar.h>
 
 // Global Variables:
-HINSTANCE g_hInst; // current instance
+HINSTANCE root_instance; // current instance
 
 int APIENTRY WinMain(
-	_In_     HINSTANCE hInstance,
-	_In_opt_ HINSTANCE hPrevInstance,
-	_In_     LPSTR lpCmdLine,
-	_In_     int nCmdShow)
+	_In_ const HINSTANCE instance,
+	_In_opt_ const HINSTANCE previous_instance,
+	_In_ const LPSTR command_line,
+	_In_ const int show_flags)
 {
-	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
+	UNREFERENCED_PARAMETER(previous_instance);
+	UNREFERENCED_PARAMETER(command_line);
+	UNREFERENCED_PARAMETER(show_flags);
 	try
 	{
-		g_hInst = hInstance;
+		root_instance = instance;
 
 		// Initialize logging
-		//Logging log(plog::info);
-		Logging log(plog::debug);
-		//Logging log(plog::verbose);
+		//logging log(plog::info);
+		logging log(plog::debug);
+		//logging log(plog::verbose);
 
 		// Set up DebugOutput Logger
-		//log.InitDebugOutput(plog::info);
-		log.InitDebugOutput(plog::debug);
-		//log.InitDebugOutput(plog::verbose);
+		//log.init_debug_output(plog::fatal);
+		//log.init_debug_output(plog::error);
+		log.init_debug_output(plog::warning);
+		//log.init_debug_output(plog::info);
+		//log.init_debug_output(plog::debug);
+		//log.init_debug_output(plog::verbose);
+
+		// Create Window
+		PLOGI << "Creating Window";
+		const window window(640, 360, TEXT("Atum D3D Window"));
+		if (!window.get_handle())
+		{
+			PLOGF << "Failed to create Window";
+			return -2;
+		}
 
 #ifdef _DEBUG
 		// Create Console
 		PLOGI << "Creating Debug Console";
-		Console console(TEXT("Atum D3D Debug Console"));
+		const console console(TEXT("Debug Console"));
+		if (!console.get_window_handle())
+		{
+			PLOGE << "Failed to create Debug Console";
+		}
 
 		// Set up Console Logger
-		//log.InitConsole(plog::info);
-		//log.InitConsole(plog::debug);
-		log.InitConsole(plog::verbose);
+		//log.init_console(plog::info);
+		log.init_console(plog::debug);
+		//log.init_console(plog::verbose);
 
 		// Check Logging
 		PLOG_VERBOSE << "This is a VERBOSE message";
@@ -45,28 +62,20 @@ int APIENTRY WinMain(
 		PLOG_WARNING << "This is a WARNING message";
 		PLOG_ERROR << "This is an ERROR message";
 		PLOG_FATAL << "This is a FATAL message";
+		PLOG_NONE << "This is a NONE message";
 #endif // _DEBUG
-
-		// Create Window
-		PLOGI << "Creating Window";
-		Window wnd(640, 360, TEXT("Atum D3D Window"));
-		if (!wnd.GetHandle())
-		{
-			PLOGF << "Failed to create Window";
-			return -2;
-		}
 
 		// Start Window Message Pump
 		PLOGI << "Starting Message Pump";
 		MSG msg;
-		BOOL gResult;
-		while ((gResult = GetMessage(&msg, nullptr, 0, 0)) > 0)
+		BOOL result;
+		while ((result = GetMessage(&msg, nullptr, 0, 0)) > 0)
 		{
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
 
-		if (gResult == -1)
+		if (result == -1)
 		{
 			return -1;
 		}
@@ -74,8 +83,9 @@ int APIENTRY WinMain(
 		PLOGI << "Closing application";
 		return static_cast<int>(msg.wParam);
 	}
-	catch (const AtumException& e) {
-		MessageBoxA(nullptr, e.what(), e.GetType(), MB_OK | MB_ICONEXCLAMATION);
+	//BUGBUG : Should be using MessageBox and adjusting text based on target encoding. Currently assuming ASCII to match output of exception.what().
+	catch (const atum_exception& e) {
+		MessageBoxA(nullptr, e.what(), e.get_type(), MB_OK | MB_ICONEXCLAMATION);
 	}
 	catch (const std::exception& e) {
 		MessageBoxA(nullptr, e.what(), "Standard Exception", MB_OK | MB_ICONEXCLAMATION);

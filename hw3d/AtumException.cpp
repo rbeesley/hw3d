@@ -1,40 +1,40 @@
 #include "AtumException.h"
 #include <sstream>
 
-AtumException::AtumException(int line, const char* file) noexcept
+atum_exception::atum_exception(const int line, const char* file) noexcept
 	:
-	line(line),
-	file(file)
+	line_(line),
+	file_(file)
 {}
 
-const char* AtumException::what() const noexcept
+const char* atum_exception::what() const noexcept
 {
 	std::ostringstream out{};
-	out << GetType() << "\n"
-		<< GetOriginString();
-	whatBuffer = out.str();
-	return whatBuffer.c_str();
+	out << get_type() << "\n"
+		<< get_origin_string();
+	what_buffer_ = out.str();
+	return what_buffer_.c_str();
 }
 
-const char* AtumException::GetType() const noexcept
+const char* atum_exception::get_type() const noexcept
 {
 	return "AtumException";
 }
 
-int AtumException::GetLine() const noexcept
+int atum_exception::get_line() const noexcept
 {
-	return line;
+	return line_;
 }
 
-const std::string& AtumException::GetFile() const noexcept
+const std::string& atum_exception::get_file() const noexcept
 {
-	return file;
+	return file_;
 }
 
-std::string AtumException::GetOriginString() const noexcept
+std::string atum_exception::get_origin_string() const noexcept
 {
 	std::ostringstream out{};
-	out << "[File] " << file << "\n"
-		<< "[Line] " << line;
+	out << "[File] " << file_ << "\n"
+		<< "[Line] " << line_;
 	return out.str();
 }

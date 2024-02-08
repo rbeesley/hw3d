@@ -1,70 +1,42 @@
 #include "AtumWindows.h"
-#include "Console.h"
 #include "Logging.h"
 
-static plog::DynamicAppender dynamicAppender;
-inline static Logging* logging;
+#include <functional>
 
-plog::ColorConsoleAppender<plog::FuncMessageFormatter>& Logging::Console::Instance() {
-	static plog::ColorConsoleAppender<plog::FuncMessageFormatter> consoleAppender;
-	return consoleAppender;
-}
-Logging::Console::Console() { PLOGV << "Console Initialied"; };
+plog::DynamicAppender logging::dynamic_appender_;
 
-plog::DebugOutputAppender<plog::TxtFormatter>& Logging::DebugOutput::Instance() {
-	static plog::DebugOutputAppender<plog::TxtFormatter> debugOutputAppender;
-	return debugOutputAppender;
-}
-Logging::DebugOutput::DebugOutput() { PLOGV << "DebugOutput Initialied"; };
-
-Logging::Logging(plog::Severity maxSeverity) noexcept
-	: maxSeverity(maxSeverity)
+logging::logging(const plog::Severity max_severity) noexcept
+	: max_severity_(max_severity)
 {
-	PLOGV << "Logging::Logging(plog::Severity maxSeverity)";
-	plog::Logger<PLOG_DEFAULT_INSTANCE_ID>* logger = plog::get();
-	if (logger == nullptr) {
-		plog::init(this->maxSeverity, &dynamicAppender);
-	}
-
-	logging = this;
-}
-
-Logging::~Logging() noexcept {
-	logging = nullptr;
-}
-
-Logging* Logging::get() noexcept {
-	return logging;
-}
-
-void Logging::InitConsole(plog::Severity maxSeverity) {
-	plog::init<Logging::kConsole>(maxSeverity, &Logging::Console::Instance());
-	dynamicAppender.addAppender(&Logging::Console::Instance());
-}
-
-void Logging::InitDebugOutput(plog::Severity maxSeverity) {
-	plog::init<Logging::kDebugOutput>(maxSeverity, &Logging::DebugOutput::Instance());
-	dynamicAppender.addAppender(&Logging::DebugOutput::Instance());
-}
-
-void Logging::RemoveConsole() {
-	PLOGV << "Removing Console Logger";
-	plog::Logger<PLOG_DEFAULT_INSTANCE_ID>* logger = plog::get();
-	if (logger != nullptr) {
-		dynamicAppender.removeAppender(plog::get<Logging::kConsole>());
-	}
-	else {
-		PLOGW << "Can't remove Console Logger";
+	if (const plog::Logger<PLOG_DEFAULT_INSTANCE_ID>* logger = plog::get(); logger == nullptr) {
+		init(max_severity_, &dynamic_appender_);
 	}
 }
 
-void Logging::RemoveDebugOutput() {
-	PLOGV << "Removing DebugOutput Logger";
-	plog::Logger<PLOG_DEFAULT_INSTANCE_ID>* logger = plog::get();
-	if (logger != nullptr) {
-		dynamicAppender.removeAppender(plog::get<Logging::kDebugOutput>());
-	}
-	else {
-		PLOGW << "Can't remove DebugOutput Logger";
-	}
+void logging::init_console(const plog::Severity max_severity) {
+	PLOGI << "Initializing Console Logger";
+	static plog::ColorConsoleAppender<plog::FuncMessageFormatter> console_appender;
+	plog::IAppender& console_logger = plog::init<CONSOLE>(max_severity, &console_appender);
+	dynamic_appender_.addAppender(&console_logger);
+	PLOGI << "Console Logger Initialized";
+}
+
+void logging::init_debug_output(const plog::Severity max_severity) {
+	PLOGI << "Initializing DebugOutput Logger";
+	static plog::DebugOutputAppender<plog::TxtFormatter> debug_output_appender;
+	plog::IAppender& debug_output_logger = plog::init<DEBUG_OUTPUT>(max_severity, &debug_output_appender);
+	dynamic_appender_.addAppender(&debug_output_logger);
+	PLOGI << "DebugOutput Logger Initialized";
+}
+
+void logging::remove_console() {
+	PLOGI << "Removing Console Logger";
+	dynamic_appender_.removeAppender(plog::get<CONSOLE>());
+	PLOGI << "Console Logger Removed";
+}
+
+void logging::remove_debug_output() {
+	PLOGI << "Removing DebugOutput Logger";
+	dynamic_appender_.removeAppender(plog::get<DEBUG_OUTPUT>());
+	PLOGI << "DebugOutput Logger Removed";
 }
