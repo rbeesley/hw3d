@@ -15,26 +15,122 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="WindowsMessageMap.cpp">
+    <ClCompile Include="src\WindowsMessageMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Window.cpp">
+    <ClCompile Include="src\Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WinMain.cpp">
+    <ClCompile Include="src\WinMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Logging.cpp">
+    <ClCompile Include="src\Logging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Console.cpp">
+    <ClCompile Include="src\Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AtumException.cpp">
+    <ClCompile Include="src\AtumException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AtumException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AtumWindows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Console.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Logging.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Appenders\AndroidAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Appenders\ArduinoAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Appenders\ColorConsoleAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Appenders\ConsoleAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Appenders\DebugOutputAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Appenders\DynamicAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Appenders\EventLogAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Appenders\IAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Appenders\RollingFileAppender.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Converters\NativeEOLConverter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Converters\UTF8Converter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Formatters\CsvFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Formatters\FuncMessageFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Formatters\MessageOnlyFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Formatters\TxtFormatter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Helpers\AscDump.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Helpers\HexDump.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Helpers\PrintVar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Init.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Initializers\ConsoleInitializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Initializers\RollingFileInitializer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Record.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Severity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\Util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\plog\WinApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources\resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="spdlog\fmt\bundled\chrono.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -47,10 +143,10 @@
     <ClInclude Include="spdlog\fmt\bundled\core.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="spdlog\fmt\bundled\format.h">
+    <ClInclude Include="spdlog\fmt\bundled\format-inl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="spdlog\fmt\bundled\format-inl.h">
+    <ClInclude Include="spdlog\fmt\bundled\format.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="spdlog\fmt\bundled\locale.h">
@@ -74,106 +170,10 @@
     <ClInclude Include="spdlog\fmt\bundled\xchar.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="plog\Appenders\AndroidAppender.h">
+    <ClInclude Include="src\Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="plog\Appenders\ArduinoAppender.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Appenders\ColorConsoleAppender.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Appenders\ConsoleAppender.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Appenders\DebugOutputAppender.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Appenders\DynamicAppender.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Appenders\EventLogAppender.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Appenders\IAppender.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Appenders\RollingFileAppender.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Converters\NativeEOLConverter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Converters\UTF8Converter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Formatters\CsvFormatter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Formatters\FuncMessageFormatter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Formatters\MessageOnlyFormatter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Formatters\TxtFormatter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Helpers\AscDump.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Helpers\HexDump.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Helpers\PrintVar.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Initializers\ConsoleInitializer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Initializers\RollingFileInitializer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Init.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Log.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Logger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Record.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Severity.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\Util.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="plog\WinApi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WindowsMessageMap.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AtumWindows.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Window.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Logging.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Console.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AtumException.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="src\WindowsMessageMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

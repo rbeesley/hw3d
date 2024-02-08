@@ -71,16 +71,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\3rdParty;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\3rdParty;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\3rdParty;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(ProjectDir);$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\3rdParty;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -163,46 +163,42 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AtumException.cpp" />
-    <ClCompile Include="Console.cpp" />
-    <ClCompile Include="Logging.cpp" />
-    <ClCompile Include="Window.cpp" />
-    <ClCompile Include="WindowsMessageMap.cpp" />
-    <ClCompile Include="WinMain.cpp" />
+    <ClCompile Include="src\AtumException.cpp" />
+    <ClCompile Include="src\Console.cpp" />
+    <ClCompile Include="src\Logging.cpp" />
+    <ClCompile Include="src\Window.cpp" />
+    <ClCompile Include="src\WindowsMessageMap.cpp" />
+    <ClCompile Include="src\WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AtumException.h" />
-    <ClInclude Include="AtumWindows.h" />
-    <ClInclude Include="Console.h" />
-    <ClInclude Include="Logging.h" />
-    <ClInclude Include="plog\Appenders\AndroidAppender.h" />
-    <ClInclude Include="plog\Appenders\ArduinoAppender.h" />
-    <ClInclude Include="plog\Appenders\ColorConsoleAppender.h" />
-    <ClInclude Include="plog\Appenders\ConsoleAppender.h" />
-    <ClInclude Include="plog\Appenders\DebugOutputAppender.h" />
-    <ClInclude Include="plog\Appenders\DynamicAppender.h" />
-    <ClInclude Include="plog\Appenders\EventLogAppender.h" />
-    <ClInclude Include="plog\Appenders\IAppender.h" />
-    <ClInclude Include="plog\Appenders\RollingFileAppender.h" />
-    <ClInclude Include="plog\Converters\NativeEOLConverter.h" />
-    <ClInclude Include="plog\Converters\UTF8Converter.h" />
-    <ClInclude Include="plog\Formatters\CsvFormatter.h" />
-    <ClInclude Include="plog\Formatters\FuncMessageFormatter.h" />
-    <ClInclude Include="plog\Formatters\MessageOnlyFormatter.h" />
-    <ClInclude Include="plog\Formatters\TxtFormatter.h" />
-    <ClInclude Include="plog\Helpers\AscDump.h" />
-    <ClInclude Include="plog\Helpers\HexDump.h" />
-    <ClInclude Include="plog\Helpers\PrintVar.h" />
-    <ClInclude Include="plog\Init.h" />
-    <ClInclude Include="plog\Initializers\ConsoleInitializer.h" />
-    <ClInclude Include="plog\Initializers\RollingFileInitializer.h" />
-    <ClInclude Include="plog\Log.h" />
-    <ClInclude Include="plog\Logger.h" />
-    <ClInclude Include="plog\Record.h" />
-    <ClInclude Include="plog\Severity.h" />
-    <ClInclude Include="plog\Util.h" />
-    <ClInclude Include="plog\WinApi.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\AndroidAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\ArduinoAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\ColorConsoleAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\ConsoleAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\DebugOutputAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\DynamicAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\EventLogAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\IAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\RollingFileAppender.h" />
+    <ClInclude Include="3rdParty\plog\Converters\NativeEOLConverter.h" />
+    <ClInclude Include="3rdParty\plog\Converters\UTF8Converter.h" />
+    <ClInclude Include="3rdParty\plog\Formatters\CsvFormatter.h" />
+    <ClInclude Include="3rdParty\plog\Formatters\FuncMessageFormatter.h" />
+    <ClInclude Include="3rdParty\plog\Formatters\MessageOnlyFormatter.h" />
+    <ClInclude Include="3rdParty\plog\Formatters\TxtFormatter.h" />
+    <ClInclude Include="3rdParty\plog\Helpers\AscDump.h" />
+    <ClInclude Include="3rdParty\plog\Helpers\HexDump.h" />
+    <ClInclude Include="3rdParty\plog\Helpers\PrintVar.h" />
+    <ClInclude Include="3rdParty\plog\Init.h" />
+    <ClInclude Include="3rdParty\plog\Initializers\ConsoleInitializer.h" />
+    <ClInclude Include="3rdParty\plog\Initializers\RollingFileInitializer.h" />
+    <ClInclude Include="3rdParty\plog\Log.h" />
+    <ClInclude Include="3rdParty\plog\Logger.h" />
+    <ClInclude Include="3rdParty\plog\Record.h" />
+    <ClInclude Include="3rdParty\plog\Severity.h" />
+    <ClInclude Include="3rdParty\plog\Util.h" />
+    <ClInclude Include="3rdParty\plog\WinApi.h" />
+    <ClInclude Include="Resources\resource.h" />
     <ClInclude Include="spdlog\fmt\bundled\chrono.h" />
     <ClInclude Include="spdlog\fmt\bundled\color.h" />
     <ClInclude Include="spdlog\fmt\bundled\compile.h" />
@@ -216,8 +212,12 @@
     <ClInclude Include="spdlog\fmt\bundled\ranges.h" />
     <ClInclude Include="spdlog\fmt\bundled\std.h" />
     <ClInclude Include="spdlog\fmt\bundled\xchar.h" />
-    <ClInclude Include="Window.h" />
-    <ClInclude Include="WindowsMessageMap.h" />
+    <ClInclude Include="src\AtumException.h" />
+    <ClInclude Include="src\AtumWindows.h" />
+    <ClInclude Include="src\Console.h" />
+    <ClInclude Include="src\Logging.h" />
+    <ClInclude Include="src\Window.h" />
+    <ClInclude Include="src\WindowsMessageMap.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hw3d.rc" />
