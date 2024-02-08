@@ -7,17 +7,17 @@
 HINSTANCE root_instance; // current instance
 
 int APIENTRY WinMain(
-	_In_ const HINSTANCE instance,
-	_In_opt_ const HINSTANCE previous_instance,
-	_In_ const LPSTR command_line,
-	_In_ const int show_flags)
+	_In_ const HINSTANCE hInstance,
+	_In_opt_ const HINSTANCE hPrevInstance,
+	_In_ const LPSTR lpCmdLine,
+	_In_ const int nShowCmd)
 {
-	UNREFERENCED_PARAMETER(previous_instance);
-	UNREFERENCED_PARAMETER(command_line);
-	UNREFERENCED_PARAMETER(show_flags);
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
+	UNREFERENCED_PARAMETER(nShowCmd);
 	try
 	{
-		root_instance = instance;
+		root_instance = hInstance;
 
 		// Initialize logging
 		//logging log(plog::info);
