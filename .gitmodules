@@ -1,0 +1,3 @@
+[submodule "hw3d/3rdParty/plog"]
+	path = hw3d/3rdParty/plog
+	url = git@github.com:rbeesley/plog.git
