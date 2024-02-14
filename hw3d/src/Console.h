@@ -24,7 +24,7 @@ public:
 public:
 	HWND get_window_handle() const noexcept;
 	explicit console(LPCWSTR name) noexcept;
-	~console() noexcept;
+	~console() noexcept = default;
 	console(const console&) = delete;
 	console& operator=(const console&) = delete;
 	console(const console&&) = delete;

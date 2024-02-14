@@ -91,7 +91,6 @@ HWND window::get_handle() const
 
 window::~window()
 {
-	logging::remove_debug_output();
 	DestroyWindow(window_handle);
 }
 

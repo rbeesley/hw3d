@@ -61,11 +61,6 @@ console::console(const LPCWSTR name) noexcept {
 	ShowWindow(GetConsoleWindow(), SW_SHOW);
 }
 
-console::~console() noexcept
-{
-	logging::remove_console();
-}
-
 HWND console::get_window_handle() const noexcept {
 	return this->window_handle;
 }

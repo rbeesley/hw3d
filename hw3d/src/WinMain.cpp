@@ -20,15 +20,19 @@ int APIENTRY WinMain(
 		root_instance = hInstance;
 
 		// Initialize logging
-		//logging log(plog::info);
-		logging log(plog::debug);
+		//logging log(plog::none); // Effectively turns off logging
+		//logging log(plog::fatal);
+		//logging log(plog::error);
+		//logging log(plog::warning);
+		logging log(plog::info); // default
+		//logging log(plog::debug);
 		//logging log(plog::verbose);
 
 		// Set up DebugOutput Logger
 		//logging::init_debug_output(plog::fatal);
 		//logging::init_debug_output(plog::error);
-		logging::init_debug_output(plog::warning);
-		//logging::init_debug_output(plog::info);
+		//logging::init_debug_output(plog::warning);
+		logging::init_debug_output(plog::info); // default
 		//logging::init_debug_output(plog::debug);
 		//logging::init_debug_output(plog::verbose);
 
@@ -52,7 +56,7 @@ int APIENTRY WinMain(
 
 		// Set up Console Logger
 		//logging::init_console(plog::info);
-		logging::init_console(plog::debug);
+		logging::init_console(plog::debug); // default
 		//logging::init_console(plog::verbose);
 
 		// Check Logging
