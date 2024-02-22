@@ -1,6 +1,7 @@
 #pragma once
-#include "AtumWindows.h"
 #include <cstdio>
+
+#include "AtumWindows.h"
 
 class console {
 public:
@@ -24,7 +25,7 @@ public:
 public:
 	HWND get_window_handle() const noexcept;
 	explicit console(LPCWSTR name) noexcept;
-	~console() noexcept;
+	~console() noexcept = default;
 	console(const console&) = delete;
 	console& operator=(const console&) = delete;
 	console(const console&&) = delete;

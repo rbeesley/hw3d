@@ -1,4 +1,5 @@
 #include "Console.h"
+
 #include "Logging.h"
 
 console::console_class console::console_class::console_class_;
@@ -59,11 +60,6 @@ console::console(const LPCWSTR name) noexcept {
 
 	PLOGV << "Show the Console Window";
 	ShowWindow(GetConsoleWindow(), SW_SHOW);
-}
-
-console::~console() noexcept
-{
-	logging::remove_console();
 }
 
 HWND console::get_window_handle() const noexcept {

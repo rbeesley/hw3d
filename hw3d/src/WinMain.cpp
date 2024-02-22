@@ -1,36 +1,47 @@
-#include "Window.h"
-#include "Console.h"
-#include "Logging.h"
 #include <tchar.h>
+
+#include "Console.h"
+#include "DefinesConfig.h"
+#include "Logging.h"
+#include "Window.h"
 
 // Global Variables:
 HINSTANCE root_instance; // current instance
 
 int APIENTRY WinMain(
-	_In_ const HINSTANCE instance,
-	_In_opt_ const HINSTANCE previous_instance,
-	_In_ const LPSTR command_line,
-	_In_ const int show_flags)
+	_In_ const HINSTANCE hInstance,
+	_In_opt_ const HINSTANCE hPrevInstance,
+	_In_ const LPSTR lpCmdLine,
+	_In_ const int nShowCmd)
 {
-	UNREFERENCED_PARAMETER(previous_instance);
-	UNREFERENCED_PARAMETER(command_line);
-	UNREFERENCED_PARAMETER(show_flags);
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
+	UNREFERENCED_PARAMETER(nShowCmd);
 	try
 	{
-		root_instance = instance;
+		root_instance = hInstance;
 
+#ifndef LOG_LEVEL_FULL // defined in DefinesConfig.h
 		// Initialize logging
-		//logging log(plog::info);
-		logging log(plog::debug);
+		//logging log(plog::none); // Effectively turns off logging
+		//logging log(plog::fatal);
+		//logging log(plog::error);
+		//logging log(plog::warning);
+		logging log(plog::info); // default
+		//logging log(plog::debug);
 		//logging log(plog::verbose);
 
 		// Set up DebugOutput Logger
 		//logging::init_debug_output(plog::fatal);
 		//logging::init_debug_output(plog::error);
-		logging::init_debug_output(plog::warning);
-		//logging::init_debug_output(plog::info);
+		//logging::init_debug_output(plog::warning);
+		logging::init_debug_output(plog::info); // default
 		//logging::init_debug_output(plog::debug);
 		//logging::init_debug_output(plog::verbose);
+#else
+		logging log(plog::verbose);
+		logging::init_debug_output(plog::verbose);
+#endif
 
 		// Create Window
 		PLOGI << "Creating Window";
@@ -50,10 +61,14 @@ int APIENTRY WinMain(
 			PLOGE << "Failed to create Debug Console";
 		}
 
+#ifndef LOG_LEVEL_FULL // defined in DefinesConfig.h
 		// Set up Console Logger
 		//logging::init_console(plog::info);
-		logging::init_console(plog::debug);
+		logging::init_console(plog::debug); // default
 		//logging::init_console(plog::verbose);
+#else
+		logging::init_console(plog::verbose);
+#endif
 
 		// Check Logging
 		PLOG_VERBOSE << "This is a VERBOSE message";

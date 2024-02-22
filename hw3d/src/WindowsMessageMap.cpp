@@ -1,7 +1,9 @@
 #include "WindowsMessageMap.h"
-#include <string>
-#include <sstream>
+
+#include <format>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
 #define ALLMESSAGES FALSE
 #define ALLMOUSEMESSAGES ALLMESSAGES | TRUE
@@ -1107,27 +1109,25 @@ windows_message_map::windows_message_map()
 std::string windows_message_map::operator()(const DWORD msg, const LPARAM l_param, const WPARAM w_param) const
 {
 	constexpr int first_col_width = 25;
-	const auto i = map_.find(msg);
+	const auto it = map_.find(msg);
 
 	std::ostringstream out;
-	if (i != map_.end())
+	std::string window_message;
+	if (it != map_.end())
 	{
-		out << std::left << std::setw(first_col_width) << i->second << std::right;
+		const auto& [key, value] = *it;
+		window_message = std::format("{:<{}}", value, first_col_width);
 	}
-	//else if (0xC000 <= msg && msg <= 0xFFFF)
-	//{
-	//	std::ostringstream pad;
-	//	pad << " RegisterWindowMessage rtn: 0x" << std::hex << std::setfill('0') << std::setw(4) << msg;
-	//	out << std::left << std::setw(firstColWidth) << pad.str() << std::right;
-	//}
 	else
 	{
-		std::ostringstream pad;
-		pad << " Unknown message: 0x" << std::hex << std::setfill('0') << std::setw(4) << msg;
-		out << std::left << std::setw(first_col_width) << pad.str() << std::right;
+		auto msg_hex = std::format("{:04x}", msg);
+		window_message = std::format(" Unknown message: 0x{:<{}}", msg_hex, first_col_width - 20); // " Unknown message: 0x" has 20 characters
 	}
-	out << "  LP: 0x" << std::hex << std::setfill('0') << std::setw(16) << l_param;
-	out << "  WP: 0x" << std::hex << std::setfill('0') << std::setw(16) << w_param;
-	
+
+	const auto l_param_hex = std::format("  LP: 0x{:016x}", static_cast<unsigned long long>(l_param));
+	const auto w_param_hex = std::format("  WP: 0x{:016x}", static_cast<unsigned long long>(w_param));
+
+	out << window_message << l_param_hex << w_param_hex;
+
 	return out.str();
 }
