@@ -60,7 +60,7 @@ public:
 	[[nodiscard]] bool is_key_empty() const noexcept;
 	void clear_key() noexcept;
 	// char event stuff
-	char read_char() noexcept;
+	std::optional<char> read_char() noexcept;
 	[[nodiscard]] bool is_char_empty() const noexcept;
 	void clear_char() noexcept;
 	void clear() noexcept;

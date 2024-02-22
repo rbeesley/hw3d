@@ -23,10 +23,7 @@ std::optional<keyboard::event> keyboard::read_key() noexcept
 		key_buffer_.pop();
 		return e;
 	}
-	else
-	{
-		return {};
-	}
+	return {};
 }
 
 bool keyboard::is_key_empty() const noexcept
@@ -113,7 +110,7 @@ void keyboard::trim_buffer(std::queue<T>& buffer) noexcept
 	}
 }
 
-char keyboard::read_char() noexcept
+std::optional<char> keyboard::read_char() noexcept
 {
 	if(!char_buffer_.empty())
 	{
