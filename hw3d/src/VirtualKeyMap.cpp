@@ -1,9 +1,9 @@
 #include "VirtualKeyMap.h"
 
 #include <format>
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
 virtual_key_map::virtual_key_map()
 	:

@@ -1,8 +1,9 @@
 #pragma once
-#include "AtumWindows.h"
-#include "AtumException.h"
-#include "Keyboard.h"
 #include <sstream>
+
+#include "AtumException.h"
+#include "AtumWindows.h"
+#include "Keyboard.h"
 
 class window
 {

@@ -1,6 +1,7 @@
 #pragma once
-#include "AtumWindows.h"
 #include <cstdio>
+
+#include "AtumWindows.h"
 
 class console {
 public:

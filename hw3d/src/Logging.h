@@ -1,12 +1,12 @@
 #pragma once
 // ReSharper disable CppUnusedIncludeDirective
-#include <3rdParty/plog/Log.h>
 #include <3rdParty/plog/Init.h>
-#include <3rdParty/plog/Formatters/FuncMessageFormatter.h>
-#include <3rdParty/plog/Formatters/TxtFormatter.h>
+#include <3rdParty/plog/Log.h>
 #include <3rdParty/plog/Appenders/ColorConsoleAppender.h>
 #include <3rdParty/plog/Appenders/DebugOutputAppender.h>
 #include <3rdParty/plog/Appenders/DynamicAppender.h>
+#include <3rdParty/plog/Formatters/FuncMessageFormatter.h>
+#include <3rdParty/plog/Formatters/TxtFormatter.h>
 // ReSharper restore CppUnusedIncludeDirective
 
 class logging

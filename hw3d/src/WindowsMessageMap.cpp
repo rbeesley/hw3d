@@ -1,9 +1,9 @@
 #include "WindowsMessageMap.h"
 
 #include <format>
-#include <string>
-#include <sstream>
 #include <iomanip>
+#include <sstream>
+#include <string>
 
 #define ALLMESSAGES FALSE
 #define ALLMOUSEMESSAGES ALLMESSAGES | TRUE

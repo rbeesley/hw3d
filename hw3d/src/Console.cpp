@@ -1,4 +1,5 @@
 #include "Console.h"
+
 #include "Logging.h"
 
 console::console_class console::console_class::console_class_;

@@ -1,7 +1,7 @@
 #pragma once
+#include <string>
 #include <unordered_map>
 #include <Windows.h>
-#include <string>
 
 class windows_message_map
 {

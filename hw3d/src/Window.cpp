@@ -1,8 +1,10 @@
-#include "DefinesConfig.h"
 #include "Window.h"
+
+#include <system_error>
+
+#include "DefinesConfig.h"
 #include "Logging.h"
 #include "Resources/resource.h"
-#include <system_error>
 
 #ifdef LOG_WINDOW_MESSAGES // defined in DefinesConfig.h
 #include "WindowsMessageMap.h"

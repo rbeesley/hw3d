@@ -1,7 +1,8 @@
-#include "AtumWindows.h"
 #include "Logging.h"
 
 #include <functional>
+
+#include "AtumWindows.h"
 
 plog::DynamicAppender logging::dynamic_appender_;
 

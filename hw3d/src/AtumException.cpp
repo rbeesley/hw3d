@@ -1,4 +1,5 @@
 #include "AtumException.h"
+
 #include <sstream>
 
 atum_exception::atum_exception(const int line, const char* file) noexcept

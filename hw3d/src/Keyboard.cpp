@@ -1,6 +1,8 @@
-#include "DefinesConfig.h"
 #include "Keyboard.h"
+
 #include <optional>
+
+#include "DefinesConfig.h"
 
 #if defined(LOG_KEYBOARD_MESSAGES) || defined(LOG_KEYBOARD_CHARS)  // defined in DefinesConfig.h
 #include <format>

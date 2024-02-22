@@ -1,7 +1,7 @@
 #pragma once
+#include <string>
 #include <unordered_map>
 #include <Windows.h>
-#include <string>
 
 class virtual_key_map
 {

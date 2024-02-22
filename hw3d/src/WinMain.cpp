@@ -1,8 +1,9 @@
-#include "DefinesConfig.h"
-#include "Window.h"
-#include "Console.h"
-#include "Logging.h"
 #include <tchar.h>
+
+#include "Console.h"
+#include "DefinesConfig.h"
+#include "Logging.h"
+#include "Window.h"
 
 // Global Variables:
 HINSTANCE root_instance; // current instance
