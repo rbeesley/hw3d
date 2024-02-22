@@ -1,11 +1,16 @@
+#include "DefinesConfig.h"
 #include "Window.h"
-#include "WindowsMessageMap.h"
 #include "Logging.h"
 #include "Resources/resource.h"
 #include <system_error>
 
-window::window_class window::window_class::window_class_;
+#ifdef LOG_WINDOW_MESSAGES // defined in DefinesConfig.h
+#include "WindowsMessageMap.h"
+
 const static windows_message_map windows_message_map;
+#endif
+
+window::window_class window::window_class::window_class_;
 
 window::window_class::window_class() noexcept
 	:
@@ -49,7 +54,7 @@ window::window(const int width, const int height, const LPCWSTR name)
 	width_(width),
 	height_(height)
 {
-	RECT window_rect;
+	RECT window_rect{};
 	window_rect.left = 100;
 	window_rect.top = 100;
 	window_rect.right = width_ + window_rect.left;
@@ -96,7 +101,9 @@ window::~window()
 
 LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
+#ifdef LOG_WINDOW_MESSAGES // defined in DefinesConfig.h
 	PLOGV << windows_message_map(msg, l_param, w_param).c_str();
+#endif
 
 	if (msg == WM_NCCREATE)
 	{
@@ -119,10 +126,13 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 {
 	int window_message_id, window_message_event;
 
+#ifdef LOG_WINDOW_MESSAGES // defined in DefinesConfig.h
 	PLOGV << windows_message_map(msg, l_param, w_param).c_str();
+#endif
 
 	switch (msg)
 	{
+	/* Window */
 	case WM_CREATE:
 		break;
 	case WM_COMMAND:
@@ -139,6 +149,26 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 		PostQuitMessage(0);
 		return 0;
 		break;
+	case WM_KILLFOCUS:
+		keyboard_.clear_state();
+		break;
+	/* Keyboard */
+	case WM_KEYDOWN:
+	case WM_SYSKEYDOWN:
+		// Filter keyboard autorepeat
+		if (!(l_param & 0x40000000 /* previous key state */) || keyboard_.is_autorepeat_enabled())
+		{
+			keyboard_.on_key_pressed(static_cast<unsigned char>(w_param));
+		}
+		break;
+	case WM_KEYUP:
+	case WM_SYSKEYUP:
+		keyboard_.on_key_released(static_cast<unsigned char>(w_param));
+		break;
+	case WM_CHAR:
+		keyboard_.on_char(static_cast<unsigned char>(w_param));
+		break;
+	/* Default */
 	default:
 		return DefWindowProc(window_handle, msg, w_param, l_param);
 	}

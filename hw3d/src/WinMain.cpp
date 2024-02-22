@@ -1,3 +1,4 @@
+#include "DefinesConfig.h"
 #include "Window.h"
 #include "Console.h"
 #include "Logging.h"
@@ -19,6 +20,7 @@ int APIENTRY WinMain(
 	{
 		root_instance = hInstance;
 
+#ifndef LOG_LEVEL_FULL // defined in DefinesConfig.h
 		// Initialize logging
 		//logging log(plog::none); // Effectively turns off logging
 		//logging log(plog::fatal);
@@ -35,6 +37,10 @@ int APIENTRY WinMain(
 		logging::init_debug_output(plog::info); // default
 		//logging::init_debug_output(plog::debug);
 		//logging::init_debug_output(plog::verbose);
+#else
+		logging log(plog::verbose);
+		logging::init_debug_output(plog::verbose);
+#endif
 
 		// Create Window
 		PLOGI << "Creating Window";
@@ -54,10 +60,14 @@ int APIENTRY WinMain(
 			PLOGE << "Failed to create Debug Console";
 		}
 
+#ifndef LOG_LEVEL_FULL // defined in DefinesConfig.h
 		// Set up Console Logger
 		//logging::init_console(plog::info);
 		logging::init_console(plog::debug); // default
 		//logging::init_console(plog::verbose);
+#else
+		logging::init_console(plog::verbose);
+#endif
 
 		// Check Logging
 		PLOG_VERBOSE << "This is a VERBOSE message";

@@ -1,6 +1,7 @@
 #pragma once
 #include "AtumWindows.h"
 #include "AtumException.h"
+#include "Keyboard.h"
 #include <sstream>
 
 class window
@@ -47,6 +48,7 @@ private:
 	static LRESULT CALLBACK handle_msg_thunk(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 	static LRESULT CALLBACK handle_msg(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 private:
+	inline static keyboard keyboard_{};
 	int width_{};
 	int height_{};
 	HWND window_handle;
