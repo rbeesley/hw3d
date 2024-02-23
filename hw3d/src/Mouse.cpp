@@ -2,6 +2,7 @@
 
 #include <optional>
 
+#include "AtumWindows.h"
 #include "DefinesConfig.h"
 
 #if defined(LOG_MOUSE_MESSAGES) // defined in DefinesConfig.h
@@ -280,6 +281,42 @@ void mouse::on_wheel_left(const int x, const int y) noexcept
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse wheel left";
+#endif
+}
+
+void mouse::on_v_wheel_delta(int x, int y, int delta) noexcept
+{
+	v_wheel_delta_carry_ += delta;
+	while(v_wheel_delta_carry_ >= WHEEL_DELTA)
+	{
+		v_wheel_delta_carry_ -= WHEEL_DELTA;
+		on_wheel_up(x, y);
+	}
+	while(v_wheel_delta_carry_ <= -WHEEL_DELTA)
+	{
+		v_wheel_delta_carry_ += WHEEL_DELTA;
+		on_wheel_down(x, y);
+	}
+#ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
+	PLOGV << "mouse v wheel delta: " << v_wheel_delta_carry_;
+#endif
+}
+
+void mouse::on_h_wheel_delta(int x, int y, int delta) noexcept
+{
+	h_wheel_delta_carry_ += delta;
+	while (h_wheel_delta_carry_ >= WHEEL_DELTA)
+	{
+		h_wheel_delta_carry_ -= WHEEL_DELTA;
+		on_wheel_right(x, y);
+	}
+	while (h_wheel_delta_carry_ <= -WHEEL_DELTA)
+	{
+		h_wheel_delta_carry_ += WHEEL_DELTA;
+		on_wheel_left(x, y);
+	}
+#ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
+	PLOGV << "mouse h wheel delta: " << h_wheel_delta_carry_;
 #endif
 }
 

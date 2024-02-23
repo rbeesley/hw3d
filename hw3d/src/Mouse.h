@@ -135,6 +135,8 @@ private:
 	void on_wheel_down(int x, int y) noexcept;
 	void on_wheel_right(int x, int y) noexcept;
 	void on_wheel_left(int x, int y) noexcept;
+	void on_v_wheel_delta(int x, int y, int delta) noexcept;
+	void on_h_wheel_delta(int x, int y, int delta) noexcept;
 	void trim_buffer() noexcept;
 private:
 	static constexpr unsigned int buffer_size = 16u;
@@ -146,5 +148,7 @@ private:
 	bool middle_is_pressed_ = false;
 	bool x1_is_pressed_ = false;
 	bool x2_is_pressed_ = false;
+	int v_wheel_delta_carry_ = 0;
+	int h_wheel_delta_carry_ = 0;
 	std::queue<event> event_buffer_;
 };

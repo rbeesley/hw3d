@@ -57,7 +57,7 @@ window::window(const int width, const int height, const LPCWSTR name)
 	width_(width),
 	height_(height)
 {
-	RECT window_rect{};
+	RECT window_rect;
 	window_rect.left = 100;
 	window_rect.top = 100;
 	window_rect.right = width_ + window_rect.left;
@@ -185,7 +185,6 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_CHAR:
 		keyboard_.on_char(static_cast<unsigned char>(w_param));
 		break;
-
 	/* Mouse */
 	case WM_MOUSEMOVE:
 		{
@@ -205,10 +204,10 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 					}
 					mouse_.on_mouse_move(x, y);
 				}
-				// mouse is outside client region
-				// but internal state places it inside client region, maybe because a button was being held down
+				// mouse is outside client region and internal state places it inside client region
 				else if(mouse_.is_in_window())
 				{
+					// because a button is being held down we want to keep track of the mouse position outside the client region boundaries
 					if (mouse_.is_left_pressed() || mouse_.is_right_pressed() || mouse_.is_middle_pressed() || mouse_.is_x1_pressed() || mouse_.is_x2_pressed())
 					{
 						mouse_.on_mouse_move(x, y);
@@ -261,28 +260,20 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			break;
 		}
 	case WM_MOUSEWHEEL:
-		{
-			const auto [x, y] = MAKEPOINTS(l_param);
-			if(GET_WHEEL_DELTA_WPARAM(w_param) < 0)
-			{
-				mouse_.on_wheel_up(x, y);
-			}
-			else if(GET_WHEEL_DELTA_WPARAM(w_param) > 0)
-			{
-				mouse_.on_wheel_down(x, y);
-			}
-			break;
-		}
 	case WM_MOUSEHWHEEL:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
-			if (GET_WHEEL_DELTA_WPARAM(w_param) < 0)
+			const int wheel_delta = GET_WHEEL_DELTA_WPARAM(w_param);
+			switch (msg)
 			{
-				mouse_.on_wheel_left(x, y);
-			}
-			else if (GET_WHEEL_DELTA_WPARAM(w_param) > 0)
-			{
-				mouse_.on_wheel_right(x, y);
+			case WM_MOUSEWHEEL: // Vertical mouse scroll wheel
+				mouse_.on_v_wheel_delta(x, y, wheel_delta);
+				break;
+			case WM_MOUSEHWHEEL: // Horizontal mouse scroll wheel
+				mouse_.on_h_wheel_delta(x, y, wheel_delta);
+				break;
+			default:
+				break;
 			}
 			break;
 		}
