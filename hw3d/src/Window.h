@@ -4,6 +4,7 @@
 #include "AtumException.h"
 #include "AtumWindows.h"
 #include "Keyboard.h"
+#include "Mouse.h"
 
 class window
 {
@@ -45,11 +46,13 @@ public:
 	window(const window&&) = delete;
 	window& operator=(const window&&) = delete;
 private:
+	void set_title(const std::wstring& title) const;
 	static LRESULT CALLBACK handle_msg_setup(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 	static LRESULT CALLBACK handle_msg_thunk(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 	static LRESULT CALLBACK handle_msg(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 private:
 	inline static keyboard keyboard_{};
+	inline static mouse mouse_{};
 	int width_{};
 	int height_{};
 	HWND window_handle;

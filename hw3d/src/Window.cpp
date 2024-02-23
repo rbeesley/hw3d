@@ -2,11 +2,12 @@
 
 #include <system_error>
 
+#include "AtumWindows.h"
 #include "DefinesConfig.h"
 #include "Logging.h"
 #include "Resources/resource.h"
 
-#ifdef LOG_WINDOW_MESSAGES // defined in DefinesConfig.h
+#if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in DefinesConfig.h
 #include "WindowsMessageMap.h"
 
 const static windows_message_map windows_message_map;
@@ -56,7 +57,7 @@ window::window(const int width, const int height, const LPCWSTR name)
 	width_(width),
 	height_(height)
 {
-	RECT window_rect{};
+	RECT window_rect;
 	window_rect.left = 100;
 	window_rect.top = 100;
 	window_rect.right = width_ + window_rect.left;
@@ -101,6 +102,14 @@ window::~window()
 	DestroyWindow(window_handle);
 }
 
+void window::set_title(const std::wstring& title) const
+{
+	if(!SetWindowText(window_handle, title.c_str()))
+	{
+		throw ATUM_WND_LAST_EXCEPT();
+	}
+}
+
 LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES // defined in DefinesConfig.h
@@ -120,16 +129,19 @@ LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT m
 
 LRESULT CALLBACK window::handle_msg_thunk(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
-	reinterpret_cast<window*>(GetWindowLongPtr(window_handle, GWLP_USERDATA));
 	return handle_msg(window_handle, msg, w_param, l_param);
 }
 
 LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
-	int window_message_id, window_message_event;
-
-#ifdef LOG_WINDOW_MESSAGES // defined in DefinesConfig.h
+#ifdef LOG_WINDOW_MESSAGES
 	PLOGV << windows_message_map(msg, l_param, w_param).c_str();
+#endif
+#ifdef LOG_WINDOW_MOUSE_MESSAGES
+	if (msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST)
+	{
+		PLOGV << windows_message_map(msg, l_param, w_param).c_str();
+	}
 #endif
 
 	switch (msg)
@@ -138,15 +150,17 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_CREATE:
 		break;
 	case WM_COMMAND:
-		window_message_id = LOWORD(w_param);
-		window_message_event = HIWORD(w_param);
-		switch (window_message_id)
 		{
-		case 0:
-		default:
-			return DefWindowProc(window_handle, msg, w_param, l_param);
+			const int window_message_id = LOWORD(w_param);
+			const int window_message_event = HIWORD(w_param);
+			switch (window_message_id)
+			{
+			case 0:
+			default:
+				return DefWindowProc(window_handle, msg, w_param, l_param);
+			}
+			break;
 		}
-		break;
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		return 0;
@@ -154,6 +168,7 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_KILLFOCUS:
 		keyboard_.clear_state();
 		break;
+
 	/* Keyboard */
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
@@ -170,6 +185,131 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_CHAR:
 		keyboard_.on_char(static_cast<unsigned char>(w_param));
 		break;
+	/* Mouse */
+	case WM_MOUSEMOVE:
+		{
+			if (const auto win = reinterpret_cast<window*>(GetWindowLongPtr(window_handle, GWLP_USERDATA)))
+			{
+				const auto [x, y] = MAKEPOINTS(l_param);
+
+				// mouse is inside client region
+				if (x >= 0 && x < win->width_ && y >= 0 && y < win->height_)
+				{
+					// but internal state is still outside client region
+					if (!mouse_.is_in_window())
+					{
+						// fix the state
+						mouse_.on_mouse_enter();
+						SetCapture(window_handle);
+					}
+					mouse_.on_mouse_move(x, y);
+				}
+				// mouse is outside client region and internal state places it inside client region
+				else if(mouse_.is_in_window())
+				{
+					// because a button is being held down we want to keep track of the mouse position outside the client region boundaries
+					if (mouse_.is_left_pressed() || mouse_.is_right_pressed() || mouse_.is_middle_pressed() || mouse_.is_x1_pressed() || mouse_.is_x2_pressed())
+					{
+						mouse_.on_mouse_move(x, y);
+					}
+					// but no buttons ARE being held down
+					else
+					{
+						// fix the state
+						ReleaseCapture();
+						mouse_.on_mouse_leave();
+					}
+				}
+			}
+			break;
+		}
+	case WM_LBUTTONDOWN:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_left_pressed(x, y);
+			break;
+		}
+	case WM_LBUTTONUP:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_left_released(x, y);
+			break;
+		}
+	case WM_RBUTTONDOWN:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_right_pressed(x, y);
+			break;
+		}
+	case WM_RBUTTONUP:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_right_released(x, y);
+			break;
+		}
+	case WM_MBUTTONDOWN:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_middle_pressed(x, y);
+			break;
+		}
+	case WM_MBUTTONUP:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_middle_released(x, y);
+			break;
+		}
+	case WM_MOUSEWHEEL:
+	case WM_MOUSEHWHEEL:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			const int wheel_delta = GET_WHEEL_DELTA_WPARAM(w_param);
+			switch (msg)
+			{
+			case WM_MOUSEWHEEL: // Vertical mouse scroll wheel
+				mouse_.on_v_wheel_delta(x, y, wheel_delta);
+				break;
+			case WM_MOUSEHWHEEL: // Horizontal mouse scroll wheel
+				mouse_.on_h_wheel_delta(x, y, wheel_delta);
+				break;
+			default:
+				break;
+			}
+			break;
+		}
+	case WM_XBUTTONDOWN:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			switch GET_XBUTTON_WPARAM(w_param)
+			{
+				case XBUTTON1:
+					mouse_.on_x1_pressed(x, y);
+					break;
+				case XBUTTON2:
+					mouse_.on_x2_pressed(x, y);
+					break;
+				default:
+					break;
+			}
+			break;
+		}
+	case WM_XBUTTONUP:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			switch GET_XBUTTON_WPARAM(w_param)
+			{
+			case XBUTTON1:
+				mouse_.on_x1_released(x, y);
+				break;
+			case XBUTTON2:
+				mouse_.on_x2_released(x, y);
+				break;
+			default:
+				break;
+			}
+			break;
+		}
+
 	/* Default */
 	default:
 		return DefWindowProc(window_handle, msg, w_param, l_param);

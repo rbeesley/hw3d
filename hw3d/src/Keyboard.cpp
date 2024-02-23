@@ -14,15 +14,15 @@ const static virtual_key_map virtual_key_map;
 
 bool keyboard::is_key_pressed(const unsigned char keycode) const noexcept
 {
-	return key_states_[keycode];
+	return key_state_[keycode];
 }
 
 std::optional<keyboard::event> keyboard::read_key() noexcept
 {
-	if (!key_buffer_.empty())
+	if (!event_buffer_.empty())
 	{
-		const event e = key_buffer_.front();
-		key_buffer_.pop();
+		const event e = event_buffer_.front();
+		event_buffer_.pop();
 		return e;
 	}
 	return {};
@@ -30,12 +30,12 @@ std::optional<keyboard::event> keyboard::read_key() noexcept
 
 bool keyboard::is_key_empty() const noexcept
 {
-	return key_buffer_.empty();
+	return event_buffer_.empty();
 }
 
-void keyboard::clear_key() noexcept
+void keyboard::clear_event_buffer() noexcept
 {
-	key_buffer_ = std::queue<event>();
+	event_buffer_ = std::queue<event>();
 }
 
 bool keyboard::is_char_empty() const noexcept
@@ -43,15 +43,15 @@ bool keyboard::is_char_empty() const noexcept
 	return char_buffer_.empty();
 }
 
-void keyboard::clear_char() noexcept
+void keyboard::clear_char_buffer() noexcept
 {
 	char_buffer_ = std::queue<char>();
 }
 
 void keyboard::clear() noexcept
 {
-	clear_key();
-	clear_char();
+	clear_event_buffer();
+	clear_char_buffer();
 }
 
 void keyboard::enable_autorepeat() noexcept
@@ -71,9 +71,9 @@ bool keyboard::is_autorepeat_enabled() const noexcept
 
 void keyboard::on_key_pressed(unsigned char key_code) noexcept
 {
-	key_states_[key_code] = true;
-	key_buffer_.emplace(event::state::press, key_code);
-	trim_buffer(key_buffer_);
+	key_state_[key_code] = true;
+	event_buffer_.emplace(event::event_type::press, key_code);
+	trim_buffer(event_buffer_);
 #ifdef LOG_KEYBOARD_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "keydown: " << virtual_key_map(key_code);
 #endif
@@ -81,9 +81,9 @@ void keyboard::on_key_pressed(unsigned char key_code) noexcept
 
 void keyboard::on_key_released(unsigned char key_code) noexcept
 {
-	key_states_[key_code] = false;
-	key_buffer_.emplace(event::state::release, key_code);
-	trim_buffer(key_buffer_);
+	key_state_[key_code] = false;
+	event_buffer_.emplace(event::event_type::release, key_code);
+	trim_buffer(event_buffer_);
 #ifdef LOG_KEYBOARD_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "keyup: " << virtual_key_map(key_code);
 #endif
@@ -100,7 +100,7 @@ void keyboard::on_char(unsigned char character) noexcept
 
 void keyboard::clear_state() noexcept
 {
-	key_states_.reset();
+	key_state_.reset();
 }
 
 template <typename T>
