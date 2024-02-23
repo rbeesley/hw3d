@@ -2,6 +2,7 @@
 
 #include <system_error>
 
+#include "AtumWindows.h"
 #include "DefinesConfig.h"
 #include "Logging.h"
 #include "Resources/resource.h"
@@ -101,6 +102,14 @@ window::~window()
 	DestroyWindow(window_handle);
 }
 
+void window::set_title(const std::wstring& title) const
+{
+	if(!SetWindowText(window_handle, title.c_str()))
+	{
+		throw ATUM_WND_LAST_EXCEPT();
+	}
+}
+
 LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES // defined in DefinesConfig.h
@@ -126,8 +135,6 @@ LRESULT CALLBACK window::handle_msg_thunk(const HWND window_handle, const UINT m
 
 LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
-	int window_message_id, window_message_event;
-
 #ifdef LOG_WINDOW_MESSAGES // defined in DefinesConfig.h
 	PLOGV << windows_message_map(msg, l_param, w_param).c_str();
 #endif
@@ -138,15 +145,17 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_CREATE:
 		break;
 	case WM_COMMAND:
-		window_message_id = LOWORD(w_param);
-		window_message_event = HIWORD(w_param);
-		switch (window_message_id)
 		{
-		case 0:
-		default:
-			return DefWindowProc(window_handle, msg, w_param, l_param);
+			const int window_message_id = LOWORD(w_param);
+			const int window_message_event = HIWORD(w_param);
+			switch (window_message_id)
+			{
+			case 0:
+			default:
+				return DefWindowProc(window_handle, msg, w_param, l_param);
+			}
+			break;
 		}
-		break;
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		return 0;
@@ -154,6 +163,7 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_KILLFOCUS:
 		keyboard_.clear_state();
 		break;
+
 	/* Keyboard */
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
@@ -170,6 +180,129 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_CHAR:
 		keyboard_.on_char(static_cast<unsigned char>(w_param));
 		break;
+	/* Mouse */
+	case WM_MOUSEMOVE:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_mouse_move(x, y);
+			break;
+		}
+	case WM_LBUTTONDOWN:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_left_pressed(x, y);
+			break;
+		}
+	case WM_LBUTTONUP:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_left_released(x, y);
+			break;
+		}
+	case WM_LBUTTONDBLCLK:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_left_pressed(x, y);
+			mouse_.on_left_released(x, y);
+			break;
+		}
+	case WM_RBUTTONDOWN:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_right_pressed(x, y);
+			break;
+		}
+	case WM_RBUTTONUP:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_right_released(x, y);
+			break;
+		}
+	case WM_RBUTTONDBLCLK:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_right_pressed(x, y);
+			mouse_.on_right_released(x, y);
+			break;
+		}
+	case WM_MBUTTONDOWN:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_middle_pressed(x, y);
+			break;
+		}
+	case WM_MBUTTONUP:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_middle_released(x, y);
+			break;
+		}
+	case WM_MBUTTONDBLCLK:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			mouse_.on_middle_pressed(x, y);
+			mouse_.on_middle_released(x, y);
+			break;
+		}
+	case WM_MOUSEWHEEL:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			if(GET_WHEEL_DELTA_WPARAM(w_param) < 0)
+			{
+				mouse_.on_wheel_up(x, y);
+			}
+			else if(GET_WHEEL_DELTA_WPARAM(w_param) > 0)
+			{
+				mouse_.on_wheel_down(x, y);
+			}
+			break;
+		}
+	case WM_MOUSEHWHEEL:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			if (GET_WHEEL_DELTA_WPARAM(w_param) < 0)
+			{
+				mouse_.on_wheel_left(x, y);
+			}
+			else if (GET_WHEEL_DELTA_WPARAM(w_param) > 0)
+			{
+				mouse_.on_wheel_right(x, y);
+			}
+			break;
+		}
+	case WM_XBUTTONDOWN:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			switch GET_XBUTTON_WPARAM(w_param)
+			{
+				case XBUTTON1:
+					mouse_.on_x1_pressed(x, y);
+					break;
+				case XBUTTON2:
+					mouse_.on_x2_pressed(x, y);
+					break;
+				default:
+					break;
+			}
+			break;
+		}
+	case WM_XBUTTONUP:
+		{
+			const auto [x, y] = MAKEPOINTS(l_param);
+			switch GET_XBUTTON_WPARAM(w_param)
+			{
+			case XBUTTON1:
+				mouse_.on_x1_released(x, y);
+				break;
+			case XBUTTON2:
+				mouse_.on_x2_released(x, y);
+				break;
+			default:
+				break;
+			}
+			break;
+		}
+
 	/* Default */
 	default:
 		return DefWindowProc(window_handle, msg, w_param, l_param);
