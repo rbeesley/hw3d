@@ -7,7 +7,7 @@
 #include "Logging.h"
 #include "Resources/resource.h"
 
-#ifdef LOG_WINDOW_MESSAGES // defined in DefinesConfig.h
+#if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in DefinesConfig.h
 #include "WindowsMessageMap.h"
 
 const static windows_message_map windows_message_map;
@@ -129,14 +129,19 @@ LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT m
 
 LRESULT CALLBACK window::handle_msg_thunk(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
-	reinterpret_cast<window*>(GetWindowLongPtr(window_handle, GWLP_USERDATA));
 	return handle_msg(window_handle, msg, w_param, l_param);
 }
 
 LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
-#ifdef LOG_WINDOW_MESSAGES // defined in DefinesConfig.h
+#ifdef LOG_WINDOW_MESSAGES
 	PLOGV << windows_message_map(msg, l_param, w_param).c_str();
+#endif
+#ifdef LOG_WINDOW_MOUSE_MESSAGES
+	if (msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST)
+	{
+		PLOGV << windows_message_map(msg, l_param, w_param).c_str();
+	}
 #endif
 
 	switch (msg)
@@ -180,11 +185,43 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_CHAR:
 		keyboard_.on_char(static_cast<unsigned char>(w_param));
 		break;
+
 	/* Mouse */
 	case WM_MOUSEMOVE:
 		{
-			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_.on_mouse_move(x, y);
+			if (const auto win = reinterpret_cast<window*>(GetWindowLongPtr(window_handle, GWLP_USERDATA)))
+			{
+				const auto [x, y] = MAKEPOINTS(l_param);
+
+				// mouse is inside client region
+				if (x >= 0 && x < win->width_ && y >= 0 && y < win->height_)
+				{
+					// but internal state is still outside client region
+					if (!mouse_.is_in_window())
+					{
+						// fix the state
+						mouse_.on_mouse_enter();
+						SetCapture(window_handle);
+					}
+					mouse_.on_mouse_move(x, y);
+				}
+				// mouse is outside client region
+				// but internal state places it inside client region, maybe because a button was being held down
+				else if(mouse_.is_in_window())
+				{
+					if (mouse_.is_left_pressed() || mouse_.is_right_pressed() || mouse_.is_middle_pressed() || mouse_.is_x1_pressed() || mouse_.is_x2_pressed())
+					{
+						mouse_.on_mouse_move(x, y);
+					}
+					// but no buttons ARE being held down
+					else
+					{
+						// fix the state
+						ReleaseCapture();
+						mouse_.on_mouse_leave();
+					}
+				}
+			}
 			break;
 		}
 	case WM_LBUTTONDOWN:
@@ -196,13 +233,6 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_LBUTTONUP:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_.on_left_released(x, y);
-			break;
-		}
-	case WM_LBUTTONDBLCLK:
-		{
-			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_.on_left_pressed(x, y);
 			mouse_.on_left_released(x, y);
 			break;
 		}
@@ -218,13 +248,6 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			mouse_.on_right_released(x, y);
 			break;
 		}
-	case WM_RBUTTONDBLCLK:
-		{
-			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_.on_right_pressed(x, y);
-			mouse_.on_right_released(x, y);
-			break;
-		}
 	case WM_MBUTTONDOWN:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
@@ -234,13 +257,6 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_MBUTTONUP:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_.on_middle_released(x, y);
-			break;
-		}
-	case WM_MBUTTONDBLCLK:
-		{
-			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_.on_middle_pressed(x, y);
 			mouse_.on_middle_released(x, y);
 			break;
 		}

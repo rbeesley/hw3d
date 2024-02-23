@@ -27,6 +27,11 @@ int mouse::get_pos_y() const noexcept
 	return y_;
 }
 
+bool mouse::is_in_window() const noexcept
+{
+	return in_window_;
+}
+
 bool mouse::is_left_pressed() const noexcept
 {
 	return left_is_pressed_;
@@ -40,6 +45,16 @@ bool mouse::is_right_pressed() const noexcept
 bool mouse::is_middle_pressed() const noexcept
 {
 	return middle_is_pressed_;
+}
+
+bool mouse::is_x1_pressed() const noexcept
+{
+	return x1_is_pressed_;
+}
+
+bool mouse::is_x2_pressed() const noexcept
+{
+	return x2_is_pressed_;
 }
 
 std::optional<mouse::event> mouse::read() noexcept
@@ -70,11 +85,32 @@ void mouse::on_mouse_move(const int x, const int y) noexcept
 #endif
 }
 
+void mouse::on_mouse_leave() noexcept
+{
+	in_window_ = false;
+	event_buffer_.emplace(event::event_type::leave, *this);
+	trim_buffer();
+#ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
+	PLOGV << "mouse leave window";
+#endif
+}
+
+void mouse::on_mouse_enter() noexcept
+{
+	in_window_ = true;
+	event_buffer_.emplace(event::event_type::enter, *this);
+	trim_buffer();
+#ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
+	PLOGV << "mouse enter window";
+#endif
+}
+
 void mouse::on_left_pressed(const int x, const int y) noexcept
 {
 	x_ = x;
 	y_ = y;
 
+	left_is_pressed_ = true;
 	event_buffer_.emplace(event::event_type::l_press, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
@@ -87,22 +123,11 @@ void mouse::on_left_released(const int x, const int y) noexcept
 	x_ = x;
 	y_ = y;
 
+	left_is_pressed_ = false;
 	event_buffer_.emplace(event::event_type::l_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse left released";
-#endif
-}
-
-void mouse::on_left_double(const int x, const int y) noexcept
-{
-	x_ = x;
-	y_ = y;
-
-	event_buffer_.emplace(event::event_type::l_double, *this);
-	trim_buffer();
-#ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
-	PLOGV << "mouse left double click";
 #endif
 }
 
@@ -111,6 +136,7 @@ void mouse::on_right_pressed(const int x, const int y) noexcept
 	x_ = x;
 	y_ = y;
 
+	right_is_pressed_ = true;
 	event_buffer_.emplace(event::event_type::r_press, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
@@ -123,22 +149,11 @@ void mouse::on_right_released(const int x, const int y) noexcept
 	x_ = x;
 	y_ = y;
 
+	right_is_pressed_ = false;
 	event_buffer_.emplace(event::event_type::r_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse right released";
-#endif
-}
-
-void mouse::on_right_double(int x, int y) noexcept
-{
-	x_ = x;
-	y_ = y;
-
-	event_buffer_.emplace(event::event_type::m_double, *this);
-	trim_buffer();
-#ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
-	PLOGV << "mouse right double click";
 #endif
 }
 
@@ -147,6 +162,7 @@ void mouse::on_middle_pressed(const int x, const int y) noexcept
 	x_ = x;
 	y_ = y;
 
+	middle_is_pressed_ = true;
 	event_buffer_.emplace(event::event_type::m_press, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
@@ -159,22 +175,11 @@ void mouse::on_middle_released(const int x, const int y) noexcept
 	x_ = x;
 	y_ = y;
 
+	middle_is_pressed_ = false;
 	event_buffer_.emplace(event::event_type::m_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse middle released";
-#endif
-}
-
-void mouse::on_middle_double(const int x, const int y) noexcept
-{
-	x_ = x;
-	y_ = y;
-
-	event_buffer_.emplace(event::event_type::m_double, *this);
-	trim_buffer();
-#ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
-	PLOGV << "mouse middle double click";
 #endif
 }
 
@@ -183,6 +188,7 @@ void mouse::on_x1_pressed(const int x, const int y) noexcept
 	x_ = x;
 	y_ = y;
 
+	x1_is_pressed_ = true;
 	event_buffer_.emplace(event::event_type::x1_press, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
@@ -195,6 +201,7 @@ void mouse::on_x1_released(const int x, const int y) noexcept
 	x_ = x;
 	y_ = y;
 
+	x1_is_pressed_ = false;
 	event_buffer_.emplace(event::event_type::x1_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
@@ -204,6 +211,7 @@ void mouse::on_x1_released(const int x, const int y) noexcept
 
 void mouse::on_x2_pressed(const int x, const int y) noexcept
 {
+	x2_is_pressed_ = true;
 	x_ = x;
 	y_ = y;
 
@@ -219,6 +227,7 @@ void mouse::on_x2_released(const int x, const int y) noexcept
 	x_ = x;
 	y_ = y;
 
+	x2_is_pressed_ = false;
 	event_buffer_.emplace(event::event_type::x2_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h

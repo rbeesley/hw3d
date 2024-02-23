@@ -30,6 +30,8 @@ public:
 			wheel_right,
 			wheel_left,
 			move,
+			enter,
+			leave,
 			invalid
 		};
 	private:
@@ -37,6 +39,8 @@ public:
 		bool left_is_pressed_;
 		bool right_is_pressed_;
 		bool middle_is_pressed_;
+		bool x1_is_pressed_;
+		bool x2_is_pressed_;
 		int x_;
 		int y_;
 	public:
@@ -47,6 +51,8 @@ public:
 			left_is_pressed_(parent.left_is_pressed_),
 			right_is_pressed_(parent.right_is_pressed_),
 			middle_is_pressed_(parent.middle_is_pressed_),
+			x1_is_pressed_(parent.x1_is_pressed_),
+			x2_is_pressed_(parent.x2_is_pressed_),
 			x_(parent.x_),
 			y_(parent.y_)
 		{}
@@ -82,6 +88,14 @@ public:
 		{
 			return right_is_pressed_;
 		}
+		bool is_x1_pressed() const noexcept
+		{
+			return x1_is_pressed_;
+		}
+		bool is_x2_pressed() const noexcept
+		{
+			return x2_is_pressed_;
+		}
 	};
 public:
 	mouse() = default;
@@ -90,26 +104,29 @@ public:
 	std::pair<int, int> get_pos() const noexcept;
 	int get_pos_x() const noexcept;
 	int get_pos_y() const noexcept;
+	bool is_in_window() const noexcept;
 	bool is_left_pressed() const noexcept;
 	bool is_right_pressed() const noexcept;
 	bool is_middle_pressed() const noexcept;
+	bool is_x1_pressed() const noexcept;
+	bool is_x2_pressed() const noexcept;
 	std::optional<event> read() noexcept;
 	bool is_empty() const noexcept
 	{
 		return event_buffer_.empty();
 	}
 	void clear() noexcept;
+
 private:
 	void on_mouse_move(int x, int y) noexcept;
+	void on_mouse_leave() noexcept;
+	void on_mouse_enter() noexcept;
 	void on_left_pressed(int x, int y) noexcept;
 	void on_left_released(int x, int y) noexcept;
-	void on_left_double(int x, int y) noexcept;
 	void on_right_pressed(int x, int y) noexcept;
 	void on_right_released(int x, int y) noexcept;
-	void on_right_double(int x, int y) noexcept;
 	void on_middle_pressed(int x, int y) noexcept;
 	void on_middle_released(int x, int y) noexcept;
-	void on_middle_double(int x, int y) noexcept;
 	void on_x1_pressed(int x, int y) noexcept;
 	void on_x1_released(int x, int y) noexcept;
 	void on_x2_pressed(int x, int y) noexcept;
@@ -123,8 +140,11 @@ private:
 	static constexpr unsigned int buffer_size = 16u;
 	int x_;
 	int y_;
-	bool left_is_pressed_;
-	bool right_is_pressed_;
-	bool middle_is_pressed_;
+	bool in_window_ = false;
+	bool left_is_pressed_ = false;
+	bool right_is_pressed_ = false;
+	bool middle_is_pressed_ = false;
+	bool x1_is_pressed_ = false;
+	bool x2_is_pressed_ = false;
 	std::queue<event> event_buffer_;
 };
