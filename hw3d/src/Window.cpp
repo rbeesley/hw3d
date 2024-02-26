@@ -5,6 +5,7 @@
 #include "AtumWindows.h"
 #include "DefinesConfig.h"
 #include "Logging.h"
+#include "DeviceConfig.h"
 #include "Resources/resource.h"
 
 #if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in DefinesConfig.h
@@ -14,6 +15,7 @@ const static windows_message_map windows_message_map;
 #endif
 
 window::window_class window::window_class::window_class_;
+DeviceConfig config_;
 
 window::window_class::window_class() noexcept
 	:
@@ -57,7 +59,10 @@ window::window(const int width, const int height, const LPCWSTR name)
 	width_(width),
 	height_(height)
 {
-	RECT window_rect;
+	mouse_ = &config_.get_mouse();
+
+	// ReSharper disable once CppInitializedValueIsAlwaysRewritten
+	RECT window_rect{};
 	window_rect.left = 100;
 	window_rect.top = 100;
 	window_rect.right = width_ + window_rect.left;
@@ -196,28 +201,31 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 				if (x >= 0 && x < win->width_ && y >= 0 && y < win->height_)
 				{
 					// but internal state is still outside client region
-					if (!mouse_.is_in_window())
+					if (!mouse_->is_in_window())
 					{
 						// fix the state
-						mouse_.on_mouse_enter();
+						mouse_->on_mouse_enter(x, y);
 						SetCapture(window_handle);
 					}
-					mouse_.on_mouse_move(x, y);
+					else
+					{
+						mouse_->on_mouse_move(x, y);
+					}
 				}
 				// mouse is outside client region and internal state places it inside client region
-				else if(mouse_.is_in_window())
+				else if(mouse_->is_in_window())
 				{
 					// because a button is being held down we want to keep track of the mouse position outside the client region boundaries
-					if (mouse_.is_left_pressed() || mouse_.is_right_pressed() || mouse_.is_middle_pressed() || mouse_.is_x1_pressed() || mouse_.is_x2_pressed())
+					if (mouse_->is_left_pressed() || mouse_->is_right_pressed() || mouse_->is_middle_pressed() || mouse_->is_x1_pressed() || mouse_->is_x2_pressed())
 					{
-						mouse_.on_mouse_move(x, y);
+						mouse_->on_mouse_move(x, y);
 					}
 					// but no buttons ARE being held down
 					else
 					{
 						// fix the state
 						ReleaseCapture();
-						mouse_.on_mouse_leave();
+						mouse_->on_mouse_leave();
 					}
 				}
 			}
@@ -226,37 +234,37 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_LBUTTONDOWN:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_.on_left_pressed(x, y);
+			mouse_->on_left_pressed(x, y);
 			break;
 		}
 	case WM_LBUTTONUP:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_.on_left_released(x, y);
+			mouse_->on_left_released(x, y);
 			break;
 		}
 	case WM_RBUTTONDOWN:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_.on_right_pressed(x, y);
+			mouse_->on_right_pressed(x, y);
 			break;
 		}
 	case WM_RBUTTONUP:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_.on_right_released(x, y);
+			mouse_->on_right_released(x, y);
 			break;
 		}
 	case WM_MBUTTONDOWN:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_.on_middle_pressed(x, y);
+			mouse_->on_middle_pressed(x, y);
 			break;
 		}
 	case WM_MBUTTONUP:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_.on_middle_released(x, y);
+			mouse_->on_middle_released(x, y);
 			break;
 		}
 	case WM_MOUSEWHEEL:
@@ -267,10 +275,10 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			switch (msg)
 			{
 			case WM_MOUSEWHEEL: // Vertical mouse scroll wheel
-				mouse_.on_v_wheel_delta(x, y, wheel_delta);
+				mouse_->on_v_wheel_delta(x, y, wheel_delta);
 				break;
 			case WM_MOUSEHWHEEL: // Horizontal mouse scroll wheel
-				mouse_.on_h_wheel_delta(x, y, wheel_delta);
+				mouse_->on_h_wheel_delta(x, y, wheel_delta);
 				break;
 			default:
 				break;
@@ -283,10 +291,10 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			switch GET_XBUTTON_WPARAM(w_param)
 			{
 				case XBUTTON1:
-					mouse_.on_x1_pressed(x, y);
+					mouse_->on_x1_pressed(x, y);
 					break;
 				case XBUTTON2:
-					mouse_.on_x2_pressed(x, y);
+					mouse_->on_x2_pressed(x, y);
 					break;
 				default:
 					break;
@@ -299,10 +307,10 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			switch GET_XBUTTON_WPARAM(w_param)
 			{
 			case XBUTTON1:
-				mouse_.on_x1_released(x, y);
+				mouse_->on_x1_released(x, y);
 				break;
 			case XBUTTON2:
-				mouse_.on_x2_released(x, y);
+				mouse_->on_x2_released(x, y);
 				break;
 			default:
 				break;

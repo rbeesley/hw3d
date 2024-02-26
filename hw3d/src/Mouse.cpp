@@ -13,6 +13,29 @@
 const static virtual_key_map virtual_key_map;
 #endif
 
+using enum mouse::event::event_type;
+
+std::optional<mouse::event> mouse::read() noexcept
+{
+	if (!event_buffer_.empty())
+	{
+		const event e = event_buffer_.front();
+		event_buffer_.pop();
+		return e;
+	}
+	return {};
+}
+
+bool mouse::is_empty() const noexcept
+{
+	return event_buffer_.empty();
+}
+
+void mouse::clear() noexcept
+{
+	event_buffer_ = std::queue<event>();
+}
+
 std::pair<int, int> mouse::get_pos() const noexcept
 {
 	return { x_, y_ };
@@ -58,28 +81,12 @@ bool mouse::is_x2_pressed() const noexcept
 	return x2_is_pressed_;
 }
 
-std::optional<mouse::event> mouse::read() noexcept
-{
-	if (!event_buffer_.empty())
-	{
-		const event e = event_buffer_.front();
-		event_buffer_.pop();
-		return e;
-	}
-	return {};
-}
-
-void mouse::clear() noexcept
-{
-	event_buffer_ = std::queue<event>();
-}
-
 void mouse::on_mouse_move(const int x, const int y) noexcept
 {
 	x_ = x;
 	y_ = y;
 
-	event_buffer_.emplace(event::event_type::move, *this);
+	event_buffer_.emplace(move, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse move: x:" << x << " y:" << y;
@@ -89,20 +96,24 @@ void mouse::on_mouse_move(const int x, const int y) noexcept
 void mouse::on_mouse_leave() noexcept
 {
 	in_window_ = false;
-	event_buffer_.emplace(event::event_type::leave, *this);
+
+	event_buffer_.emplace(leave, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse leave window";
 #endif
 }
 
-void mouse::on_mouse_enter() noexcept
+void mouse::on_mouse_enter(const int x, const int y) noexcept
 {
+	x_ = x;
+	y_ = y;
 	in_window_ = true;
-	event_buffer_.emplace(event::event_type::enter, *this);
+
+	event_buffer_.emplace(enter, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
-	PLOGV << "mouse enter window";
+	PLOGV << "mouse enter window: x:" << x << " y:" << y;
 #endif
 }
 
@@ -112,7 +123,7 @@ void mouse::on_left_pressed(const int x, const int y) noexcept
 	y_ = y;
 
 	left_is_pressed_ = true;
-	event_buffer_.emplace(event::event_type::l_press, *this);
+	event_buffer_.emplace(l_press, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse left pressed";
@@ -125,7 +136,7 @@ void mouse::on_left_released(const int x, const int y) noexcept
 	y_ = y;
 
 	left_is_pressed_ = false;
-	event_buffer_.emplace(event::event_type::l_release, *this);
+	event_buffer_.emplace(l_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse left released";
@@ -138,7 +149,7 @@ void mouse::on_right_pressed(const int x, const int y) noexcept
 	y_ = y;
 
 	right_is_pressed_ = true;
-	event_buffer_.emplace(event::event_type::r_press, *this);
+	event_buffer_.emplace(r_press, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse right pressed";
@@ -151,7 +162,7 @@ void mouse::on_right_released(const int x, const int y) noexcept
 	y_ = y;
 
 	right_is_pressed_ = false;
-	event_buffer_.emplace(event::event_type::r_release, *this);
+	event_buffer_.emplace(r_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse right released";
@@ -164,7 +175,7 @@ void mouse::on_middle_pressed(const int x, const int y) noexcept
 	y_ = y;
 
 	middle_is_pressed_ = true;
-	event_buffer_.emplace(event::event_type::m_press, *this);
+	event_buffer_.emplace(m_press, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse middle pressed";
@@ -177,7 +188,7 @@ void mouse::on_middle_released(const int x, const int y) noexcept
 	y_ = y;
 
 	middle_is_pressed_ = false;
-	event_buffer_.emplace(event::event_type::m_release, *this);
+	event_buffer_.emplace(m_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse middle released";
@@ -190,7 +201,7 @@ void mouse::on_x1_pressed(const int x, const int y) noexcept
 	y_ = y;
 
 	x1_is_pressed_ = true;
-	event_buffer_.emplace(event::event_type::x1_press, *this);
+	event_buffer_.emplace(x1_press, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse button 4 pressed";
@@ -203,7 +214,7 @@ void mouse::on_x1_released(const int x, const int y) noexcept
 	y_ = y;
 
 	x1_is_pressed_ = false;
-	event_buffer_.emplace(event::event_type::x1_release, *this);
+	event_buffer_.emplace(x1_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse button 4 released";
@@ -216,7 +227,7 @@ void mouse::on_x2_pressed(const int x, const int y) noexcept
 	x_ = x;
 	y_ = y;
 
-	event_buffer_.emplace(event::event_type::x2_press, *this);
+	event_buffer_.emplace(x2_press, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse button 5 pressed";
@@ -229,7 +240,7 @@ void mouse::on_x2_released(const int x, const int y) noexcept
 	y_ = y;
 
 	x2_is_pressed_ = false;
-	event_buffer_.emplace(event::event_type::x2_release, *this);
+	event_buffer_.emplace(x2_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse button 5 released";
@@ -241,7 +252,7 @@ void mouse::on_wheel_up(const int x, const int y) noexcept
 	x_ = x;
 	y_ = y;
 
-	event_buffer_.emplace(event::event_type::wheel_up, *this);
+	event_buffer_.emplace(wheel_up, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse wheel up";
@@ -253,7 +264,7 @@ void mouse::on_wheel_down(const int x, const int y) noexcept
 	x_ = x;
 	y_ = y;
 
-	event_buffer_.emplace(event::event_type::wheel_down, *this);
+	event_buffer_.emplace(wheel_down, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse wheel down";
@@ -265,7 +276,7 @@ void mouse::on_wheel_right(const int x, const int y) noexcept
 	x_ = x;
 	y_ = y;
 
-	event_buffer_.emplace(event::event_type::wheel_right, *this);
+	event_buffer_.emplace(wheel_right, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse wheel right";
@@ -277,14 +288,14 @@ void mouse::on_wheel_left(const int x, const int y) noexcept
 	x_ = x;
 	y_ = y;
 
-	event_buffer_.emplace(event::event_type::wheel_left, *this);
+	event_buffer_.emplace(wheel_left, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in DefinesConfig.h
 	PLOGV << "mouse wheel left";
 #endif
 }
 
-void mouse::on_v_wheel_delta(int x, int y, int delta) noexcept
+void mouse::on_v_wheel_delta(const int x, const int y, const int delta) noexcept
 {
 	v_wheel_delta_carry_ += delta;
 	while(v_wheel_delta_carry_ >= WHEEL_DELTA)
@@ -302,7 +313,7 @@ void mouse::on_v_wheel_delta(int x, int y, int delta) noexcept
 #endif
 }
 
-void mouse::on_h_wheel_delta(int x, int y, int delta) noexcept
+void mouse::on_h_wheel_delta(const int x, const int y, const int delta) noexcept
 {
 	h_wheel_delta_carry_ += delta;
 	while (h_wheel_delta_carry_ >= WHEEL_DELTA)

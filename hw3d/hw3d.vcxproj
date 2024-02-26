@@ -167,6 +167,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\DeviceConfig.cpp" />
     <ClCompile Include="src\Keyboard.cpp" />
     <ClCompile Include="src\AtumException.cpp" />
     <ClCompile Include="src\Console.cpp" />
@@ -205,8 +206,10 @@
     <ClInclude Include="3rdParty\plog\Severity.h" />
     <ClInclude Include="3rdParty\plog\Util.h" />
     <ClInclude Include="3rdParty\plog\WinApi.h" />
+    <ClInclude Include="src\DeviceConfig.h" />
     <ClInclude Include="src\AtumWinUser.h" />
     <ClInclude Include="src\DefinesConfig.h" />
+    <ClInclude Include="src\IMouse.h" />
     <ClInclude Include="src\Keyboard.h" />
     <ClInclude Include="Resources\resource.h" />
     <ClInclude Include="spdlog\fmt\bundled\chrono.h" />

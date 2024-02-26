@@ -4,7 +4,7 @@
 #include "AtumException.h"
 #include "AtumWindows.h"
 #include "Keyboard.h"
-#include "Mouse.h"
+#include "IMouse.h"
 
 class window
 {
@@ -52,7 +52,7 @@ private:
 	static LRESULT CALLBACK handle_msg(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 private:
 	inline static keyboard keyboard_{};
-	inline static mouse mouse_{};
+	inline static i_mouse* mouse_{};
 	int width_{};
 	int height_{};
 	HWND window_handle;
