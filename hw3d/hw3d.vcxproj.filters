@@ -39,6 +39,12 @@
     <ClCompile Include="src\VirtualKeyMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\DeviceConfig.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Mouse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\AtumException.h">
@@ -188,7 +194,22 @@
     <ClInclude Include="src\VirtualKeyMap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\DefinesConfig.h">
+    <ClInclude Include="src\LoggingConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\DeviceConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AtumWinUser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IMouse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Mouse.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IKeyboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

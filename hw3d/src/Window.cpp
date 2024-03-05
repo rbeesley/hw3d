@@ -3,19 +3,17 @@
 #include <system_error>
 
 #include "AtumWindows.h"
-#include "DefinesConfig.h"
+#include "LoggingConfig.h"
 #include "Logging.h"
-#include "DeviceConfig.h"
 #include "Resources/resource.h"
 
-#if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in DefinesConfig.h
+#if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in LoggingConfig.h
 #include "WindowsMessageMap.h"
 
 const static windows_message_map windows_message_map;
 #endif
 
 window::window_class window::window_class::window_class_;
-DeviceConfig config_;
 
 window::window_class::window_class() noexcept
 	:
@@ -59,8 +57,6 @@ window::window(const int width, const int height, const LPCWSTR name)
 	width_(width),
 	height_(height)
 {
-	mouse_ = &config_.get_mouse();
-
 	// ReSharper disable once CppInitializedValueIsAlwaysRewritten
 	RECT window_rect{};
 	window_rect.left = 100;
@@ -117,7 +113,7 @@ void window::set_title(const std::wstring& title) const
 
 LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
-#ifdef LOG_WINDOW_MESSAGES // defined in DefinesConfig.h
+#ifdef LOG_WINDOW_MESSAGES // defined in LoggingConfig.h
 	PLOGV << windows_message_map(msg, l_param, w_param).c_str();
 #endif
 
@@ -171,24 +167,24 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 		return 0;
 		break;
 	case WM_KILLFOCUS:
-		keyboard_.clear_state();
+		keyboard_->clear_state();
 		break;
 
 	/* Keyboard */
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
 		// Filter keyboard autorepeat
-		if (!(l_param & 0x40000000 /* previous key state */) || keyboard_.is_autorepeat_enabled())
+		if (!(l_param & 0x40000000 /* previous key state */) || keyboard_->is_autorepeat_enabled())
 		{
-			keyboard_.on_key_pressed(static_cast<unsigned char>(w_param));
+			keyboard_->on_key_pressed(static_cast<unsigned char>(w_param));
 		}
 		break;
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
-		keyboard_.on_key_released(static_cast<unsigned char>(w_param));
+		keyboard_->on_key_released(static_cast<unsigned char>(w_param));
 		break;
 	case WM_CHAR:
-		keyboard_.on_char(static_cast<unsigned char>(w_param));
+		keyboard_->on_char(static_cast<unsigned char>(w_param));
 		break;
 	/* Mouse */
 	case WM_MOUSEMOVE:

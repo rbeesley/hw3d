@@ -1,7 +1,7 @@
 #include <tchar.h>
 
 #include "Console.h"
-#include "DefinesConfig.h"
+#include "LoggingConfig.h"
 #include "Logging.h"
 #include "Window.h"
 
@@ -21,7 +21,7 @@ int APIENTRY WinMain(
 	{
 		root_instance = hInstance;
 
-#ifndef LOG_LEVEL_FULL // defined in DefinesConfig.h
+#ifndef LOG_LEVEL_FULL // defined in LoggingConfig.h
 		// Initialize logging
 		//logging log(plog::none); // Effectively turns off logging
 		//logging log(plog::fatal);
@@ -61,7 +61,7 @@ int APIENTRY WinMain(
 			PLOGE << "Failed to create Debug Console";
 		}
 
-#ifndef LOG_LEVEL_FULL // defined in DefinesConfig.h
+#ifndef LOG_LEVEL_FULL // defined in LoggingConfig.h
 		// Set up Console Logger
 		//logging::init_console(plog::info);
 		logging::init_console(plog::debug); // default

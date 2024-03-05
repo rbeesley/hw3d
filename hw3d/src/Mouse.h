@@ -53,6 +53,7 @@ public:
 		bool middle_is_pressed_;
 		bool x1_is_pressed_;
 		bool x2_is_pressed_;
+
 	public:
 		event() = delete;
 		event(const event_type event_type, const mouse& parent) noexcept
@@ -116,7 +117,7 @@ public:
 private:
 	void trim_buffer() noexcept;
 	std::optional<event> read() noexcept;
-	bool is_empty() const noexcept;
+	[[nodiscard]] bool is_empty() const noexcept;
 	void clear() noexcept;
 
 public:

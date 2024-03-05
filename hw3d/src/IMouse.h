@@ -1,5 +1,5 @@
 #pragma once
-#include <optional>
+#include <memory>
 #include <utility>
 
 class i_mouse
@@ -12,6 +12,7 @@ public:
 	i_mouse(const i_mouse&&) = delete;
 	virtual i_mouse& operator=(const i_mouse&&) = delete;
 
+public:
 	[[nodiscard]] virtual std::pair<int, int> get_pos() const noexcept = 0;
 	[[nodiscard]] virtual int get_pos_x() const noexcept = 0;
 	[[nodiscard]] virtual int get_pos_y() const noexcept = 0;

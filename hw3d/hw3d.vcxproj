@@ -208,7 +208,8 @@
     <ClInclude Include="3rdParty\plog\WinApi.h" />
     <ClInclude Include="src\DeviceConfig.h" />
     <ClInclude Include="src\AtumWinUser.h" />
-    <ClInclude Include="src\DefinesConfig.h" />
+    <ClInclude Include="src\LoggingConfig.h" />
+    <ClInclude Include="src\IKeyboard.h" />
     <ClInclude Include="src\IMouse.h" />
     <ClInclude Include="src\Keyboard.h" />
     <ClInclude Include="Resources\resource.h" />

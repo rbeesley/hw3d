@@ -3,7 +3,8 @@
 
 #include "AtumException.h"
 #include "AtumWindows.h"
-#include "Keyboard.h"
+#include "DeviceConfig.h"
+#include "IKeyboard.h"
 #include "IMouse.h"
 
 class window
@@ -51,8 +52,9 @@ private:
 	static LRESULT CALLBACK handle_msg_thunk(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 	static LRESULT CALLBACK handle_msg(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 private:
-	inline static keyboard keyboard_{};
-	inline static i_mouse* mouse_{};
+	inline static device_config config_;
+	inline static i_keyboard* keyboard_ = &(config_.get_keyboard());
+	inline static i_mouse* mouse_ = &(config_.get_mouse());
 	int width_{};
 	int height_{};
 	HWND window_handle;
