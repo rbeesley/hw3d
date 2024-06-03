@@ -50,6 +50,7 @@ private:
 	void set_title(const std::wstring& title) const;
 	static LRESULT CALLBACK handle_msg_setup(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 	static LRESULT CALLBACK handle_msg_thunk(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
+	static HWND set_active(HWND window_handle);
 	static LRESULT CALLBACK handle_msg(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 private:
 	inline static device_config config_;

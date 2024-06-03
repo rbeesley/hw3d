@@ -119,7 +119,7 @@ LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT m
 
 	if (msg == WM_NCCREATE)
 	{
-		const CREATESTRUCTW* const p_create = reinterpret_cast<CREATESTRUCTW*>(l_param);
+		const CREATESTRUCTW* const p_create = reinterpret_cast<CREATESTRUCTW*>(l_param);  // NOLINT(performance-no-int-to-ptr)
 		window* const p_wnd = static_cast<window*>(p_create->lpCreateParams);
 		SetWindowLongPtr(window_handle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(p_wnd));
 		SetWindowLongPtr(window_handle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&window::handle_msg_thunk));
@@ -131,6 +131,19 @@ LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT m
 LRESULT CALLBACK window::handle_msg_thunk(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
 	return handle_msg(window_handle, msg, w_param, l_param);
+}
+
+HWND window::set_active(const HWND window_handle)
+{
+	if (mouse_->is_in_window())
+	{
+		if (const HWND active_window = GetActiveWindow(); active_window != window_handle)
+		{
+			return SetActiveWindow(window_handle);
+		}
+	}
+
+	return nullptr;
 }
 
 LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
@@ -156,9 +169,9 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			const int window_message_event = HIWORD(w_param);
 			switch (window_message_id)
 			{
-			case 0:
-			default:
-				return DefWindowProc(window_handle, msg, w_param, l_param);
+				case 0:
+				default:
+					return DefWindowProc(window_handle, msg, w_param, l_param);
 			}
 			break;
 		}
@@ -189,7 +202,7 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	/* Mouse */
 	case WM_MOUSEMOVE:
 		{
-			if (const auto win = reinterpret_cast<window*>(GetWindowLongPtr(window_handle, GWLP_USERDATA)))
+			if (const auto win = reinterpret_cast<window*>(GetWindowLongPtr(window_handle, GWLP_USERDATA)))  // NOLINT(performance-no-int-to-ptr)
 			{
 				const auto [x, y] = MAKEPOINTS(l_param);
 
@@ -230,6 +243,7 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_LBUTTONDOWN:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
+			set_active(window_handle);
 			mouse_->on_left_pressed(x, y);
 			break;
 		}
@@ -242,6 +256,7 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_RBUTTONDOWN:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
+			set_active(window_handle);
 			mouse_->on_right_pressed(x, y);
 			break;
 		}
@@ -254,6 +269,7 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_MBUTTONDOWN:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
+			set_active(window_handle);
 			mouse_->on_middle_pressed(x, y);
 			break;
 		}
@@ -270,20 +286,21 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			const int wheel_delta = GET_WHEEL_DELTA_WPARAM(w_param);
 			switch (msg)
 			{
-			case WM_MOUSEWHEEL: // Vertical mouse scroll wheel
-				mouse_->on_v_wheel_delta(x, y, wheel_delta);
-				break;
-			case WM_MOUSEHWHEEL: // Horizontal mouse scroll wheel
-				mouse_->on_h_wheel_delta(x, y, wheel_delta);
-				break;
-			default:
-				break;
+				case WM_MOUSEWHEEL: // Vertical mouse scroll wheel
+					mouse_->on_v_wheel_delta(x, y, wheel_delta);
+					break;
+				case WM_MOUSEHWHEEL: // Horizontal mouse scroll wheel
+					mouse_->on_h_wheel_delta(x, y, wheel_delta);
+					break;
+				default:
+					break;
 			}
 			break;
 		}
 	case WM_XBUTTONDOWN:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
+			set_active(window_handle);
 			switch GET_XBUTTON_WPARAM(w_param)
 			{
 				case XBUTTON1:
@@ -302,14 +319,14 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			const auto [x, y] = MAKEPOINTS(l_param);
 			switch GET_XBUTTON_WPARAM(w_param)
 			{
-			case XBUTTON1:
-				mouse_->on_x1_released(x, y);
-				break;
-			case XBUTTON2:
-				mouse_->on_x2_released(x, y);
-				break;
-			default:
-				break;
+				case XBUTTON1:
+					mouse_->on_x1_released(x, y);
+					break;
+				case XBUTTON2:
+					mouse_->on_x2_released(x, y);
+					break;
+				default:
+					break;
 			}
 			break;
 		}
