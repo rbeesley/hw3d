@@ -1,9 +1,5 @@
 #include "Logging.h"
 
-#include <functional>
-
-#include "AtumWindows.h"
-
 plog::DynamicAppender logging::dynamic_appender_;
 
 logging::logging(const plog::Severity max_severity) noexcept

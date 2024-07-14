@@ -167,6 +167,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\App.cpp" />
+    <ClCompile Include="src\DeviceConfig.cpp" />
     <ClCompile Include="src\Keyboard.cpp" />
     <ClCompile Include="src\AtumException.cpp" />
     <ClCompile Include="src\Console.cpp" />
@@ -205,23 +207,14 @@
     <ClInclude Include="3rdParty\plog\Severity.h" />
     <ClInclude Include="3rdParty\plog\Util.h" />
     <ClInclude Include="3rdParty\plog\WinApi.h" />
+    <ClInclude Include="src\App.h" />
+    <ClInclude Include="src\DeviceConfig.h" />
     <ClInclude Include="src\AtumWinUser.h" />
-    <ClInclude Include="src\DefinesConfig.h" />
+    <ClInclude Include="src\LoggingConfig.h" />
+    <ClInclude Include="src\IKeyboard.h" />
+    <ClInclude Include="src\IMouse.h" />
     <ClInclude Include="src\Keyboard.h" />
     <ClInclude Include="Resources\resource.h" />
-    <ClInclude Include="spdlog\fmt\bundled\chrono.h" />
-    <ClInclude Include="spdlog\fmt\bundled\color.h" />
-    <ClInclude Include="spdlog\fmt\bundled\compile.h" />
-    <ClInclude Include="spdlog\fmt\bundled\core.h" />
-    <ClInclude Include="spdlog\fmt\bundled\format-inl.h" />
-    <ClInclude Include="spdlog\fmt\bundled\format.h" />
-    <ClInclude Include="spdlog\fmt\bundled\locale.h" />
-    <ClInclude Include="spdlog\fmt\bundled\os.h" />
-    <ClInclude Include="spdlog\fmt\bundled\ostream.h" />
-    <ClInclude Include="spdlog\fmt\bundled\printf.h" />
-    <ClInclude Include="spdlog\fmt\bundled\ranges.h" />
-    <ClInclude Include="spdlog\fmt\bundled\std.h" />
-    <ClInclude Include="spdlog\fmt\bundled\xchar.h" />
     <ClInclude Include="src\AtumException.h" />
     <ClInclude Include="src\AtumWindows.h" />
     <ClInclude Include="src\Console.h" />

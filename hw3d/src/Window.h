@@ -1,10 +1,12 @@
 #pragma once
+#include <optional>
 #include <sstream>
 
 #include "AtumException.h"
 #include "AtumWindows.h"
-#include "Keyboard.h"
-#include "Mouse.h"
+#include "DeviceConfig.h"
+#include "IKeyboard.h"
+#include "IMouse.h"
 
 class window
 {
@@ -41,6 +43,7 @@ public:
 	window(int width, int height, LPCWSTR name);
 	~window();
 	[[nodiscard]] HWND get_handle() const;
+	static std::optional<int> process_messages();
 	window(const window&) = delete;
 	window& operator=(const window&) = delete;
 	window(const window&&) = delete;
@@ -49,10 +52,12 @@ private:
 	void set_title(const std::wstring& title) const;
 	static LRESULT CALLBACK handle_msg_setup(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 	static LRESULT CALLBACK handle_msg_thunk(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
+	static HWND set_active(HWND window_handle);
 	static LRESULT CALLBACK handle_msg(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 private:
-	inline static keyboard keyboard_{};
-	inline static mouse mouse_{};
+	inline static device_config config_;
+	inline static i_keyboard* keyboard_ = &(config_.get_keyboard());
+	inline static i_mouse* mouse_ = &(config_.get_mouse());
 	int width_{};
 	int height_{};
 	HWND window_handle;

@@ -82,7 +82,7 @@
 #define NOTASKDIALOG		// - Task Dialog.
 #define NOMUI				// - MUI APIs.
 #define NOTRACKMOUSEEVENT	// - TrackMouseEvent API.
-#define NOFLATSBAPIS		// - Flat SB APIs. (Disable LPSCROLLINFO requrements)
+#define NOFLATSBAPIS		// - Flat SB APIs. (Disable LPSCROLLINFO requirements)
 
 #include <CommCtrl.h>
 #pragma comment(lib,"comctl32.lib")

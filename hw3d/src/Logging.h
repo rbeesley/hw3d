@@ -44,4 +44,3 @@ private:
 	static plog::DynamicAppender dynamic_appender_;
 	plog::Logger<PLOG_DEFAULT_INSTANCE_ID>& default_logger_;
 };
-

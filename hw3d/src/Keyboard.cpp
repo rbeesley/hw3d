@@ -2,9 +2,9 @@
 
 #include <optional>
 
-#include "DefinesConfig.h"
+#include "LoggingConfig.h"
 
-#if defined(LOG_KEYBOARD_MESSAGES) || defined(LOG_KEYBOARD_CHARS)  // defined in DefinesConfig.h
+#if defined(LOG_KEYBOARD_MESSAGES) || defined(LOG_KEYBOARD_CHARS)  // defined in LoggingConfig.h
 #include <format>
 #include "Logging.h"
 #include "VirtualKeyMap.h"
@@ -74,7 +74,7 @@ void keyboard::on_key_pressed(unsigned char key_code) noexcept
 	key_state_[key_code] = true;
 	event_buffer_.emplace(event::event_type::press, key_code);
 	trim_buffer(event_buffer_);
-#ifdef LOG_KEYBOARD_MESSAGES // defined in DefinesConfig.h
+#ifdef LOG_KEYBOARD_MESSAGES // defined in LoggingConfig.h
 	PLOGV << "keydown: " << virtual_key_map(key_code);
 #endif
 }
@@ -84,7 +84,7 @@ void keyboard::on_key_released(unsigned char key_code) noexcept
 	key_state_[key_code] = false;
 	event_buffer_.emplace(event::event_type::release, key_code);
 	trim_buffer(event_buffer_);
-#ifdef LOG_KEYBOARD_MESSAGES // defined in DefinesConfig.h
+#ifdef LOG_KEYBOARD_MESSAGES // defined in LoggingConfig.h
 	PLOGV << "keyup: " << virtual_key_map(key_code);
 #endif
 }
@@ -93,7 +93,7 @@ void keyboard::on_char(unsigned char character) noexcept
 {
 	char_buffer_.emplace(character);
 	trim_buffer(char_buffer_);
-#ifdef LOG_KEYBOARD_CHARS // defined in DefinesConfig.h
+#ifdef LOG_KEYBOARD_CHARS // defined in LoggingConfig.h
 	PLOGV << "char: " << character;
 #endif
 }

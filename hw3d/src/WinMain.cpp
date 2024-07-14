@@ -1,9 +1,8 @@
 #include <tchar.h>
 
-#include "Console.h"
-#include "DefinesConfig.h"
+#include "App.h"
 #include "Logging.h"
-#include "Window.h"
+#include "LoggingConfig.h"
 
 // Global Variables:
 HINSTANCE root_instance; // current instance
@@ -21,7 +20,7 @@ int APIENTRY WinMain(
 	{
 		root_instance = hInstance;
 
-#ifndef LOG_LEVEL_FULL // defined in DefinesConfig.h
+#ifndef LOG_LEVEL_FULL // defined in LoggingConfig.h
 		// Initialize logging
 		//logging log(plog::none); // Effectively turns off logging
 		//logging log(plog::fatal);
@@ -41,27 +40,13 @@ int APIENTRY WinMain(
 #else
 		logging log(plog::verbose);
 		logging::init_debug_output(plog::verbose);
-#endif
+		#endif
 
-		// Create Window
-		PLOGI << "Creating Window";
-		const window window(640, 360, TEXT("Atum D3D Window"));
-		if (!window.get_handle())
-		{
-			PLOGF << "Failed to create Window";
-			return -2;
-		}
-
+		app app;
 #ifdef _DEBUG
-		// Create Console
-		PLOGI << "Creating Debug Console";
-		const console console(TEXT("Debug Console"));
-		if (!console.get_window_handle())
-		{
-			PLOGE << "Failed to create Debug Console";
-		}
 
-#ifndef LOG_LEVEL_FULL // defined in DefinesConfig.h
+
+#ifndef LOG_LEVEL_FULL // defined in LoggingConfig.h
 		// Set up Console Logger
 		//logging::init_console(plog::info);
 		logging::init_console(plog::debug); // default
@@ -78,26 +63,22 @@ int APIENTRY WinMain(
 		PLOG_ERROR << "This is an ERROR message";
 		PLOG_FATAL << "This is a FATAL message";
 		//PLOG_NONE << "This is a NONE message";
-#endif // _DEBUG
+#endif
+
+		if(const int result = app.init() < 0)
+		{
+			return result;
+		}
 
 		// Start Window Message Pump
 		PLOGI << "Starting Message Pump";
-		MSG msg;
-		BOOL result;
-		while ((result = GetMessage(&msg, nullptr, 0, 0)) > 0)
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
+		PLOGI << "Running App";
+		const int result = app.run();
 
-		if (result == -1)
-		{
-			return -1;
-		}
-
-		PLOGI << "Closing application";
-		return static_cast<int>(msg.wParam);
+		PLOGI << "Closing App";
+		return result;
 	}
+
 	//BUGBUG : Should be using MessageBox and adjusting text based on target encoding. Currently assuming ASCII to match output of exception.what().
 	catch (const atum_exception& e) {
 		PLOGF << e.get_type() << ":";
