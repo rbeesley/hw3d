@@ -1,4 +1,5 @@
 #pragma once
+#include <optional>
 #include <sstream>
 
 #include "AtumException.h"
@@ -42,6 +43,7 @@ public:
 	window(int width, int height, LPCWSTR name);
 	~window();
 	[[nodiscard]] HWND get_handle() const;
+	static std::optional<int> process_messages();
 	window(const window&) = delete;
 	window& operator=(const window&) = delete;
 	window(const window&&) = delete;

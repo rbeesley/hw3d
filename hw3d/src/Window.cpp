@@ -57,6 +57,8 @@ window::window(const int width, const int height, const LPCWSTR name)
 	width_(width),
 	height_(height)
 {
+	PLOGI << "Initializing Window";
+
 	// ReSharper disable once CppInitializedValueIsAlwaysRewritten
 	RECT window_rect{};
 	window_rect.left = 100;
@@ -109,6 +111,22 @@ void window::set_title(const std::wstring& title) const
 	{
 		throw ATUM_WND_LAST_EXCEPT();
 	}
+}
+
+std::optional<int> window::process_messages()
+{
+	MSG msg;
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	{
+		if (msg.message == WM_QUIT)
+		{
+			return static_cast<int>(msg.wParam);
+		}
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	return {};
 }
 
 LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept

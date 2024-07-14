@@ -24,14 +24,18 @@ HINSTANCE console::console_class::get_instance() noexcept
 }
 
 console::console(const LPCWSTR name) noexcept {
+	PLOGI << "Initializing Console";
+
 	AllocConsole();
 	window_handle = GetConsoleWindow();
 
 	PLOGV << "Initialize STD File Streams";
 	errno_t result = 0;
+	// ReSharper disable StringLiteralTypo
 	result |= freopen_s(reinterpret_cast<FILE**>(stdin), "CONIN$", "r", stdin);
 	result |= freopen_s(reinterpret_cast<FILE**>(stdout), "CONOUT$", "w", stdout);
 	result |= freopen_s(reinterpret_cast<FILE**>(stderr), "CONOUT$", "w", stderr);
+	// ReSharper restore StringLiteralTypo
 
 	if(result)
 	{
@@ -68,7 +72,7 @@ HWND console::get_window_handle() const noexcept {
 
 BOOL console::ctrl_handler(const DWORD ctrl_type) noexcept
 {
-	reinterpret_cast<console*>(GetWindowLongPtr(GetConsoleWindow(), GWLP_USERDATA));
+	reinterpret_cast<console*>(GetWindowLongPtr(GetConsoleWindow(), GWLP_USERDATA));  // NOLINT(clang-diagnostic-unused-value, performance-no-int-to-ptr)
 	switch (ctrl_type)
 	{
 	case CTRL_C_EVENT:
