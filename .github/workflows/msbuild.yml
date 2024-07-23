@@ -29,6 +29,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v1.0.2
@@ -39,7 +41,7 @@ jobs:
 
     - name: Sync 3rd Party libraries
       working-directory: ./hw3d/3rdParty
-      run: git submodule update --recursive
+      run: git submodule update --init --recursive
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
