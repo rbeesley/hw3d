@@ -38,7 +38,8 @@ jobs:
       run: nuget restore ${{env.SOLUTION_FILE_PATH}}
 
     - name: Sync 3rd Party libraries
-      run: git pull --recurse-submodules
+      working-directory: ./hw3d/3rdParty
+      run: git submodule update --recursive
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
