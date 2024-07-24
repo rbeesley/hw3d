@@ -1,12 +1,14 @@
 #pragma once
 #include <optional>
 #include <sstream>
+#include <memory>
 
 #include "AtumException.h"
 #include "AtumWindows.h"
 #include "DeviceConfig.h"
 #include "IKeyboard.h"
 #include "IMouse.h"
+#include "Graphics.h"
 
 class window
 {
@@ -44,6 +46,7 @@ public:
 	~window();
 	[[nodiscard]] HWND get_handle() const;
 	static std::optional<int> process_messages();
+	graphics& get_graphics() const;
 	window(const window&) = delete;
 	window& operator=(const window&) = delete;
 	window(const window&&) = delete;
@@ -60,7 +63,8 @@ private:
 	inline static i_mouse* mouse_ = &(config_.get_mouse());
 	int width_{};
 	int height_{};
-	HWND window_handle;
+	HWND window_handle_;
+	std::unique_ptr<graphics> p_graphics_;
 };
 
 // Error exception helper macro

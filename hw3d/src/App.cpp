@@ -29,7 +29,7 @@ int app::init() const
 	return 0;
 }
 
-int app::run()
+int app::run() const
 {
 	while(true)
 	{
@@ -43,6 +43,9 @@ int app::run()
 	}
 }
 
-void app::process_frame()
+void app::process_frame() const
 {
+	const float c = sin(timer_.peek()) / 2.f + 0.5f;
+	window_.get_graphics().clear_buffer(c, c, 1.f);
+	window_.get_graphics().end_frame();
 }
