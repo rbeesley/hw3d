@@ -71,7 +71,7 @@ window::window(const int width, const int height, const LPCWSTR name)
 		throw ATUM_WND_LAST_EXCEPT();
 	}
 
-	window_handle = CreateWindowEx(
+	window_handle_ = CreateWindowEx(
 		0,
 		window_class::get_name(),
 		name,
@@ -86,28 +86,38 @@ window::window(const int width, const int height, const LPCWSTR name)
 		this
 	);
 
-	if (nullptr == window_handle)
+	// Check for an error
+	if (nullptr == window_handle_)
 	{
 		throw ATUM_WND_LAST_EXCEPT();
 	}
 
-	// Show Window
-	ShowWindow(window_handle, SW_SHOWDEFAULT);
+	// Newly created windows start off as hidden
+	ShowWindow(window_handle_, SW_SHOWDEFAULT);
+
+	// Create the graphics object
+	p_graphics_ = std::make_unique<graphics>(window_handle_);
+
+	// Check for an error
+	if (nullptr == p_graphics_)
+	{
+		throw ATUM_WND_LAST_EXCEPT();
+	}
 }
 
 HWND window::get_handle() const
 {
-	return window_handle;
+	return window_handle_;
 }
 
 window::~window()
 {
-	DestroyWindow(window_handle);
+	DestroyWindow(window_handle_);
 }
 
 void window::set_title(const std::wstring& title) const
 {
-	if(!SetWindowText(window_handle, title.c_str()))
+	if(!SetWindowText(window_handle_, title.c_str()))
 	{
 		throw ATUM_WND_LAST_EXCEPT();
 	}
@@ -127,6 +137,11 @@ std::optional<int> window::process_messages()
 	}
 
 	return {};
+}
+
+graphics& window::get_graphics() const
+{
+	return *p_graphics_;
 }
 
 LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept

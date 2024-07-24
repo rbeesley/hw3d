@@ -1,6 +1,7 @@
 #pragma once
 #include "Window.h"
 #include "Console.h"
+#include "Timer.h"
 
 class app
 {
@@ -12,12 +13,13 @@ public:
 	app(const app&&) = delete;
 	app& operator=(const app&&) = delete;
 	[[nodiscard]] int init() const;
-	int run();
+	int run() const;
 private:
-	void process_frame();
+	void process_frame() const;
 private:
 	const window window_;
 #if defined(_DEBUG)
 	const console console_;
 #endif
+	const timer timer_;
 };

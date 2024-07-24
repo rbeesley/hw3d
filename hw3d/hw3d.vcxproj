@@ -169,6 +169,7 @@
   <ItemGroup>
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\DeviceConfig.cpp" />
+    <ClCompile Include="src\Graphics.cpp" />
     <ClCompile Include="src\Keyboard.cpp" />
     <ClCompile Include="src\AtumException.cpp" />
     <ClCompile Include="src\Console.cpp" />
@@ -178,6 +179,7 @@
     <ClCompile Include="src\WindowsMessageMap.cpp" />
     <ClCompile Include="src\WinMain.cpp" />
     <ClCompile Include="src\VirtualKeyMap.cpp" />
+    <ClCompile Include="src\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdParty\plog\Appenders\AndroidAppender.h" />
@@ -210,6 +212,7 @@
     <ClInclude Include="src\App.h" />
     <ClInclude Include="src\DeviceConfig.h" />
     <ClInclude Include="src\AtumWinUser.h" />
+    <ClInclude Include="src\Graphics.h" />
     <ClInclude Include="src\LoggingConfig.h" />
     <ClInclude Include="src\IKeyboard.h" />
     <ClInclude Include="src\IMouse.h" />
@@ -223,6 +226,7 @@
     <ClInclude Include="src\Window.h" />
     <ClInclude Include="src\WindowsMessageMap.h" />
     <ClInclude Include="src\VirtualKeyMap.h" />
+    <ClInclude Include="src\Timer.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hw3d.rc" />
