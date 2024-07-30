@@ -1,19 +1,52 @@
 #pragma once
-#include "AtumWindows.h"
+//#include "AtumWindows.h"
+#include "AtumException.h"
 #include <d3d11.h>
+#include <vector>
+#include "DxgiInfoManager.h"
 
 class graphics
 {
 public:
-	graphics(HWND window_handle);
+	class graphics_exception : public atum_exception
+	{
+		using atum_exception::atum_exception;
+	};
+	class hresult_exception : public graphics_exception
+	{
+	public:
+		hresult_exception(int line, const char* file, HRESULT hresult, const std::vector<std::string>& info_messages = {}) noexcept;
+		const char* what() const noexcept override;
+		const char* get_type() const noexcept override;
+		HRESULT get_error_code() const noexcept;
+		std::string get_error_string() const noexcept;
+		std::string get_error_description() const noexcept;
+		std::string get_error_info() const noexcept;
+	private:
+		HRESULT hresult_;
+		std::string info_message_;
+	};
+	class device_removed_exception final : public hresult_exception
+	{
+		using hresult_exception::hresult_exception;
+	public:
+		const char* get_type() const noexcept override;
+	};
+public:
+	explicit graphics(HWND window_handle);
 	graphics(const graphics&) = delete;
 	graphics& operator=(const graphics&) = delete;
+	graphics(const graphics&&) = delete;
+	graphics& operator=(const graphics&&) = delete;
 	~graphics();
 	void end_frame();
-	void clear_buffer(float red, float green, float blue) noexcept;
+	void clear_buffer(float red, float green, float blue) const noexcept;
 private:
-	ID3D11Device* p_device_ = nullptr;
-	IDXGISwapChain* p_swap_chain_ = nullptr;
-	ID3D11DeviceContext* p_context_ = nullptr;
-	ID3D11RenderTargetView* p_target_ = nullptr;
+#ifdef _DEBUG
+	dxgi_info_manager info_manager_;
+#endif
+	ID3D11Device* device_ = nullptr;
+	IDXGISwapChain* swap_chain_ = nullptr;
+	ID3D11DeviceContext* device_context_ = nullptr;
+	ID3D11RenderTargetView* target_view_ = nullptr;
 };

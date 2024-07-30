@@ -167,8 +167,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="3rdParty\DxErr\DXErr.cpp" />
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\DeviceConfig.cpp" />
+    <ClCompile Include="src\DxgiInfoManager.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
     <ClCompile Include="src\Keyboard.cpp" />
     <ClCompile Include="src\AtumException.cpp" />
@@ -182,6 +184,7 @@
     <ClCompile Include="src\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="3rdParty\DxErr\DXErr.h" />
     <ClInclude Include="3rdParty\plog\Appenders\AndroidAppender.h" />
     <ClInclude Include="3rdParty\plog\Appenders\ArduinoAppender.h" />
     <ClInclude Include="3rdParty\plog\Appenders\ColorConsoleAppender.h" />
@@ -212,6 +215,7 @@
     <ClInclude Include="src\App.h" />
     <ClInclude Include="src\DeviceConfig.h" />
     <ClInclude Include="src\AtumWinUser.h" />
+    <ClInclude Include="src\DxgiInfoManager.h" />
     <ClInclude Include="src\Graphics.h" />
     <ClInclude Include="src\LoggingConfig.h" />
     <ClInclude Include="src\IKeyboard.h" />
@@ -233,6 +237,11 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\hw3d.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="3rdParty\DxErr\DXGetErrorDescription.inl" />
+    <None Include="3rdParty\DxErr\DXGetErrorString.inl" />
+    <None Include="3rdParty\DxErr\DXTrace.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

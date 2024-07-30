@@ -30,16 +30,31 @@ private:
 		HINSTANCE instance_handle_;
 	};
 public:
-	class exception final : public atum_exception {
+	class exception : public atum_exception {
+		using atum_exception::atum_exception;
 	public:
-		exception(int line, const char* file, HRESULT result) noexcept;
-		const char* what() const noexcept override;
-		const char* get_type() const noexcept override;
 		static std::string translate_error_code(HRESULT result) noexcept;
-		HRESULT get_error_code() const noexcept;
-		std::string get_error_string() const noexcept;
 	private:
 		HRESULT result_;
+	};
+public:
+	class hresult_exception : public exception
+	{
+	public:
+		hresult_exception(int line, const char* file, HRESULT hresult) noexcept;
+		const char* what() const noexcept override;
+		const char* get_type() const noexcept override;
+		HRESULT get_error_code() const noexcept;
+		std::string get_error_description() const noexcept;
+	private:
+		HRESULT hresult_;
+	};
+	class no_gfx_exception : public exception
+	{
+	public:
+		using exception::exception;
+		const char* get_type() const noexcept override;
+
 	};
 public:
 	window(int width, int height, LPCWSTR name);
@@ -68,5 +83,6 @@ private:
 };
 
 // Error exception helper macro
-#define ATUM_WND_EXCEPT(h_result) window::exception(__LINE__, __FILE__, h_result)
-#define ATUM_WND_LAST_EXCEPT() window::exception(__LINE__, __FILE__, GetLastError())
+#define ATUM_WND_EXCEPT(h_result) window::hresult_exception(__LINE__, __FILE__, h_result)
+#define ATUM_WND_LAST_EXCEPT() window::hresult_exception(__LINE__, __FILE__, GetLastError())
+#define ATUM_WND_NO_GFX_EXCEPT() window::no_gfx_exception(__LINE__, __FILE__)
