@@ -127,13 +127,22 @@ void graphics::end_frame()
 	
 }
 
-void graphics::clear_buffer(const float red, const float green, const float blue) const noexcept
+void graphics::clear_buffer(const float red, const float green, const float blue) const
 {
 	const float color[] = { red, green, blue, 1.0f };
 	device_context_->ClearRenderTargetView(target_view_, color);
 }
 
 // Graphics Exception
+std::string graphics::graphics_exception::to_narrow(const wchar_t* s, const char fallback, const std::locale& loc) noexcept
+{
+	std::ostringstream out;
+	while (*s != L'\0') {
+		out << std::use_facet<std::ctype<wchar_t>>(loc).narrow(*s++, fallback);
+	}
+	return out.str();
+}
+
 graphics::hresult_exception::hresult_exception(const int line, const char* file, const HRESULT hresult, const std::vector<std::string>& info_messages) noexcept
 	:
 	graphics_exception(line, file),
@@ -145,27 +154,21 @@ graphics::hresult_exception::hresult_exception(const int line, const char* file,
 		info_message_ += message;
 		info_message_.push_back('\n');
 	}
-	// Remove the final newline if it exists
-	if(!info_message_.empty())
-	{
-		info_message_.pop_back();
-	}
 }
 
 const char* graphics::hresult_exception::what() const noexcept
 {
-	std::ostringstream oss;
-	oss << get_type() << '\n'
-		<< "[Error Code] 0x" << std::hex << std::uppercase << get_error_code()
+	std::ostringstream out;
+	out	<< "[Error Code] 0x" << std::hex << std::uppercase << get_error_code()
 		<< std::dec << " (" << static_cast<unsigned long>(get_error_code()) << ")" << '\n'
 		<< "[Error String] " << get_error_string() << '\n'
 		<< "[Description] " << get_error_description() << '\n';
 	if(!info_message_.empty())
 	{
-		oss << "\n[Error Info]\n" << get_error_info() << "\n\n";
+		out << "[Error Info]\n" << get_error_info() << '\n';
 	}
-	oss << get_origin_string();
-	what_buffer_ = oss.str();
+	out << get_origin_string();
+	what_buffer_ = out.str();
 	return what_buffer_.c_str();
 }
 
@@ -182,12 +185,7 @@ HRESULT graphics::hresult_exception::get_error_code() const noexcept
 std::string graphics::hresult_exception::get_error_string() const noexcept
 {
 #ifdef UNICODE
-	const WCHAR* buffer = DXGetErrorString(hresult_);
-	// Convert WCHAR* to std::wstring
-	std::wstring ws(buffer);
-	// Set the exception message
-	std::string utf8_message(ws.begin(), ws.end());
-	return utf8_message;
+	return to_narrow(DXGetErrorString(hresult_));
 #else
 	return DXGetErrorString(hresult_);
 #endif
@@ -196,13 +194,9 @@ std::string graphics::hresult_exception::get_error_string() const noexcept
 std::string graphics::hresult_exception::get_error_description() const noexcept
 {
 #ifdef UNICODE
-	WCHAR buffer[2048];
+	WCHAR buffer[512];
 	DXGetErrorDescription(hresult_, buffer, sizeof(buffer));
-	// Convert WCHAR* to std::wstring
-	std::wstring ws(buffer);
-	// Set the exception message
-	std::string utf8_message(ws.begin(), ws.end());
-	return utf8_message;
+	return to_narrow(buffer);
 #else
 	char buffer[512];
 	DXGetErrorDescription(hresult_, buffer, sizeof(buffer));

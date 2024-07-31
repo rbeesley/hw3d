@@ -375,23 +375,16 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	return 0;
 }
 
-//window::exception::exception(const int line, const char* file, const HRESULT result) noexcept
-//	:
-//	atum_exception(line, file),
-//	result_(result)
-//{}
 window::hresult_exception::hresult_exception(int line, const char* file, HRESULT hresult) noexcept
 	:
 	exception(line, file),
 	hresult_(hresult)
 {}
 
-
 const char* window::hresult_exception::what() const noexcept
 {
 	std::ostringstream out;
-	out << get_type() << "\n"
-		<< "[Error Code] " << get_error_code() << "\n"
+	out	<< "[Error Code] " << get_error_code() << "\n"
 		<< "[Description] " << get_error_description() << "\n"
 		<< get_origin_string();
 	what_buffer_ = out.str();

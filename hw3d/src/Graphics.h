@@ -2,6 +2,7 @@
 //#include "AtumWindows.h"
 #include "AtumException.h"
 #include <d3d11.h>
+#include <locale>
 #include <vector>
 #include "DxgiInfoManager.h"
 
@@ -11,6 +12,8 @@ public:
 	class graphics_exception : public atum_exception
 	{
 		using atum_exception::atum_exception;
+	protected:
+		static std::string to_narrow(const wchar_t* s, char fallback = '?', const std::locale& loc = std::locale()) noexcept;
 	};
 	class hresult_exception : public graphics_exception
 	{
@@ -40,7 +43,7 @@ public:
 	graphics& operator=(const graphics&&) = delete;
 	~graphics();
 	void end_frame();
-	void clear_buffer(float red, float green, float blue) const noexcept;
+	void clear_buffer(float red, float green, float blue) const;
 private:
 #ifdef _DEBUG
 	dxgi_info_manager info_manager_;

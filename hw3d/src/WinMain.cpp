@@ -81,18 +81,15 @@ int APIENTRY WinMain(
 
 	//BUGBUG : Should be using MessageBox and adjusting text based on target encoding. Currently assuming ASCII to match output of exception.what().
 	catch (const atum_exception& e) {
-		PLOGF << e.get_type() << ":";
-		PLOGF << "    " << e.what();
+		PLOGF << e.get_type() << ":" << "\n" << e.what();
 		MessageBoxA(nullptr, e.what(), e.get_type(), MB_OK | MB_ICONEXCLAMATION);
 	}
 	catch (const std::exception& e) {
-		PLOGF << "Standard Exception:";
-		PLOGF << "    " << e.what();
+		PLOGF << "Standard Exception:" << "\n" << e.what();
 		MessageBoxA(nullptr, e.what(), "Standard Exception", MB_OK | MB_ICONEXCLAMATION);
 	}
 	catch (...) {
-		PLOGF << "Unknown Exception:";
-		PLOGF << "No further details about the exception are available.";
+		PLOGF << "Unknown Exception:" << "\n" << "No further details about the exception are available.";
 		MessageBox(nullptr, TEXT("No details available"), TEXT("Unknown Exception"), MB_OK | MB_ICONEXCLAMATION);
 	}
 	return -1;
