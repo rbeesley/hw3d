@@ -141,6 +141,10 @@ std::optional<int> window::process_messages()
 
 graphics& window::get_graphics() const
 {
+	if(!p_graphics_)
+	{
+		throw ATUM_WND_NO_GFX_EXCEPT();
+	}
 	return *p_graphics_;
 }
 
@@ -371,24 +375,23 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	return 0;
 }
 
-window::exception::exception(const int line, const char* file, const HRESULT result) noexcept
+window::hresult_exception::hresult_exception(int line, const char* file, HRESULT hresult) noexcept
 	:
-	atum_exception(line, file),
-	result_(result)
+	exception(line, file),
+	hresult_(hresult)
 {}
 
-const char* window::exception::what() const noexcept
+const char* window::hresult_exception::what() const noexcept
 {
 	std::ostringstream out;
-	out << get_type() << "\n"
-		<< "[Error Code] " << get_error_code() << "\n"
-		<< "[Description] " << get_error_string() << "\n"
+	out	<< "[Error Code] " << get_error_code() << "\n"
+		<< "[Description] " << get_error_description() << "\n"
 		<< get_origin_string();
 	what_buffer_ = out.str();
 	return what_buffer_.c_str();
 }
 
-const char* window::exception::get_type() const noexcept
+const char* window::hresult_exception::get_type() const noexcept
 {
 	return "Atum Window Exception";
 }
@@ -399,12 +402,17 @@ std::string window::exception::translate_error_code(const HRESULT result) noexce
 	return message;
 }
 
-HRESULT window::exception::get_error_code() const noexcept
+HRESULT window::hresult_exception::get_error_code() const noexcept
 {
-	return result_;
+	return hresult_;
 }
 
-std::string window::exception::get_error_string() const noexcept
+std::string window::hresult_exception::get_error_description() const noexcept
 {
-	return translate_error_code(result_);
+	return translate_error_code(hresult_);
+}
+
+const char* window::no_gfx_exception::get_type() const noexcept
+{
+	return "Atum Window Exception [No Graphics]";
 }

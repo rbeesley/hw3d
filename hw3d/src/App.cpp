@@ -39,11 +39,11 @@ int app::run() const
 			// If the optional return has a value, it is the exit code
 			return *exit_code;
 		}
-		process_frame();
+		render_frame();
 	}
 }
 
-void app::process_frame() const
+void app::render_frame() const
 {
 	const float c = sin(timer_.peek()) / 2.f + 0.5f;
 	window_.get_graphics().clear_buffer(c, c, 1.f);

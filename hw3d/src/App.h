@@ -15,7 +15,7 @@ public:
 	[[nodiscard]] int init() const;
 	int run() const;
 private:
-	void process_frame() const;
+	void render_frame() const;
 private:
 	const window window_;
 #if defined(_DEBUG)
