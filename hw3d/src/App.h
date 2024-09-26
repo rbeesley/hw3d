@@ -18,7 +18,7 @@ private:
 	void render_frame() const;
 private:
 	const window window_;
-#if defined(_DEBUG)
+#if defined(DEBUG) || defined(_DEBUG)
 	const console console_;
 #endif
 	const timer timer_;

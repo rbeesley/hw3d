@@ -1,10 +1,10 @@
 #pragma once
-//#include "AtumWindows.h"
 #include "AtumException.h"
+#include "DxgiInfoManager.h"
 #include <d3d11.h>
 #include <locale>
 #include <vector>
-#include "DxgiInfoManager.h"
+#include <wrl.h>
 
 class graphics
 {
@@ -41,15 +41,15 @@ public:
 	graphics& operator=(const graphics&) = delete;
 	graphics(const graphics&&) = delete;
 	graphics& operator=(const graphics&&) = delete;
-	~graphics();
+	~graphics() = default;
 	void end_frame();
 	void clear_buffer(float red, float green, float blue) const;
 private:
-#ifdef _DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
 	dxgi_info_manager info_manager_;
 #endif
-	ID3D11Device* device_ = nullptr;
-	IDXGISwapChain* swap_chain_ = nullptr;
-	ID3D11DeviceContext* device_context_ = nullptr;
-	ID3D11RenderTargetView* target_view_ = nullptr;
+	Microsoft::WRL::ComPtr<ID3D11Device> device_;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> swap_chain_;
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context_;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> target_view_;
 };
