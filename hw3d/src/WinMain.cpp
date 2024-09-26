@@ -40,12 +40,11 @@ int APIENTRY WinMain(
 #else
 		logging log(plog::verbose);
 		logging::init_debug_output(plog::verbose);
-		#endif
+#endif
 
 		app app;
-#ifdef _DEBUG
 
-
+#if defined(DEBUG) || defined(_DEBUG)
 #ifndef LOG_LEVEL_FULL // defined in LoggingConfig.h
 		// Set up Console Logger
 		//logging::init_console(plog::info);

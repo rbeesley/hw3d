@@ -3,7 +3,7 @@
 
 app::app()
 	: window_(640, 360, TEXT("Atum D3D Window"))
-#if defined(_DEBUG)
+#if defined(DEBUG) || defined(_DEBUG)
 	, console_(TEXT("Debug Console"))
 #endif
 {
@@ -18,13 +18,13 @@ int app::init() const
 		return -2;
 	}
 
-#ifdef _DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
 	if (!console_.get_window_handle())
 	{
 		PLOGE << "Failed to create Debug Console";
 		return -3;
 	}
-#endif // _DEBUG
+#endif
 
 	return 0;
 }

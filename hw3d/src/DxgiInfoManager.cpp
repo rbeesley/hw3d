@@ -1,6 +1,6 @@
 #include "DxgiInfoManager.h"
-#include "Window.h"
 #include "Graphics.h"
+#include "Window.h"
 #include <dxgidebug.h>
 #include <memory>
 #ifdef UNICODE
@@ -37,15 +37,7 @@ dxgi_info_manager::dxgi_info_manager()
 	}
 
 	HRESULT hresult;
-	GFX_THROW_NOINFO(debug_interface(__uuidof(IDXGIInfoQueue), reinterpret_cast<void**>(&dxgi_info_queue_)));
-}
-
-dxgi_info_manager::~dxgi_info_manager()
-{
-	if(dxgi_info_queue_ != nullptr)
-	{
-		dxgi_info_queue_->Release();
-	}
+	GFX_THROW_NOINFO(debug_interface(__uuidof(IDXGIInfoQueue), &dxgi_info_queue_));
 }
 
 void dxgi_info_manager::set() noexcept

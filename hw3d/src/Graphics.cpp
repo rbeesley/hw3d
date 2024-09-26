@@ -1,10 +1,12 @@
 #include "Graphics.h"
 
-#include "LoggingConfig.h"
 #include "Logging.h"
+#include "LoggingConfig.h"
 
 #include "3rdParty/DxErr/DXErr.h"
 #include <sstream>
+
+namespace wrl = Microsoft::WRL;
 
 #pragma comment(lib, "d3d11.lib")
 
@@ -12,7 +14,7 @@
 #define GFX_EXCEPT_NOINFO(hresult) graphics::hresult_exception(__LINE__, __FILE__, (hresult))
 #define GFX_THROW_NOINFO(hresult_call) if(FAILED(hresult = (hresult_call))) throw graphics::hresult_exception(__LINE__, __FILE__, hresult)
 
-#ifdef _DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
 #define GFX_EXCEPT(hresult) graphics::hresult_exception(__LINE__, __FILE__, (hresult), info_manager_.get_messages())
 #define GFX_THROW_INFO(hresult_call) info_manager_.set(); if(FAILED(hresult = (hresult_call))) throw GFX_EXCEPT(hresult)
 #define GFX_DEVICE_REMOVED_EXCEPTION(hresult) graphics::device_removed_exception(__LINE__, __FILE__, (hresult), info_manager_.get_messages())
@@ -52,7 +54,7 @@ graphics::graphics(const HWND window_handle)
 	};
 
 	UINT swap_create_flags = 0u;
-#ifdef _DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
 	swap_create_flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
@@ -69,48 +71,24 @@ graphics::graphics(const HWND window_handle)
 		0,
 		D3D11_SDK_VERSION,
 		&scd,
-		&swap_chain_,
-		&device_,
+		swap_chain_.GetAddressOf(),
+		device_.GetAddressOf(),
 		nullptr,
-		&device_context_
+		device_context_.GetAddressOf()
 	));
 
 	// Get the address of the back buffer
-	ID3D11Resource* back_buffer = nullptr;
-	GFX_THROW_INFO(swap_chain_->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&back_buffer)));
+	wrl::ComPtr<ID3D11Resource> back_buffer;
+	GFX_THROW_INFO(swap_chain_->GetBuffer(0, __uuidof(ID3D11Texture2D), &back_buffer));
 
 	// Use the back buffer address to create the render target
-	GFX_THROW_INFO(device_->CreateRenderTargetView(back_buffer, nullptr, &target_view_));
-	back_buffer->Release();
-
-	// Set the render target as the back buffer
-	device_context_->OMSetRenderTargets(1, &target_view_, nullptr);
-}
-
-graphics::~graphics()
-{
-	if (target_view_ != nullptr)
-	{
-		target_view_->Release();
-	}
-	if (swap_chain_ != nullptr)
-	{
-		swap_chain_->Release();
-	}
-	if (device_context_ != nullptr)
-	{
-		device_context_->Release();
-	}
-	if (device_ != nullptr)
-	{
-		device_->Release();
-	}
+	GFX_THROW_INFO(device_->CreateRenderTargetView(back_buffer.Get(), nullptr, target_view_.GetAddressOf()));
 }
 
 void graphics::end_frame()
 {
 	HRESULT hresult;
-#ifdef _DEBUG
+#if defined(DEBUG) || defined(_DEBUG)
 	info_manager_.set();
 #endif
 	if (FAILED(hresult = swap_chain_->Present(1u, 0u)))
@@ -130,7 +108,7 @@ void graphics::end_frame()
 void graphics::clear_buffer(const float red, const float green, const float blue) const
 {
 	const float color[] = { red, green, blue, 1.0f };
-	device_context_->ClearRenderTargetView(target_view_, color);
+	device_context_->ClearRenderTargetView(target_view_.Get(), color);
 }
 
 // Graphics Exception
