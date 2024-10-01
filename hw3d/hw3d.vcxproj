@@ -250,21 +250,7 @@
     <Image Include="Resources\hw3d.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="libs\DXErr\DXErr_x64_ad.pdb" />
-    <None Include="libs\DXErr\DXErr_x64_ud.pdb" />
-    <None Include="libs\DXErr\DXErr_x86_ad.pdb" />
-    <None Include="libs\DXErr\DXErr_x86_ud.pdb" />
     <None Include="libs\DXErr\README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="libs\DXErr\DXErr_x64_ad.lib" />
-    <Library Include="libs\DXErr\DXErr_x64_ar.lib" />
-    <Library Include="libs\DXErr\DXErr_x64_ud.lib" />
-    <Library Include="libs\DXErr\DXErr_x64_ur.lib" />
-    <Library Include="libs\DXErr\DXErr_x86_ad.lib" />
-    <Library Include="libs\DXErr\DXErr_x86_ar.lib" />
-    <Library Include="libs\DXErr\DXErr_x86_ud.lib" />
-    <Library Include="libs\DXErr\DXErr_x86_ur.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
