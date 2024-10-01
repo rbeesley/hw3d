@@ -25,7 +25,7 @@ jobs:
     - name: Merge build artifacts
       uses: actions/download-artifact@v4
       with:
-        path: ${{ github.workspace }}/artifacts/stage/HW3D
+        path: ${{ github.workspace }}/artifacts/stage
         merge-multiple: false
 
     - name: Create ZIP archive
