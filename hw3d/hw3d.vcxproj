@@ -98,12 +98,15 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalIncludeDirectories>$(ProjectDir)libs\DXErr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)libs\DXErr</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -116,6 +119,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalIncludeDirectories>$(ProjectDir)libs\DXErr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -124,6 +128,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)libs\DXErr</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -136,12 +142,15 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)libs\DXErr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)libs\DXErr</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -156,6 +165,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)libs\DXErr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -164,10 +174,11 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
+      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)libs\DXErr</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="3rdParty\DxErr\DXErr.cpp" />
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\DeviceConfig.cpp" />
     <ClCompile Include="src\DxgiInfoManager.cpp" />
@@ -184,7 +195,6 @@
     <ClCompile Include="src\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="3rdParty\DxErr\DXErr.h" />
     <ClInclude Include="3rdParty\plog\Appenders\AndroidAppender.h" />
     <ClInclude Include="3rdParty\plog\Appenders\ArduinoAppender.h" />
     <ClInclude Include="3rdParty\plog\Appenders\ColorConsoleAppender.h" />
@@ -212,6 +222,7 @@
     <ClInclude Include="3rdParty\plog\Severity.h" />
     <ClInclude Include="3rdParty\plog\Util.h" />
     <ClInclude Include="3rdParty\plog\WinApi.h" />
+    <ClInclude Include="libs\DXErr\DXErr.h" />
     <ClInclude Include="src\App.h" />
     <ClInclude Include="src\DeviceConfig.h" />
     <ClInclude Include="src\AtumWinUser.h" />
@@ -239,9 +250,21 @@
     <Image Include="Resources\hw3d.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="3rdParty\DxErr\DXGetErrorDescription.inl" />
-    <None Include="3rdParty\DxErr\DXGetErrorString.inl" />
-    <None Include="3rdParty\DxErr\DXTrace.inl" />
+    <None Include="libs\DXErr\DXErr_x64_ad.pdb" />
+    <None Include="libs\DXErr\DXErr_x64_ud.pdb" />
+    <None Include="libs\DXErr\DXErr_x86_ad.pdb" />
+    <None Include="libs\DXErr\DXErr_x86_ud.pdb" />
+    <None Include="libs\DXErr\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="libs\DXErr\DXErr_x64_ad.lib" />
+    <Library Include="libs\DXErr\DXErr_x64_ar.lib" />
+    <Library Include="libs\DXErr\DXErr_x64_ud.lib" />
+    <Library Include="libs\DXErr\DXErr_x64_ur.lib" />
+    <Library Include="libs\DXErr\DXErr_x86_ad.lib" />
+    <Library Include="libs\DXErr\DXErr_x86_ar.lib" />
+    <Library Include="libs\DXErr\DXErr_x86_ud.lib" />
+    <Library Include="libs\DXErr\DXErr_x86_ur.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
