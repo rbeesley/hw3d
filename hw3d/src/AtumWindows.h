@@ -6,23 +6,6 @@
 //#define NTDDI_VERSION NTDDI_WIN10
 //#define _WIN32_WINNT _WIN32_WINNT_WIN10
 
-// Required for HW3D
-//#define NOVIRTUALKEYCODES // - VK_ *
-//#define NOWINMESSAGES // - WM_*, EM_*, LB_*, CB_*
-//#define NOWINSTYLES // -  WS_*, CS_*, ES_*, LBS_*, SBS_*, CBS_*
-//#define NOSYSMETRICS // - SM_ * // !NOSYSMETRICS Required for GetSystemMetrics() for icons
-//#define NOMENUS // - MF_ * // !NOMENUS Required for GetSystemMenu
-//#define NOKEYSTATES // - MK_ *
-//#define NOSYSCOMMANDS // - SC_ * // !NOSYSCOMMANDS Required for EnableMenuItem
-//#define NOSHOWWINDOW // - SW_ *
-//#define NOCTLMGR // - Control and Dialog routines // !NOCTLMGR Required for SetWindowSubclass
-//#define NOGDI // - All GDI defines and routines
-//#define NOUSER // - All USER defines and routines
-//#define NONLS // - All NLS defines and routines // !NONLS Required for MultiByteToWideChar()
-//#define NOMB // - MB_ * and MessageBox()
-//#define NOMSG // - typedef MSG and associated routines
-//#define NOWINOFFSETS // - GWL_*, GCL_*, associated routines
-
 // Windows.h macro defines
 #define WIN32_LEAN_AND_MEAN
 #define NOGDICAPMASKS // - CC_*, LC_*, PC_*, CP_*, TC_*, RC_
