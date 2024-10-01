@@ -1,0 +1,62 @@
+name: Build HW3D
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:      
+  build:
+    name: Build
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        configuration: [Debug, Release]
+        platform: [x86, x64]
+
+    steps:
+    - name: Checkout source
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: MSBuild
+      working-directory: ${{ github.workspace }}
+      # Add additional options to the MSBuild command line here (like platform or verbosity level).
+      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
+      run: msbuild /m /p:Configuration=${{ matrix.configuration }} /p:Platform=${{ matrix.platform }}
+
+    - name: Create artifact release directory
+      run: |
+        mkdir ${{ github.workspace }}/artifacts
+        if (Test-Path "bin/Win32/*.exe") {
+          cp -r bin/Win32/*.exe ${{ github.workspace }}/artifacts
+        }
+        if (Test-Path "bin/Win32/*.pdb") {
+          cp -r bin/Win32/*.pdb ${{ github.workspace }}/artifacts
+        }
+        mkdir ${{ github.workspace }}/artifacts
+        if (Test-Path "bin/x64/*.exe") {
+          cp -r bin/x64/*.exe ${{ github.workspace }}/artifacts
+        }
+        if (Test-Path "bin/x64/*.pdb") {
+          cp -r bin/x64/*.pdb ${{ github.workspace }}/artifacts
+        }
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: HW3D-${{ matrix.platform }}-${{ matrix.configuration }}
+        path: ${{ github.workspace }}/artifacts/*
+        if-no-files-found: error
+        retention-days: 1

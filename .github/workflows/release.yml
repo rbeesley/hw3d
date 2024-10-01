@@ -1,0 +1,54 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+    - '*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build
+    uses:
+      # rbeesley/HW3D/.github/workflows/build.yml@main
+      ./.github/workflows/build.yml
+
+  create-release-assets:
+    name: Create release assets
+    needs: build
+    runs-on: windows-latest
+    
+    steps:
+    - name: Merge build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: ${{ github.workspace }}/artifacts/stage/HW3D
+        merge-multiple: false
+
+    - name: Create ZIP archive
+      if: ${{ startsWith(github.ref, 'refs/tags/') }}
+      run: |
+        Compress-Archive -Path ${{ github.workspace }}/artifacts/stage/* -DestinationPath ${{ github.workspace }}/artifacts/HW3D_${{ github.ref_name }}.zip
+
+    - name: Upload release
+      id: upload_release
+      if: ${{ ! startsWith(github.ref, 'refs/tags/') }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: HW3D
+        path: |
+          ${{ github.workspace }}/artifacts/stage/*
+        if-no-files-found: error
+        retention-days: 1
+
+    - name: Update release
+      id: update_release
+      if: ${{ startsWith(github.ref, 'refs/tags/') }}
+      uses: softprops/action-gh-release@v2
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        files: ${{ github.workspace }}/artifacts/HW3D_${{ github.ref_name }}.zip
