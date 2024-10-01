@@ -38,28 +38,25 @@ jobs:
 
     - name: Create artifact release directory
       run: |
-        ls -r ${{ github.workspace }}
-        ls ${{ github.workspace }}
-        ls ${{ github.workspace }}/artifacts
-        mkdir -p ${{ github.workspace }}/artifacts
-        if (Test-Path "bin/Win32/*.exe") {
-          cp -r bin/Win32/*.exe ${{ github.workspace }}/artifacts
+        $sourcePath = "${{ github.workspace }}\bin"
+        $destinationPath = "${{ github.workspace }}\artifacts"
+
+        # Create the destination directory if it doesn't exist
+        if (-not (Test-Path -Path $destinationPath)) {
+          New-Item -ItemType Directory -Path $destinationPath
         }
-        if (Test-Path "bin/Win32/*.pdb") {
-          cp -r bin/Win32/*.pdb ${{ github.workspace }}/artifacts
-        }
-        mkdir ${{ github.workspace }}/artifacts
-        if (Test-Path "bin/x64/*.exe") {
-          cp -r bin/x64/*.exe ${{ github.workspace }}/artifacts
-        }
-        if (Test-Path "bin/x64/*.pdb") {
-          cp -r bin/x64/*.pdb ${{ github.workspace }}/artifacts
+
+        # Get all .exe and .pdb files from the platform/configuration directories
+        Get-ChildItem -Path $sourcePath -Recurse -File -Include *.exe, *.pdb | Where-Object {
+          $_.DirectoryName -match '\\(Win32|x64)\\(Release|Debug)$'
+        } | ForEach-Object {
+          Copy-Item -Path $_.FullName -Destination $destinationPath -Force
         }
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
         name: HW3D-${{ matrix.platform }}-${{ matrix.configuration }}
-        path: ${{ github.workspace }}/artifacts/*
+        path: ${{ github.workspace }}\artifacts\*
         if-no-files-found: error
         retention-days: 1
