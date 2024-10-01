@@ -38,6 +38,7 @@ jobs:
 
     - name: Create artifact release directory
       run: |
+        ls -r ${{ github.workspace }}
         mkdir ${{ github.workspace }}/artifacts
         if (Test-Path "bin/Win32/*.exe") {
           cp -r bin/Win32/*.exe ${{ github.workspace }}/artifacts
