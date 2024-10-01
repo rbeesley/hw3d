@@ -3,14 +3,12 @@
 #include "Logging.h"
 #include "LoggingConfig.h"
 
+#include "3rdParty/DxErr/DXErr.h"
 #include <sstream>
 
 namespace wrl = Microsoft::WRL;
 
 #pragma comment(lib, "d3d11.lib")
-
-// Add the DXErr library
-#include "DXErr.h"
 
 // Graphics exception macros, some with DXGI info
 #define GFX_EXCEPT_NOINFO(hresult) graphics::hresult_exception(__LINE__, __FILE__, (hresult))
@@ -164,7 +162,7 @@ HRESULT graphics::hresult_exception::get_error_code() const noexcept
 
 std::string graphics::hresult_exception::get_error_string() const noexcept
 {
-#ifdef _UNICODE
+#ifdef UNICODE
 	return to_narrow(DXGetErrorString(hresult_));
 #else
 	return DXGetErrorString(hresult_);
@@ -173,7 +171,7 @@ std::string graphics::hresult_exception::get_error_string() const noexcept
 
 std::string graphics::hresult_exception::get_error_description() const noexcept
 {
-#ifdef _UNICODE
+#ifdef UNICODE
 	WCHAR buffer[512];
 	DXGetErrorDescription(hresult_, buffer, sizeof(buffer));
 	return to_narrow(buffer);
