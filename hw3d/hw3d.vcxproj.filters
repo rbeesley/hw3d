@@ -54,9 +54,6 @@
     <ClCompile Include="src\Timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="3rdParty\DxErr\DXErr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\DxgiInfoManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -197,10 +194,10 @@
     <ClInclude Include="src\Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="3rdParty\DxErr\DXErr.h">
+    <ClInclude Include="src\DxgiInfoManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\DxgiInfoManager.h">
+    <ClInclude Include="libs\DXErr\DXErr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -215,14 +212,20 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <None Include="3rdParty\DxErr\DXGetErrorDescription.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="3rdParty\DxErr\DXGetErrorString.inl">
-      <Filter>Header Files</Filter>
-    </None>
-    <None Include="3rdParty\DxErr\DXTrace.inl">
-      <Filter>Header Files</Filter>
-    </None>
+    <None Include="libs\DXErr\DXErr_x64_ud.pdb" />
+    <None Include="libs\DXErr\DXErr_x86_ud.pdb" />
+    <None Include="libs\DXErr\DXErr_x64_ad.pdb" />
+    <None Include="libs\DXErr\DXErr_x86_ad.pdb" />
+    <None Include="libs\DXErr\README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="libs\DXErr\DXErr_x64_ud.lib" />
+    <Library Include="libs\DXErr\DXErr_x64_ur.lib" />
+    <Library Include="libs\DXErr\DXErr_x86_ud.lib" />
+    <Library Include="libs\DXErr\DXErr_x86_ur.lib" />
+    <Library Include="libs\DXErr\DXErr_x64_ad.lib" />
+    <Library Include="libs\DXErr\DXErr_x64_ar.lib" />
+    <Library Include="libs\DXErr\DXErr_x86_ad.lib" />
+    <Library Include="libs\DXErr\DXErr_x86_ar.lib" />
   </ItemGroup>
 </Project>
