@@ -173,9 +173,6 @@
     <ClInclude Include="src\DeviceConfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\AtumWinUser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\IMouse.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -197,7 +194,7 @@
     <ClInclude Include="src\DxgiInfoManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="libs\DXErr\DXErr.h">
+    <ClInclude Include="lib\DXErr\DXErr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -210,22 +207,5 @@
     <Image Include="Resources\hw3d.ico">
       <Filter>Resource Files</Filter>
     </Image>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="libs\DXErr\DXErr_x64_ud.pdb" />
-    <None Include="libs\DXErr\DXErr_x86_ud.pdb" />
-    <None Include="libs\DXErr\DXErr_x64_ad.pdb" />
-    <None Include="libs\DXErr\DXErr_x86_ad.pdb" />
-    <None Include="libs\DXErr\README.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="libs\DXErr\DXErr_x64_ud.lib" />
-    <Library Include="libs\DXErr\DXErr_x64_ur.lib" />
-    <Library Include="libs\DXErr\DXErr_x86_ud.lib" />
-    <Library Include="libs\DXErr\DXErr_x86_ur.lib" />
-    <Library Include="libs\DXErr\DXErr_x64_ad.lib" />
-    <Library Include="libs\DXErr\DXErr_x64_ar.lib" />
-    <Library Include="libs\DXErr\DXErr_x86_ad.lib" />
-    <Library Include="libs\DXErr\DXErr_x86_ar.lib" />
   </ItemGroup>
 </Project>

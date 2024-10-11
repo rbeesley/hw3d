@@ -21,32 +21,44 @@
 
 // Minimum required Windows.h defines for DXErr
 //#define NOGDI // - All GDI defines and routines
+#if defined(NOGDI)
+#undef NOGDI
+#endif
 //#define NOUSER // - All USER defines and routines
+#if defined(NOUSER)
+#undef NOUSER
+#endif
 //#define NOMB // - MB_ * and MessageBox()
+#if defined(NOMB)
+#undef NOMB
+#endif
 //#define NOMSG // - typedef MSG and associated routines
+#if defined(NOMSG)
+#undef NOMSG
+#endif
 
 // Not required for DXErr
 #define NOGDICAPMASKS // - CC_*, LC_*, PC_*, CP_*, TC_*, RC_
 #define NOVIRTUALKEYCODES // - VK_ *
 #define NOWINMESSAGES // - WM_*, EM_*, LB_*, CB_*
 #define NOWINSTYLES // -  WS_*, CS_*, ES_*, LBS_*, SBS_*, CBS_*
-#define NOSYSMETRICS // - SM_ * // !NOSYSMETRICS Required for GetSystemMetrics() for icons
-#define NOMENUS // - MF_ * // !NOMENUS Required for GetSystemMenu
+#define NOSYSMETRICS // - SM_ *
+#define NOMENUS // - MF_ *
 #define NOICONS // - IDI_ *
 #define NOKEYSTATES // - MK_ *
-#define NOSYSCOMMANDS // - SC_ * // !NOSYSCOMMANDS Required for EnableMenuItem
+#define NOSYSCOMMANDS // - SC_ *
 #define NORASTEROPS // - Binary and Tertiary raster ops
 #define NOSHOWWINDOW // - SW_ *
 #define OEMRESOURCE // - OEM Resource values
 #define NOATOM // - Atom Manager routines
 #define NOCLIPBOARD // - Clipboard routines
 #define NOCOLOR // - Screen colors
-#define NOCTLMGR // - Control and Dialog routines // !NOCTLMGR Required for SetWindowSubclass
+#define NOCTLMGR // - Control and Dialog routines
 #define NODRAWTEXT // - DrawText() and DT_ *
 //#define NOGDI // - All GDI defines and routines
 #define NOKERNEL // - All KERNEL defines and routines
 //#define NOUSER // - All USER defines and routines
-#define NONLS // - All NLS defines and routines // !NONLS Required for MultiByteToWideChar()
+#define NONLS // - All NLS defines and routines
 //#define NOMB // - MB_ * and MessageBox()
 #define NOMEMMGR // - GMEM_*, LMEM_*, GHND, LHND, associated routines
 #define NOMETAFILE // - typedef METAFILEPICT
@@ -73,6 +85,9 @@
 #ifndef STRICT
 #define STRICT
 #endif
+
+#include <Windows.h>
+#include <sal.h>
 
 #ifdef _WIN64
 #ifdef _UNICODE
@@ -104,9 +119,6 @@
 #endif
 #endif
 
-#include <Windows.h>
-#include <sal.h>
-
 #ifdef __cplusplus
 extern "C" {
 	#endif
@@ -121,6 +133,7 @@ extern "C" {
 	#else
 	#define DXGetErrorString DXGetErrorStringA
 	#endif
+
 	//--------------------------------------------------------------------------------------
 	// DXGetErrorDescription has to be modified to return a copy in a buffer rather than
 	// the original static string.
@@ -132,6 +145,7 @@ extern "C" {
 	#else
 	#define DXGetErrorDescription DXGetErrorDescriptionA
 	#endif
+
 	//--------------------------------------------------------------------------------------
 	//  DXTrace
 	//
@@ -147,6 +161,7 @@ extern "C" {
 	//
 	//  Return: The hr that was passed in.  
 	//--------------------------------------------------------------------------------------
+
 	HRESULT WINAPI DXTraceW(_In_z_ const WCHAR* strFile, _In_ DWORD dwLine, _In_ HRESULT hr, _In_opt_ const WCHAR* strMsg, _In_ bool bPopMsgBox);
 	//--------------------------------------------------------------------------------------
 	//  DXTrace
@@ -169,6 +184,7 @@ extern "C" {
 	#else
 	#define DXTrace DXTraceA
 	#endif
+
 	//--------------------------------------------------------------------------------------
 	//
 	// Helper macros

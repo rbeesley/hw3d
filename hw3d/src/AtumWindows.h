@@ -3,25 +3,67 @@
 #define _WIN32_WINNT 0x0A00
 #include <sdkddkver.h>
 
-//#define NTDDI_VERSION NTDDI_WIN10
-//#define _WIN32_WINNT _WIN32_WINNT_WIN10
-
 // Required for HW3D
 //#define NOVIRTUALKEYCODES // - VK_ *
+#if defined(NOVIRTUALKEYCODES)
+#undef NOVIRTUALKEYCODES
+#endif
 //#define NOWINMESSAGES // - WM_*, EM_*, LB_*, CB_*
+#if defined(NOWINMESSAGES)
+#undef NOWINMESSAGES
+#endif
 //#define NOWINSTYLES // -  WS_*, CS_*, ES_*, LBS_*, SBS_*, CBS_*
+#if defined(NOWINSTYLES)
+#undef NOWINSTYLES
+#endif
 //#define NOSYSMETRICS // - SM_ * // !NOSYSMETRICS Required for GetSystemMetrics() for icons
+#if defined(NOSYSMETRICS)
+#undef NOSYSMETRICS
+#endif
 //#define NOMENUS // - MF_ * // !NOMENUS Required for GetSystemMenu
+#if defined(NOMENUS)
+#undef NOMENUS
+#endif
 //#define NOKEYSTATES // - MK_ *
+#if defined(NOKEYSTATES)
+#undef NOKEYSTATES
+#endif
 //#define NOSYSCOMMANDS // - SC_ * // !NOSYSCOMMANDS Required for EnableMenuItem
+#if defined(NOSYSCOMMANDS)
+#undef NOSYSCOMMANDS
+#endif
 //#define NOSHOWWINDOW // - SW_ *
+#if defined(NOSHOWWINDOW)
+#undef NOSHOWWINDOW
+#endif
 //#define NOCTLMGR // - Control and Dialog routines // !NOCTLMGR Required for SetWindowSubclass
+#if defined(NOCTLMGR)
+#undef NOCTLMGR
+#endif
 //#define NOGDI // - All GDI defines and routines
+#if defined(NOGDI)
+#undef NOGDI
+#endif
 //#define NOUSER // - All USER defines and routines
+#if defined(NOUSER)
+#undef NOUSER
+#endif
 //#define NONLS // - All NLS defines and routines // !NONLS Required for MultiByteToWideChar()
+#if defined(NONLS)
+#undef NONLS
+#endif
 //#define NOMB // - MB_ * and MessageBox()
+#if defined(NOMB)
+#undef NOMB
+#endif
 //#define NOMSG // - typedef MSG and associated routines
+#if defined(NOMSG)
+#undef NOMSG
+#endif
 //#define NOWINOFFSETS // - GWL_*, GCL_*, associated routines
+#if defined(NOWINOFFSETS)
+#undef NOWINOFFSETS
+#endif
 
 // Windows.h macro defines
 #define WIN32_LEAN_AND_MEAN
