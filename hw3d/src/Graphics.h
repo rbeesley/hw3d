@@ -29,6 +29,16 @@ public:
 		HRESULT hresult_;
 		std::string info_message_;
 	};
+	class info_exception final : public graphics_exception
+	{
+	public:
+		info_exception(int line, const char* file, const std::vector<std::string>& info_messages = {}) noexcept;
+		const char* what() const noexcept override;
+		const char* get_type() const noexcept override;
+		std::string get_error_info() const noexcept;
+	private:
+		std::string info_message_;
+	};
 	class device_removed_exception final : public hresult_exception
 	{
 		using hresult_exception::hresult_exception;
@@ -44,6 +54,10 @@ public:
 	~graphics() = default;
 	void end_frame();
 	void clear_buffer(float red, float green, float blue) const;
+
+	// Jam in experimental code to try and draw our first triangle
+	void draw_test_triangle();
+
 private:
 #if defined(DEBUG) || defined(_DEBUG)
 	dxgi_info_manager info_manager_;
