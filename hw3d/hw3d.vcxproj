@@ -199,33 +199,33 @@
     <ClCompile Include="src\Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="3rdParty\plog\Appenders\AndroidAppender.h" />
-    <ClInclude Include="3rdParty\plog\Appenders\ArduinoAppender.h" />
-    <ClInclude Include="3rdParty\plog\Appenders\ColorConsoleAppender.h" />
-    <ClInclude Include="3rdParty\plog\Appenders\ConsoleAppender.h" />
-    <ClInclude Include="3rdParty\plog\Appenders\DebugOutputAppender.h" />
-    <ClInclude Include="3rdParty\plog\Appenders\DynamicAppender.h" />
-    <ClInclude Include="3rdParty\plog\Appenders\EventLogAppender.h" />
-    <ClInclude Include="3rdParty\plog\Appenders\IAppender.h" />
-    <ClInclude Include="3rdParty\plog\Appenders\RollingFileAppender.h" />
-    <ClInclude Include="3rdParty\plog\Converters\NativeEOLConverter.h" />
-    <ClInclude Include="3rdParty\plog\Converters\UTF8Converter.h" />
-    <ClInclude Include="3rdParty\plog\Formatters\CsvFormatter.h" />
-    <ClInclude Include="3rdParty\plog\Formatters\FuncMessageFormatter.h" />
-    <ClInclude Include="3rdParty\plog\Formatters\MessageOnlyFormatter.h" />
-    <ClInclude Include="3rdParty\plog\Formatters\TxtFormatter.h" />
-    <ClInclude Include="3rdParty\plog\Helpers\AscDump.h" />
-    <ClInclude Include="3rdParty\plog\Helpers\HexDump.h" />
-    <ClInclude Include="3rdParty\plog\Helpers\PrintVar.h" />
-    <ClInclude Include="3rdParty\plog\Init.h" />
-    <ClInclude Include="3rdParty\plog\Initializers\ConsoleInitializer.h" />
-    <ClInclude Include="3rdParty\plog\Initializers\RollingFileInitializer.h" />
-    <ClInclude Include="3rdParty\plog\Log.h" />
-    <ClInclude Include="3rdParty\plog\Logger.h" />
-    <ClInclude Include="3rdParty\plog\Record.h" />
-    <ClInclude Include="3rdParty\plog\Severity.h" />
-    <ClInclude Include="3rdParty\plog\Util.h" />
-    <ClInclude Include="3rdParty\plog\WinApi.h" />
+    <ClInclude Include="3rdparty\plog\Appenders\AndroidAppender.h" />
+    <ClInclude Include="3rdparty\plog\Appenders\ArduinoAppender.h" />
+    <ClInclude Include="3rdparty\plog\Appenders\ColorConsoleAppender.h" />
+    <ClInclude Include="3rdparty\plog\Appenders\ConsoleAppender.h" />
+    <ClInclude Include="3rdparty\plog\Appenders\DebugOutputAppender.h" />
+    <ClInclude Include="3rdparty\plog\Appenders\DynamicAppender.h" />
+    <ClInclude Include="3rdparty\plog\Appenders\EventLogAppender.h" />
+    <ClInclude Include="3rdparty\plog\Appenders\IAppender.h" />
+    <ClInclude Include="3rdparty\plog\Appenders\RollingFileAppender.h" />
+    <ClInclude Include="3rdparty\plog\Converters\NativeEOLConverter.h" />
+    <ClInclude Include="3rdparty\plog\Converters\UTF8Converter.h" />
+    <ClInclude Include="3rdparty\plog\Formatters\CsvFormatter.h" />
+    <ClInclude Include="3rdparty\plog\Formatters\FuncMessageFormatter.h" />
+    <ClInclude Include="3rdparty\plog\Formatters\MessageOnlyFormatter.h" />
+    <ClInclude Include="3rdparty\plog\Formatters\TxtFormatter.h" />
+    <ClInclude Include="3rdparty\plog\Helpers\AscDump.h" />
+    <ClInclude Include="3rdparty\plog\Helpers\HexDump.h" />
+    <ClInclude Include="3rdparty\plog\Helpers\PrintVar.h" />
+    <ClInclude Include="3rdparty\plog\Init.h" />
+    <ClInclude Include="3rdparty\plog\Initializers\ConsoleInitializer.h" />
+    <ClInclude Include="3rdparty\plog\Initializers\RollingFileInitializer.h" />
+    <ClInclude Include="3rdparty\plog\Log.h" />
+    <ClInclude Include="3rdparty\plog\Logger.h" />
+    <ClInclude Include="3rdparty\plog\Record.h" />
+    <ClInclude Include="3rdparty\plog\Severity.h" />
+    <ClInclude Include="3rdparty\plog\Util.h" />
+    <ClInclude Include="3rdparty\plog\WinApi.h" />
     <ClInclude Include="lib\DXErr\DXErr.h" />
     <ClInclude Include="src\App.h" />
     <ClInclude Include="src\DeviceConfig.h" />
@@ -235,7 +235,7 @@
     <ClInclude Include="src\IKeyboard.h" />
     <ClInclude Include="src\IMouse.h" />
     <ClInclude Include="src\Keyboard.h" />
-    <ClInclude Include="Resources\resource.h" />
+    <ClInclude Include="resources\resource.h" />
     <ClInclude Include="src\AtumException.h" />
     <ClInclude Include="src\AtumWindows.h" />
     <ClInclude Include="src\Console.h" />
@@ -250,7 +250,21 @@
     <ResourceCompile Include="hw3d.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="Resources\hw3d.ico" />
+    <Image Include="resources\hw3d.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="shaders\PixelShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="shaders\VertexShader.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

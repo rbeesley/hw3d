@@ -70,8 +70,8 @@ int APIENTRY WinMain(
 		}
 
 		// Start Window Message Pump
-		PLOGI << "Starting Message Pump";
 		PLOGI << "Running App";
+
 		const int result = app.run();
 
 		PLOGI << "Closing App";

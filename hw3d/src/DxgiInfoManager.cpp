@@ -1,6 +1,7 @@
 #include "DxgiInfoManager.h"
 #include "Graphics.h"
 #include "Window.h"
+
 #include <dxgidebug.h>
 #include <memory>
 #ifdef UNICODE
