@@ -158,29 +158,23 @@ void graphics::draw_test_triangle()
 
 	struct vertex
 	{
-		struct
-		{
-			float x;
-			float y;
-		} pos;
-		struct
-		{
-			float r;
-			float g;
-			float b;
-			float a;
-		} color;
+		struct { float x; float y; } pos;
+		struct { float r; float g; float b; float a; } color;
 	};
 
+	// 4:3 aspect ratio correction
+	const float aspect_ratio = width_ / height_;
+	constexpr float scale_factor = 1.5f;
+
 	// Create a vertex buffer structure
-	constexpr vertex vertices[] =
+	const vertex vertices[] =
 	{
-		{{0.0f, 0.5f,},{ 1.0f, 0.0f, 0.0f, 0.0f}},
-		{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f, 0.0f}},
-		{{-0.5f, -0.5f}, {0.0f, 0.0f, 1.0f, 0.0f}},
-		{{-0.3f, 0.3f}, {0.0f, 1.0f, 0.0f, 0.0f}},
-		{{0.3f, 0.3f}, {0.0f, 0.0f, 1.0f, 0.0f}},
-		{{0.0f, -0.8f,},{ 1.0f, 0.0f, 0.0f, 0.0f}},
+		{{ 0.0f / aspect_ratio * scale_factor, 0.5f * scale_factor},		{ 1.0f, 0.0f, 0.0f, 1.0f}},  // Top vertex
+		{{ 0.433f / aspect_ratio * scale_factor, 0.25f * scale_factor},		{ 1.0f, 1.0f, 0.0f, 1.0f}},  // Top-right vertex
+		{{ 0.433f / aspect_ratio * scale_factor, -0.25f * scale_factor},	{ 0.0f, 1.0f, 0.0f, 1.0f}},  // Bottom-right vertex
+		{{ 0.0f / aspect_ratio * scale_factor, -0.5f * scale_factor},		{ 0.0f, 1.0f, 1.0f, 1.0f}},  // Bottom vertex
+		{{-0.433f / aspect_ratio * scale_factor, -0.25f * scale_factor},	{ 0.0f, 0.0f, 1.0f, 1.0f}},  // Bottom-left vertex
+		{{-0.433f / aspect_ratio * scale_factor, 0.25f * scale_factor},		{ 1.0f, 0.0f, 1.0f, 1.0f}},  // Top-left vertex
 	};
 
 	// Create the vertex buffer
@@ -212,10 +206,10 @@ void graphics::draw_test_triangle()
 	// Create an index buffer structure
 	const unsigned short indices[] =
 	{
-		0, 1, 2,
-		0, 2, 3,
-		0, 4, 1,
-		2, 1, 5,
+		0, 1, 2, // First triangle
+		0, 2, 3, // Second triangle
+		0, 3, 4, // Third triangle
+		0, 4, 5, // Fourth triangle
 	};
 
 	// Create the index buffer
