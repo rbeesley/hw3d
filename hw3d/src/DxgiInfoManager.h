@@ -1,4 +1,5 @@
 #pragma once
+
 #include <dxgidebug.h>
 #include <string>
 #include <vector>

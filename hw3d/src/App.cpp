@@ -1,8 +1,11 @@
 #include "App.h"
 #include "Logging.h"
 
+constexpr int width = 800;
+constexpr int height = 600;
+
 app::app()
-	: window_(640, 360, TEXT("Atum D3D Window"))
+	: window_(width, height, TEXT("Atum D3D Window"))
 #if defined(DEBUG) || defined(_DEBUG)
 	, console_(TEXT("Debug Console"))
 #endif
@@ -31,6 +34,8 @@ int app::init() const
 
 int app::run() const
 {
+	PLOGI << "Starting Message Pump and Render Loop";
+
 	while(true)
 	{
 		// Process pending messages without blocking

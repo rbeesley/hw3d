@@ -96,7 +96,7 @@ window::window(const int width, const int height, const LPCWSTR name)
 	ShowWindow(window_handle_, SW_SHOWDEFAULT);
 
 	// Create the graphics object
-	p_graphics_ = std::make_unique<graphics>(window_handle_);
+	p_graphics_ = std::make_unique<graphics>(window_handle_, width_, height_);
 
 	// Check for an error
 	if (nullptr == p_graphics_)

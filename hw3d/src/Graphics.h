@@ -1,6 +1,7 @@
 #pragma once
 #include "AtumException.h"
 #include "DxgiInfoManager.h"
+
 #include <d3d11.h>
 #include <locale>
 #include <vector>
@@ -46,7 +47,7 @@ public:
 		const char* get_type() const noexcept override;
 	};
 public:
-	explicit graphics(HWND window_handle);
+	explicit graphics(HWND parent, int width, int height);
 	graphics(const graphics&) = delete;
 	graphics& operator=(const graphics&) = delete;
 	graphics(const graphics&&) = delete;
@@ -59,11 +60,13 @@ public:
 	void draw_test_triangle();
 
 private:
+	HWND parent_;
+	float width_, height_;
 #if defined(DEBUG) || defined(_DEBUG)
 	dxgi_info_manager info_manager_;
 #endif
-	Microsoft::WRL::ComPtr<ID3D11Device> device_;
-	Microsoft::WRL::ComPtr<IDXGISwapChain> swap_chain_;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context_;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> target_view_;
+	Microsoft::WRL::ComPtr<ID3D11Device> p_device_;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> p_swap_chain_;
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> p_device_context_;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> p_target_view_;
 };

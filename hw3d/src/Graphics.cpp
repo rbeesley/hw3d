@@ -1,4 +1,6 @@
+// ReSharper disable CppClangTidyClangDiagnosticExtraSemiStmt
 #include "Graphics.h"
+#include "DXErr.h"
 
 #include "Logging.h"
 #include "LoggingConfig.h"
@@ -6,13 +8,12 @@
 #include <d3dcompiler.h>
 #include <sstream>
 
-namespace wrl = Microsoft::WRL;
-
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
 
-// Add the DXErr library
-#include "DXErr.h"
+#ifndef __cplusplus
+#define __uuidof(iid) IID_##iid
+#endif
 
 // Graphics exception macros, some with DXGI info
 
@@ -21,7 +22,7 @@ namespace wrl = Microsoft::WRL;
 #define GFX_EXCEPT_NOINFO(hresult) graphics::hresult_exception(__LINE__, __FILE__, (hresult))
 // Wrap graphics call with error check, no info manager
 // Has a dependency that HRESULT hresult; is allocated
-#define GFX_THROW_NOINFO(hresult_call) if(FAILED(hresult = (hresult_call))) throw graphics::hresult_exception(__LINE__, __FILE__, hresult)
+#define GFX_THROW_NOINFO(hresult_call) if( FAILED(hresult = (hresult_call)) ) { throw graphics::hresult_exception(__LINE__, __FILE__, hresult); }
 
 #if defined(DEBUG) || defined(_DEBUG)
 // Get the resulting error message and log the exception
@@ -29,7 +30,7 @@ namespace wrl = Microsoft::WRL;
 #define GFX_EXCEPT(hresult) graphics::hresult_exception(__LINE__, __FILE__, (hresult), info_manager_.get_messages())
 // Wrap graphics call with error check
 // Has a dependency that HRESULT hresult; is allocated
-#define GFX_THROW_INFO(hresult_call) info_manager_.set(); if(FAILED(hresult = (hresult_call))) throw GFX_EXCEPT(hresult)
+#define GFX_THROW_INFO(hresult_call) info_manager_.set(); if( FAILED(hresult = (hresult_call)) ) { throw GFX_EXCEPT(hresult); }
 // Get the error for a device removed and log the exception
 // Has a dependency that HRESULT hresult; is allocated and assigned a value
 #define GFX_DEVICE_REMOVED_EXCEPTION(hresult) graphics::device_removed_exception(__LINE__, __FILE__, (hresult), info_manager_.get_messages())
@@ -41,7 +42,7 @@ namespace wrl = Microsoft::WRL;
 #define GFX_EXCEPT(hresult) graphics::hresult_exception(__LINE__, __FILE__, (hresult))
 // Wrap graphics call with error check
 // Has a dependency that HRESULT hresult; is allocated
-#define GFX_THROW_INFO(hresult_call) if(FAILED(hresult = (hresult_call))) throw graphics::hresult_exception(__LINE__, __FILE__, (hresult))
+#define GFX_THROW_INFO(hresult_call) if( FAILED(hresult = (hresult_call)) ) { throw graphics::hresult_exception(__LINE__, __FILE__, (hresult)); }
 // Get the error for a device removed and log the exception
 // Has a dependency that HRESULT hresult; is allocated and assigned a value
 #define GFX_DEVICE_REMOVED_EXCEPTION(hresult) graphics::device_removed_exception(__LINE__, __FILE__, (hresult))
@@ -49,11 +50,16 @@ namespace wrl = Microsoft::WRL;
 #define GFX_THROW_INFO_ONLY(call) (call)
 #endif
 
-graphics::graphics(const HWND window_handle)
+namespace wrl = Microsoft::WRL;
+
+graphics::graphics(const HWND parent, int width, int height) :
+	parent_(parent),
+	width_(static_cast<float>(width)),
+	height_(static_cast<float>(height))
 {
 	PLOGI << "Initializing Graphics";
 
-	DXGI_SWAP_CHAIN_DESC scd = {
+	DXGI_SWAP_CHAIN_DESC swap_chain_desc = {
 		.BufferDesc = {
 			.Width = 0,
 			.Height = 0,
@@ -72,7 +78,7 @@ graphics::graphics(const HWND window_handle)
 		},
 		.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
 		.BufferCount = 1,
-		.OutputWindow = window_handle,
+		.OutputWindow = parent_,
 		.Windowed = TRUE,
 		.SwapEffect = DXGI_SWAP_EFFECT_DISCARD,
 		.Flags = 0,
@@ -95,19 +101,28 @@ graphics::graphics(const HWND window_handle)
 		nullptr,
 		0,
 		D3D11_SDK_VERSION,
-		&scd,
-		swap_chain_.GetAddressOf(),
-		device_.GetAddressOf(),
+		&swap_chain_desc,
+		p_swap_chain_.GetAddressOf(),
+		p_device_.GetAddressOf(),
 		nullptr,
-		device_context_.GetAddressOf()
+		p_device_context_.GetAddressOf()
 	));
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wlanguage-extension-token"
+#endif
+
 	// Get the address of the back buffer
-	wrl::ComPtr<ID3D11Resource> back_buffer;
-	GFX_THROW_INFO(swap_chain_->GetBuffer(0, __uuidof(ID3D11Texture2D), &back_buffer));
+	wrl::ComPtr<ID3D11Resource> p_back_buffer;
+	GFX_THROW_INFO(p_swap_chain_->GetBuffer(0, __uuidof(ID3D11Texture2D), &p_back_buffer));
 
 	// Use the back buffer address to create the render target
-	GFX_THROW_INFO(device_->CreateRenderTargetView(back_buffer.Get(), nullptr, target_view_.GetAddressOf()));
+	GFX_THROW_INFO(p_device_->CreateRenderTargetView(p_back_buffer.Get(), nullptr, p_target_view_.GetAddressOf()));
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 }
 
 void graphics::end_frame()
@@ -116,11 +131,11 @@ void graphics::end_frame()
 #if defined(DEBUG) || defined(_DEBUG)
 	info_manager_.set();
 #endif
-	if (FAILED(hresult = swap_chain_->Present(1u, 0u)))
+	if (FAILED(hresult = p_swap_chain_->Present(1u, 0u)))
 	{
 		if (hresult == DXGI_ERROR_DEVICE_REMOVED)
 		{
-			throw GFX_DEVICE_REMOVED_EXCEPTION(device_->GetDeviceRemovedReason());
+			throw GFX_DEVICE_REMOVED_EXCEPTION(p_device_->GetDeviceRemovedReason());
 		}
 		else
 		{
@@ -133,7 +148,7 @@ void graphics::end_frame()
 void graphics::clear_buffer(const float red, const float green, const float blue) const
 {
 	const float color[] = { red, green, blue, 1.0f };
-	device_context_->ClearRenderTargetView(target_view_.Get(), color);
+	p_device_context_->ClearRenderTargetView(p_target_view_.Get(), color);
 }
 
 // Experimental drawing code
@@ -155,7 +170,9 @@ void graphics::draw_test_triangle()
 		{-0.5f, -0.5f},
 	};
 
+	// Create the vertex buffer
 	wrl::ComPtr<ID3D11Buffer> vertex_buffer;
+
 	constexpr D3D11_BUFFER_DESC buffer_desc = {
 		.ByteWidth = sizeof(vertices),
 		.Usage = D3D11_USAGE_DEFAULT,
@@ -165,28 +182,94 @@ void graphics::draw_test_triangle()
 		.StructureByteStride = sizeof(vertex),
 	};
 
+	// ReSharper disable once CppVariableCanBeMadeConstexpr
 	const D3D11_SUBRESOURCE_DATA subresource_data = {
 		.pSysMem = vertices,
+		.SysMemPitch = 0u,
+		.SysMemSlicePitch = 0u
 	};
 
 	HRESULT hresult;
-	GFX_THROW_INFO(device_->CreateBuffer(&buffer_desc, &subresource_data, &vertex_buffer));
+	GFX_THROW_INFO(p_device_->CreateBuffer(&buffer_desc, &subresource_data, &vertex_buffer));
 
 	// Bind the vertex buffer to the pipeline
 	constexpr UINT stride = sizeof(vertex);
 	constexpr UINT offset = 0u;
-	device_context_->IASetVertexBuffers(0u, 1u, vertex_buffer.GetAddressOf(), &stride, &offset);
+	p_device_context_->IASetVertexBuffers(0u, 1u, vertex_buffer.GetAddressOf(), &stride, &offset);
 
-	// Create vertex shader
-	wrl::ComPtr<ID3D11VertexShader> vertex_shader;
-	wrl::ComPtr<ID3DBlob> blob;
+	{
+		wrl::ComPtr<ID3DBlob> blob;
 
-	GFX_THROW_INFO(D3DReadFileToBlob(L"VertexShader.cso", &blob));
-	GFX_THROW_INFO(device_->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &vertex_shader));
+		// Create the pixel shader
+		// uses blob
+		{
+			wrl::ComPtr<ID3D11PixelShader> pixel_shader;
+			GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &blob));
+			GFX_THROW_INFO(p_device_->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &pixel_shader));
 
-	device_context_->VSSetShader(vertex_shader.Get(), nullptr, 0u);
+			// Bind the pixel shader
+			p_device_context_->PSSetShader(pixel_shader.Get(), nullptr, 0u);
+		}
 
-	GFX_THROW_INFO_ONLY(device_context_->Draw(std::size(vertices), 0u));
+		// Create the vertex shader
+		// reuses blob
+		{
+			wrl::ComPtr<ID3D11VertexShader> vertex_shader;
+
+			GFX_THROW_INFO(D3DReadFileToBlob(L"VertexShader.cso", &blob));
+			GFX_THROW_INFO(p_device_->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &vertex_shader));
+
+			// Bind the vertex shader
+			p_device_context_->VSSetShader(vertex_shader.Get(), nullptr, 0u);
+		}
+
+		// Input (vertex) layout (2D position only)
+		// dependent on VS blob
+		//  - Input Assembler
+		{
+			wrl::ComPtr<ID3D11InputLayout> input_layout;
+			constexpr D3D11_INPUT_ELEMENT_DESC input_element_desc[] = { {
+				.SemanticName = "POSITION",	// Input in the vertex shader
+				.SemanticIndex = 0u,
+				.Format = DXGI_FORMAT_R32G32_FLOAT,
+				.InputSlot = 0u,
+				.AlignedByteOffset = 0u,
+				.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
+				.InstanceDataStepRate = 0u
+			} };
+			GFX_THROW_INFO(p_device_->CreateInputLayout(
+				input_element_desc,
+				std::size(input_element_desc),
+				blob->GetBufferPointer(),
+				blob->GetBufferSize(),
+				&input_layout));
+
+			// Bind the input layout
+			p_device_context_->IASetInputLayout(input_layout.Get());
+		}
+	}
+
+	// Bind the render target
+	//  - Output Merger
+	p_device_context_->OMSetRenderTargets(1u, p_target_view_.GetAddressOf(), nullptr);
+
+	// Set primitive topology to triangle list
+	//  - Input Assembler
+	p_device_context_->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	// Configure the viewport
+	//  - Rasterizer
+	const D3D11_VIEWPORT viewport = {
+		.TopLeftX = 0,
+		.TopLeftY = 0,
+		.Width = width_,
+		.Height = height_,
+		.MinDepth = 0,
+		.MaxDepth = 1
+	};
+	p_device_context_->RSSetViewports(1u, &viewport);
+
+	GFX_THROW_INFO_ONLY(p_device_context_->Draw(std::size(vertices), 0u));
 }
 
 // Graphics Exception
