@@ -67,8 +67,7 @@ graphics::graphics(const HWND parent, int width, int height) :
 				.Numerator = 0,
 				.Denominator = 0,
 			},
-			//.Format = DXGI_FORMAT_B8G8R8A8_UNORM, // BGRA
-			.Format = DXGI_FORMAT_R8G8B8A8_UNORM, // RGBA
+			.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM, // RGBA
 			.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
 			.Scaling = DXGI_MODE_SCALING_UNSPECIFIED,
 		},
@@ -155,25 +154,33 @@ void graphics::clear_buffer(const float red, const float green, const float blue
 void graphics::draw_test_triangle()
 {
 	namespace wrl = Microsoft::WRL;
+	HRESULT hresult;
 
 	struct vertex
 	{
-		float x;
-		float y;
+		struct { float x; float y; } pos;
+		struct { float r; float g; float b; float a; } color;
 	};
 
-	// Create a vertex buffer (1 2D triangle at the center of the screen)
-	constexpr vertex vertices[] =
+	// 4:3 aspect ratio correction
+	const float aspect_ratio = width_ / height_;
+	constexpr float scale_factor = 1.5f;
+
+	// Create a vertex buffer structure
+	const vertex vertices[] =
 	{
-		{0.0f, 0.5f},
-		{0.5f, -0.5f},
-		{-0.5f, -0.5f},
+		{{ 0.0f / aspect_ratio * scale_factor, 0.5f * scale_factor},		{ 1.0f, 0.0f, 0.0f, 1.0f}},  // Top vertex
+		{{ 0.433f / aspect_ratio * scale_factor, 0.25f * scale_factor},		{ 1.0f, 1.0f, 0.0f, 1.0f}},  // Top-right vertex
+		{{ 0.433f / aspect_ratio * scale_factor, -0.25f * scale_factor},	{ 0.0f, 1.0f, 0.0f, 1.0f}},  // Bottom-right vertex
+		{{ 0.0f / aspect_ratio * scale_factor, -0.5f * scale_factor},		{ 0.0f, 1.0f, 1.0f, 1.0f}},  // Bottom vertex
+		{{-0.433f / aspect_ratio * scale_factor, -0.25f * scale_factor},	{ 0.0f, 0.0f, 1.0f, 1.0f}},  // Bottom-left vertex
+		{{-0.433f / aspect_ratio * scale_factor, 0.25f * scale_factor},		{ 1.0f, 0.0f, 1.0f, 1.0f}},  // Top-left vertex
 	};
 
 	// Create the vertex buffer
 	wrl::ComPtr<ID3D11Buffer> vertex_buffer;
 
-	constexpr D3D11_BUFFER_DESC buffer_desc = {
+	constexpr D3D11_BUFFER_DESC vertex_buffer_desc = {
 		.ByteWidth = sizeof(vertices),
 		.Usage = D3D11_USAGE_DEFAULT,
 		.BindFlags = D3D11_BIND_VERTEX_BUFFER,
@@ -183,19 +190,53 @@ void graphics::draw_test_triangle()
 	};
 
 	// ReSharper disable once CppVariableCanBeMadeConstexpr
-	const D3D11_SUBRESOURCE_DATA subresource_data = {
+	const D3D11_SUBRESOURCE_DATA vertex_subresource_data = {
 		.pSysMem = vertices,
 		.SysMemPitch = 0u,
 		.SysMemSlicePitch = 0u
 	};
 
-	HRESULT hresult;
-	GFX_THROW_INFO(p_device_->CreateBuffer(&buffer_desc, &subresource_data, &vertex_buffer));
+	GFX_THROW_INFO(p_device_->CreateBuffer(&vertex_buffer_desc, &vertex_subresource_data, &vertex_buffer));
 
 	// Bind the vertex buffer to the pipeline
-	constexpr UINT stride = sizeof(vertex);
-	constexpr UINT offset = 0u;
+	UINT stride = sizeof(vertex);
+	UINT offset = 0u;
 	p_device_context_->IASetVertexBuffers(0u, 1u, vertex_buffer.GetAddressOf(), &stride, &offset);
+
+	// Create an index buffer structure
+	const unsigned short indices[] =
+	{
+		0, 1, 2, // First triangle
+		0, 2, 3, // Second triangle
+		0, 3, 4, // Third triangle
+		0, 4, 5, // Fourth triangle
+	};
+
+	// Create the index buffer
+	wrl::ComPtr<ID3D11Buffer> index_buffer;
+
+	constexpr D3D11_BUFFER_DESC index_buffer_desc = {
+		.ByteWidth = sizeof(indices),
+		.Usage = D3D11_USAGE_DEFAULT,
+		.BindFlags = D3D11_BIND_INDEX_BUFFER,
+		.CPUAccessFlags = 0u,
+		.MiscFlags = 0u,
+		.StructureByteStride = sizeof(unsigned short),
+	};
+
+	// ReSharper disable once CppVariableCanBeMadeConstexpr
+	const D3D11_SUBRESOURCE_DATA index_subresource_data = {
+		.pSysMem = indices,
+		.SysMemPitch = 0u,
+		.SysMemSlicePitch = 0u
+	};
+
+	GFX_THROW_INFO(p_device_->CreateBuffer(&index_buffer_desc, &index_subresource_data, &index_buffer));
+
+	// Bind the index buffer to the pipeline
+	stride = sizeof(unsigned short);
+	offset = 0u;
+	p_device_context_->IASetIndexBuffer(index_buffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R16_UINT, 0u);
 
 	{
 		wrl::ComPtr<ID3DBlob> blob;
@@ -228,15 +269,26 @@ void graphics::draw_test_triangle()
 		//  - Input Assembler
 		{
 			wrl::ComPtr<ID3D11InputLayout> input_layout;
-			constexpr D3D11_INPUT_ELEMENT_DESC input_element_desc[] = { {
-				.SemanticName = "POSITION",	// Input in the vertex shader
-				.SemanticIndex = 0u,
-				.Format = DXGI_FORMAT_R32G32_FLOAT,
-				.InputSlot = 0u,
-				.AlignedByteOffset = 0u,
-				.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
-				.InstanceDataStepRate = 0u
-			} };
+			constexpr D3D11_INPUT_ELEMENT_DESC input_element_desc[] = {
+				{
+					.SemanticName = "POSITION",	// Input in the vertex shader
+					.SemanticIndex = 0u,
+					.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT,
+					.InputSlot = 0u,
+					.AlignedByteOffset = 0u,
+					.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
+					.InstanceDataStepRate = 0u
+				},
+				{
+					.SemanticName = "COLOR",	// Input in the vertex shader
+					.SemanticIndex = 0u,
+					.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT,
+					.InputSlot = 0u,
+					.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT,
+					.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
+					.InstanceDataStepRate = 0u
+				},
+			};
 			GFX_THROW_INFO(p_device_->CreateInputLayout(
 				input_element_desc,
 				std::size(input_element_desc),
@@ -269,7 +321,7 @@ void graphics::draw_test_triangle()
 	};
 	p_device_context_->RSSetViewports(1u, &viewport);
 
-	GFX_THROW_INFO_ONLY(p_device_context_->Draw(std::size(vertices), 0u));
+	GFX_THROW_INFO_ONLY(p_device_context_->DrawIndexed(std::size(indices), 0u, 0u));
 }
 
 // Graphics Exception
