@@ -6,7 +6,11 @@
 #include "LoggingConfig.h"
 
 #include <d3dcompiler.h>
+#include <DirectXMath.h>
 #include <sstream>
+
+namespace wrl = Microsoft::WRL;
+namespace dx = DirectX;
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
@@ -56,8 +60,6 @@
 // Wrap graphics call with error check for a call which doesn't return an hresult
 #define GFX_THROW_INFO_ONLY(call) (call)
 #endif
-
-namespace wrl = Microsoft::WRL;
 
 graphics::graphics(const HWND parent, int width, int height) :
 	parent_(parent),
@@ -254,14 +256,12 @@ void graphics::draw_test_triangle(const float angle)
 	p_device_context_->IASetIndexBuffer(p_index_buffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R16_UINT, 0u);
 
 	// Create a constant buffer for a transformation matrix
-	struct constant_buffer { struct { float element[4][4]; } transformation; };
+	struct constant_buffer { dx::XMMATRIX transform; };
 	const constant_buffer constant_buffer = {
-		{
-			aspect_ratio * std::cos(angle), std::sin(angle), 0.0f, 0.0f,
-			aspect_ratio * -std::sin(angle), std::cos(angle), 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f,
-		} };
+		{dx::XMMatrixTranspose(
+			dx::XMMatrixRotationZ(angle) * dx::XMMatrixScaling(aspect_ratio, 1.0f, 1.0f)
+		)}
+	};
 
 	wrl::ComPtr<ID3D11Buffer> p_constant_buffer;
 
