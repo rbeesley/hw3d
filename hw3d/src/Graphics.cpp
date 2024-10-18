@@ -221,10 +221,10 @@ void graphics::draw_test_triangle(const float angle)
 	// Create an index buffer structure
 	const unsigned short indices[] =
 	{
-		0, 1, 2, // First triangle
-		0, 2, 3, // Second triangle
-		0, 3, 4, // Third triangle
-		0, 4, 5, // Fourth triangle
+		0, 2, 4, // First triangle
+		0, 1, 2, // Second triangle
+		2, 3, 4, // Third triangle
+		4, 5, 0, // Fourth triangle
 	};
 
 	// Create the index buffer
