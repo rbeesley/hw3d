@@ -57,7 +57,7 @@ public:
 	void clear_buffer(float red, float green, float blue) const;
 
 	// Jam in experimental code to try and draw our first triangle
-	void draw_test_triangle();
+	void draw_test_triangle(float angle);
 
 private:
 	HWND parent_;

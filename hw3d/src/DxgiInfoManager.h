@@ -18,5 +18,5 @@ public:
 	[[nodiscard]] std::vector<std::string> get_messages() const;
 private:
 	unsigned long long next_ = 0u;
-	Microsoft::WRL::ComPtr<IDXGIInfoQueue> dxgi_info_queue_;
+	Microsoft::WRL::ComPtr<IDXGIInfoQueue> p_dxgi_info_queue_;
 };

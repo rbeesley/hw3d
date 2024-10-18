@@ -12,7 +12,14 @@
 #pragma comment(lib, "D3DCompiler.lib")
 
 #ifndef __cplusplus
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wlanguage-extension-token"
+#endif
 #define __uuidof(iid) IID_##iid
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 #endif
 
 // Graphics exception macros, some with DXGI info
@@ -151,7 +158,7 @@ void graphics::clear_buffer(const float red, const float green, const float blue
 }
 
 // Experimental drawing code
-void graphics::draw_test_triangle()
+void graphics::draw_test_triangle(const float angle)
 {
 	namespace wrl = Microsoft::WRL;
 	HRESULT hresult;
@@ -163,22 +170,30 @@ void graphics::draw_test_triangle()
 	};
 
 	// 4:3 aspect ratio correction
-	const float aspect_ratio = width_ / height_;
-	constexpr float scale_factor = 1.5f;
+	const float aspect_ratio = height_ / width_;
+	constexpr float scale_factor = 2.0f;
 
 	// Create a vertex buffer structure
 	const vertex vertices[] =
 	{
-		{{ 0.0f / aspect_ratio * scale_factor, 0.5f * scale_factor},		{ 1.0f, 0.0f, 0.0f, 1.0f}},  // Top vertex
-		{{ 0.433f / aspect_ratio * scale_factor, 0.25f * scale_factor},		{ 1.0f, 1.0f, 0.0f, 1.0f}},  // Top-right vertex
-		{{ 0.433f / aspect_ratio * scale_factor, -0.25f * scale_factor},	{ 0.0f, 1.0f, 0.0f, 1.0f}},  // Bottom-right vertex
-		{{ 0.0f / aspect_ratio * scale_factor, -0.5f * scale_factor},		{ 0.0f, 1.0f, 1.0f, 1.0f}},  // Bottom vertex
-		{{-0.433f / aspect_ratio * scale_factor, -0.25f * scale_factor},	{ 0.0f, 0.0f, 1.0f, 1.0f}},  // Bottom-left vertex
-		{{-0.433f / aspect_ratio * scale_factor, 0.25f * scale_factor},		{ 1.0f, 0.0f, 1.0f, 1.0f}},  // Top-left vertex
+		{{ 0.0f * scale_factor, 0.5f * scale_factor},		{ 1.0f, 0.0f, 0.0f, 1.0f}},  // Top vertex
+		{{ 0.433f * scale_factor, 0.25f * scale_factor},	{ 1.0f, 1.0f, 0.0f, 1.0f}},  // Top-right vertex
+		{{ 0.433f * scale_factor, -0.25f * scale_factor},	{ 0.0f, 1.0f, 0.0f, 1.0f}},  // Bottom-right vertex
+		{{ 0.0f * scale_factor, -0.5f * scale_factor},		{ 0.0f, 1.0f, 1.0f, 1.0f}},  // Bottom vertex
+		{{-0.433f * scale_factor, -0.25f * scale_factor},	{ 0.0f, 0.0f, 1.0f, 1.0f}},  // Bottom-left vertex
+		{{-0.433f * scale_factor, 0.25f * scale_factor},	{ 1.0f, 0.0f, 1.0f, 1.0f}},  // Top-left vertex
 	};
 
+	PLOGD << "vertices";
+	PLOGD << "[0].pos.x:" << vertices[0].pos.x << ", [0].pos.y:" << vertices[0].pos.y;
+	PLOGD << "[1].pos.x:" << vertices[1].pos.x << ", [1].pos.y:" << vertices[1].pos.y;
+	PLOGD << "[2].pos.x:" << vertices[2].pos.x << ", [2].pos.y:" << vertices[2].pos.y;
+	PLOGD << "[3].pos.x:" << vertices[3].pos.x << ", [3].pos.y:" << vertices[3].pos.y;
+	PLOGD << "[4].pos.x:" << vertices[4].pos.x << ", [4].pos.y:" << vertices[4].pos.y;
+	PLOGD << "[5].pos.x:" << vertices[5].pos.x << ", [5].pos.y:" << vertices[5].pos.y;
+
 	// Create the vertex buffer
-	wrl::ComPtr<ID3D11Buffer> vertex_buffer;
+	wrl::ComPtr<ID3D11Buffer> p_vertex_buffer;
 
 	constexpr D3D11_BUFFER_DESC vertex_buffer_desc = {
 		.ByteWidth = sizeof(vertices),
@@ -196,12 +211,12 @@ void graphics::draw_test_triangle()
 		.SysMemSlicePitch = 0u
 	};
 
-	GFX_THROW_INFO(p_device_->CreateBuffer(&vertex_buffer_desc, &vertex_subresource_data, &vertex_buffer));
+	GFX_THROW_INFO(p_device_->CreateBuffer(&vertex_buffer_desc, &vertex_subresource_data, &p_vertex_buffer));
 
 	// Bind the vertex buffer to the pipeline
 	UINT stride = sizeof(vertex);
 	UINT offset = 0u;
-	p_device_context_->IASetVertexBuffers(0u, 1u, vertex_buffer.GetAddressOf(), &stride, &offset);
+	p_device_context_->IASetVertexBuffers(0u, 1u, p_vertex_buffer.GetAddressOf(), &stride, &offset);
 
 	// Create an index buffer structure
 	const unsigned short indices[] =
@@ -213,7 +228,7 @@ void graphics::draw_test_triangle()
 	};
 
 	// Create the index buffer
-	wrl::ComPtr<ID3D11Buffer> index_buffer;
+	wrl::ComPtr<ID3D11Buffer> p_index_buffer;
 
 	constexpr D3D11_BUFFER_DESC index_buffer_desc = {
 		.ByteWidth = sizeof(indices),
@@ -231,44 +246,77 @@ void graphics::draw_test_triangle()
 		.SysMemSlicePitch = 0u
 	};
 
-	GFX_THROW_INFO(p_device_->CreateBuffer(&index_buffer_desc, &index_subresource_data, &index_buffer));
+	GFX_THROW_INFO(p_device_->CreateBuffer(&index_buffer_desc, &index_subresource_data, &p_index_buffer));
 
 	// Bind the index buffer to the pipeline
 	stride = sizeof(unsigned short);
 	offset = 0u;
-	p_device_context_->IASetIndexBuffer(index_buffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R16_UINT, 0u);
+	p_device_context_->IASetIndexBuffer(p_index_buffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R16_UINT, 0u);
+
+	// Create a constant buffer for a transformation matrix
+	struct constant_buffer { struct { float element[4][4]; } transformation; };
+	const constant_buffer constant_buffer = {
+		{
+			aspect_ratio * std::cos(angle), std::sin(angle), 0.0f, 0.0f,
+			aspect_ratio * -std::sin(angle), std::cos(angle), 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f,
+		} };
+
+	wrl::ComPtr<ID3D11Buffer> p_constant_buffer;
+
+	// ReSharper disable once CppVariableCanBeMadeConstexpr
+	D3D11_BUFFER_DESC constant_buffer_description = {
+		.ByteWidth = sizeof(constant_buffer),
+		.Usage = D3D11_USAGE_DYNAMIC,
+		.BindFlags = D3D11_BIND_CONSTANT_BUFFER,
+		.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
+		.MiscFlags = 0u,
+		.StructureByteStride = 0u
+	};
+
+	D3D11_SUBRESOURCE_DATA constant_buffer_subresource_data = {
+		.pSysMem = &constant_buffer,
+		.SysMemPitch = 0u,
+		.SysMemSlicePitch = 0u
+	};
+
+	GFX_THROW_INFO(p_device_->CreateBuffer(&constant_buffer_description, &constant_buffer_subresource_data, &p_constant_buffer));
+
+	// Bind the constant buffer to the pipeline
+	p_device_context_->VSSetConstantBuffers(0u, 1u, p_constant_buffer.GetAddressOf());
 
 	{
-		wrl::ComPtr<ID3DBlob> blob;
+		wrl::ComPtr<ID3DBlob> p_blob;
 
 		// Create the pixel shader
 		// uses blob
 		{
-			wrl::ComPtr<ID3D11PixelShader> pixel_shader;
-			GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &blob));
-			GFX_THROW_INFO(p_device_->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &pixel_shader));
+			wrl::ComPtr<ID3D11PixelShader> p_pixel_shader;
+			GFX_THROW_INFO(D3DReadFileToBlob(L"PixelShader.cso", &p_blob));
+			GFX_THROW_INFO(p_device_->CreatePixelShader(p_blob->GetBufferPointer(), p_blob->GetBufferSize(), nullptr, &p_pixel_shader));
 
 			// Bind the pixel shader
-			p_device_context_->PSSetShader(pixel_shader.Get(), nullptr, 0u);
+			p_device_context_->PSSetShader(p_pixel_shader.Get(), nullptr, 0u);
 		}
 
 		// Create the vertex shader
 		// reuses blob
 		{
-			wrl::ComPtr<ID3D11VertexShader> vertex_shader;
+			wrl::ComPtr<ID3D11VertexShader> p_vertex_shader;
 
-			GFX_THROW_INFO(D3DReadFileToBlob(L"VertexShader.cso", &blob));
-			GFX_THROW_INFO(p_device_->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &vertex_shader));
+			GFX_THROW_INFO(D3DReadFileToBlob(L"VertexShader.cso", &p_blob));
+			GFX_THROW_INFO(p_device_->CreateVertexShader(p_blob->GetBufferPointer(), p_blob->GetBufferSize(), nullptr, &p_vertex_shader));
 
 			// Bind the vertex shader
-			p_device_context_->VSSetShader(vertex_shader.Get(), nullptr, 0u);
+			p_device_context_->VSSetShader(p_vertex_shader.Get(), nullptr, 0u);
 		}
 
 		// Input (vertex) layout (2D position only)
 		// dependent on VS blob
 		//  - Input Assembler
 		{
-			wrl::ComPtr<ID3D11InputLayout> input_layout;
+			wrl::ComPtr<ID3D11InputLayout> p_input_layout;
 			constexpr D3D11_INPUT_ELEMENT_DESC input_element_desc[] = {
 				{
 					.SemanticName = "POSITION",	// Input in the vertex shader
@@ -292,12 +340,12 @@ void graphics::draw_test_triangle()
 			GFX_THROW_INFO(p_device_->CreateInputLayout(
 				input_element_desc,
 				std::size(input_element_desc),
-				blob->GetBufferPointer(),
-				blob->GetBufferSize(),
-				&input_layout));
+				p_blob->GetBufferPointer(),
+				p_blob->GetBufferSize(),
+				&p_input_layout));
 
 			// Bind the input layout
-			p_device_context_->IASetInputLayout(input_layout.Get());
+			p_device_context_->IASetInputLayout(p_input_layout.Get());
 		}
 	}
 
