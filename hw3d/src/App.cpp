@@ -50,11 +50,11 @@ int app::run() const
 
 void app::render_frame() const
 {
-	const float c = sin(timer_.peek()) / 2.f + 0.5f;
-	window_.get_graphics().clear_buffer(c, c, 1.f);
+	const float c = sin(timer_.peek()) / 2.0f + 0.5f;
+	window_.get_graphics().clear_buffer(c, c, 1.0f);
 
 	// Experiment with drawing graphics
-	window_.get_graphics().draw_test_triangle();
+	window_.get_graphics().draw_test_triangle(timer_.peek());
 
 	window_.get_graphics().end_frame();
 }

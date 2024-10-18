@@ -14,21 +14,17 @@ class logging
 public:
 	class console {
 	public:
-		static plog::ColorConsoleAppender<plog::FuncMessageFormatter>& instance();
-	private:
-		console();
+		console() = delete;
 	};
 
 	class debug_output {
 	public:
-		static plog::DebugOutputAppender<plog::TxtFormatter>& instance();
-	private:
-		debug_output();
+		debug_output() = delete;
 	};
 
-	enum {
-		CONSOLE = 1,
-		DEBUG_OUTPUT
+	enum : std::uint8_t {
+		console = 1,
+		debug_output
 	};
 
 	explicit logging(plog::Severity max_severity) noexcept;

@@ -4,10 +4,15 @@ struct vs_out
     float4 color : COLOR;
 };
 
+cbuffer cbuff
+{
+    row_major matrix transform;
+};
+
 vs_out main( float4 pos : POSITION, float4 color : COLOR )
 {
     vs_out vout;
-    vout.pos = pos;
+    vout.pos = mul(pos, transform);
     vout.color = color;
 	return vout;
 }
