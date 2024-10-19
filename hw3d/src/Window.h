@@ -5,7 +5,7 @@
 
 #include "AtumException.h"
 #include "AtumWindows.h"
-#include "DeviceConfig.h"
+#include "DeviceHAL.h"
 #include "IKeyboard.h"
 #include "IMouse.h"
 #include "IGraphics.h"
@@ -75,7 +75,7 @@ private:
 	static HWND set_active(HWND window_handle);
 	static LRESULT CALLBACK handle_msg(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 private:
-	inline static device_config device_;
+	inline static device_hal device_;
 	inline static std::shared_ptr<i_keyboard> p_keyboard_;
 	inline static std::shared_ptr<i_mouse> p_mouse_;
 	inline static std::shared_ptr<i_graphics> p_graphics_;

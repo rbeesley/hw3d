@@ -6,10 +6,10 @@
 #include "IMouse.h"
 #include "IKeyboard.h"
 
-class device_config
+class device_hal
 {
 public:
-	device_config();
+	device_hal();
 private:
 	std::unique_ptr<i_mouse> p_mouse_;
 	std::unique_ptr<i_keyboard> p_keyboard_;

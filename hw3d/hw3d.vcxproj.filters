@@ -39,7 +39,7 @@
     <ClCompile Include="src\VirtualKeyMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\DeviceConfig.cpp">
+    <ClCompile Include="src\DeviceHAL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Mouse.cpp">
@@ -173,7 +173,7 @@
     <ClInclude Include="src\LoggingConfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\DeviceConfig.h">
+    <ClInclude Include="src\DeviceHAL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\IMouse.h">
