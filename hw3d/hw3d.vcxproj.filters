@@ -57,6 +57,9 @@
     <ClCompile Include="src\DxgiInfoManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\IGraphics.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\AtumException.h">

@@ -187,6 +187,7 @@
     <ClCompile Include="src\DeviceConfig.cpp" />
     <ClCompile Include="src\DxgiInfoManager.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
+    <ClCompile Include="src\IGraphics.h" />
     <ClCompile Include="src\Keyboard.cpp" />
     <ClCompile Include="src\AtumException.cpp" />
     <ClCompile Include="src\Console.cpp" />

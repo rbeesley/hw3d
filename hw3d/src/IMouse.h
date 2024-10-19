@@ -11,9 +11,10 @@ public:
 	virtual i_mouse& operator=(const i_mouse&) = delete;
 	i_mouse(const i_mouse&&) = delete;
 	virtual i_mouse& operator=(const i_mouse&&) = delete;
-
+	struct position { int x, y; };
 public:
 	[[nodiscard]] virtual std::pair<int, int> get_pos() const noexcept = 0;
+	[[nodiscard]] virtual position pos() const noexcept = 0;
 	[[nodiscard]] virtual int get_pos_x() const noexcept = 0;
 	[[nodiscard]] virtual int get_pos_y() const noexcept = 0;
 	[[nodiscard]] virtual bool is_in_window() const noexcept = 0;

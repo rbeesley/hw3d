@@ -95,8 +95,12 @@ window::window(const int width, const int height, const LPCWSTR name)
 	// Newly created windows start off as hidden
 	ShowWindow(window_handle_, SW_SHOWDEFAULT);
 
+	// Get the mouse and keyboard
+	p_mouse_ = device_.get_mouse();
+	p_keyboard_ = device_.get_keyboard();
+
 	// Create the graphics object
-	p_graphics_ = std::make_unique<graphics>(window_handle_, width_, height_);
+	p_graphics_ = device_.get_graphics(window_handle_, width_, height_);
 
 	// Check for an error
 	if (nullptr == p_graphics_)
@@ -139,13 +143,19 @@ std::optional<int> window::process_messages()
 	return {};
 }
 
-graphics& window::get_graphics() const
+std::shared_ptr<i_mouse> window::mouse()
 {
-	if(!p_graphics_)
-	{
-		throw ATUM_WND_NO_GFX_EXCEPT();
-	}
-	return *p_graphics_;
+	return p_mouse_;
+}
+
+std::shared_ptr<i_keyboard> window::keyboard()
+{
+	return p_keyboard_;
+}
+
+std::shared_ptr<i_graphics> window::graphics()
+{
+	return p_graphics_;
 }
 
 LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
@@ -172,7 +182,7 @@ LRESULT CALLBACK window::handle_msg_thunk(const HWND window_handle, const UINT m
 
 HWND window::set_active(const HWND window_handle)
 {
-	if (mouse_->is_in_window())
+	if (p_mouse_->is_in_window())
 	{
 		if (const HWND active_window = GetActiveWindow(); active_window != window_handle)
 		{
@@ -199,7 +209,13 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	{
 	/* Window */
 	case WM_CREATE:
-		break;
+		{
+			RECT rect;
+			GetWindowRect(window_handle, &rect);
+			x_ = rect.left;
+			y_ = rect.top;
+			break;
+		}
 	case WM_COMMAND:
 		{
 			const int window_message_id = LOWORD(w_param);
@@ -208,7 +224,7 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			{
 				case 0:
 				default:
-					return DefWindowProc(window_handle, msg, w_param, l_param);
+				return DefWindowProc(window_handle, msg, w_param, l_param);
 			}
 			break;
 		}
@@ -217,24 +233,60 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 		return 0;
 		break;
 	case WM_KILLFOCUS:
-		keyboard_->clear_state();
+		p_keyboard_->clear_state();
 		break;
+	case WM_SHOWWINDOW:
+		{
+			if (w_param == TRUE) // The window is being shown
+			{
+				RECT rect;
+				GetWindowRect(window_handle, &rect);
+				x_ = rect.left;
+				y_ = rect.top;
+			}
+			break;
+		}
+	case WM_MOVE:
+		{
+			const int x_pos = static_cast<short>(LOWORD(l_param)); // Horizontal position
+			const int y_pos = static_cast<short>(HIWORD(l_param)); // Vertical position
+
+			// Calculate how far the window has moved
+			if (p_mouse_)
+			{
+				const int x_delta = x_pos - x_;
+				const int y_delta = y_pos - y_;
+
+#ifdef LOG_WINDOW_MOVEMENT_MESSAGES
+				PLOGD << "Window moved: " << x_delta << ", " << y_delta;
+#endif
+
+				// Update the mouse position so that the elements in the window which are dependent on the mouse position, are updated to appear stationary
+				p_mouse_->on_mouse_move(p_mouse_->pos().x - x_delta, p_mouse_->pos().y - y_delta);
+			}
+
+			// Store the new position for future calculations
+			x_ = x_pos;
+			y_ = y_pos;
+
+			break;
+		}
 
 	/* Keyboard */
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
 		// Filter keyboard autorepeat
-		if (!(l_param & 0x40000000 /* previous key state */) || keyboard_->is_autorepeat_enabled())
+		if (!(l_param & 0x40000000 /* previous key state */) || p_keyboard_->is_autorepeat_enabled())
 		{
-			keyboard_->on_key_pressed(static_cast<unsigned char>(w_param));
+			p_keyboard_->on_key_pressed(static_cast<unsigned char>(w_param));
 		}
 		break;
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
-		keyboard_->on_key_released(static_cast<unsigned char>(w_param));
+		p_keyboard_->on_key_released(static_cast<unsigned char>(w_param));
 		break;
 	case WM_CHAR:
-		keyboard_->on_char(static_cast<unsigned char>(w_param));
+		p_keyboard_->on_char(static_cast<unsigned char>(w_param));
 		break;
 	/* Mouse */
 	case WM_MOUSEMOVE:
@@ -247,31 +299,31 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 				if (x >= 0 && x < win->width_ && y >= 0 && y < win->height_)
 				{
 					// but internal state is still outside client region
-					if (!mouse_->is_in_window())
+					if (!p_mouse_->is_in_window())
 					{
 						// fix the state
-						mouse_->on_mouse_enter(x, y);
+						p_mouse_->on_mouse_enter(x, y);
 						SetCapture(window_handle);
 					}
 					else
 					{
-						mouse_->on_mouse_move(x, y);
+						p_mouse_->on_mouse_move(x, y);
 					}
 				}
 				// mouse is outside client region and internal state places it inside client region
-				else if(mouse_->is_in_window())
+				else if(p_mouse_->is_in_window())
 				{
 					// because a button is being held down we want to keep track of the mouse position outside the client region boundaries
-					if (mouse_->is_left_pressed() || mouse_->is_right_pressed() || mouse_->is_middle_pressed() || mouse_->is_x1_pressed() || mouse_->is_x2_pressed())
+					if (p_mouse_->is_left_pressed() || p_mouse_->is_right_pressed() || p_mouse_->is_middle_pressed() || p_mouse_->is_x1_pressed() || p_mouse_->is_x2_pressed())
 					{
-						mouse_->on_mouse_move(x, y);
+						p_mouse_->on_mouse_move(x, y);
 					}
 					// but no buttons ARE being held down
 					else
 					{
 						// fix the state
 						ReleaseCapture();
-						mouse_->on_mouse_leave();
+						p_mouse_->on_mouse_leave();
 					}
 				}
 			}
@@ -281,39 +333,39 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
 			set_active(window_handle);
-			mouse_->on_left_pressed(x, y);
+			p_mouse_->on_left_pressed(x, y);
 			break;
 		}
 	case WM_LBUTTONUP:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_->on_left_released(x, y);
+			p_mouse_->on_left_released(x, y);
 			break;
 		}
 	case WM_RBUTTONDOWN:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
 			set_active(window_handle);
-			mouse_->on_right_pressed(x, y);
+			p_mouse_->on_right_pressed(x, y);
 			break;
 		}
 	case WM_RBUTTONUP:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_->on_right_released(x, y);
+			p_mouse_->on_right_released(x, y);
 			break;
 		}
 	case WM_MBUTTONDOWN:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
 			set_active(window_handle);
-			mouse_->on_middle_pressed(x, y);
+			p_mouse_->on_middle_pressed(x, y);
 			break;
 		}
 	case WM_MBUTTONUP:
 		{
 			const auto [x, y] = MAKEPOINTS(l_param);
-			mouse_->on_middle_released(x, y);
+			p_mouse_->on_middle_released(x, y);
 			break;
 		}
 	case WM_MOUSEWHEEL:
@@ -324,10 +376,10 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			switch (msg)
 			{
 				case WM_MOUSEWHEEL: // Vertical mouse scroll wheel
-					mouse_->on_v_wheel_delta(x, y, wheel_delta);
+					p_mouse_->on_v_wheel_delta(x, y, wheel_delta);
 					break;
 				case WM_MOUSEHWHEEL: // Horizontal mouse scroll wheel
-					mouse_->on_h_wheel_delta(x, y, wheel_delta);
+					p_mouse_->on_h_wheel_delta(x, y, wheel_delta);
 					break;
 				default:
 					break;
@@ -341,10 +393,10 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			switch GET_XBUTTON_WPARAM(w_param)
 			{
 				case XBUTTON1:
-					mouse_->on_x1_pressed(x, y);
+					p_mouse_->on_x1_pressed(x, y);
 					break;
 				case XBUTTON2:
-					mouse_->on_x2_pressed(x, y);
+					p_mouse_->on_x2_pressed(x, y);
 					break;
 				default:
 					break;
@@ -357,10 +409,10 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			switch GET_XBUTTON_WPARAM(w_param)
 			{
 				case XBUTTON1:
-					mouse_->on_x1_released(x, y);
+					p_mouse_->on_x1_released(x, y);
 					break;
 				case XBUTTON2:
-					mouse_->on_x2_released(x, y);
+					p_mouse_->on_x2_released(x, y);
 					break;
 				default:
 					break;

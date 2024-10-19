@@ -8,7 +8,7 @@
 #include "DeviceConfig.h"
 #include "IKeyboard.h"
 #include "IMouse.h"
-#include "Graphics.h"
+#include "IGraphics.h"
 
 class window
 {
@@ -61,7 +61,9 @@ public:
 	~window();
 	[[nodiscard]] HWND get_handle() const;
 	static std::optional<int> process_messages();
-	graphics& get_graphics() const;
+	[[nodiscard]] static std::shared_ptr<i_mouse> mouse();
+	[[nodiscard]] static std::shared_ptr<i_keyboard> keyboard();
+	[[nodiscard]] static std::shared_ptr<i_graphics> graphics();
 	window(const window&) = delete;
 	window& operator=(const window&) = delete;
 	window(const window&&) = delete;
@@ -73,13 +75,15 @@ private:
 	static HWND set_active(HWND window_handle);
 	static LRESULT CALLBACK handle_msg(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 private:
-	inline static device_config config_;
-	inline static i_keyboard* keyboard_ = &(config_.get_keyboard());
-	inline static i_mouse* mouse_ = &(config_.get_mouse());
+	inline static device_config device_;
+	inline static std::shared_ptr<i_keyboard> p_keyboard_;
+	inline static std::shared_ptr<i_mouse> p_mouse_;
+	inline static std::shared_ptr<i_graphics> p_graphics_;
+	inline static int x_{};
+	inline static int y_{};
 	int width_{};
 	int height_{};
 	HWND window_handle_;
-	std::unique_ptr<graphics> p_graphics_;
 };
 
 // Error exception helper macro
