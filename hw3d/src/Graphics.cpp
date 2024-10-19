@@ -168,7 +168,6 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	struct vertex
 	{
 		struct { float x; float y; float z; } pos;
-		struct { float r; float g; float b; float a; } color;
 	};
 
 	// 4:3 aspect ratio correction
@@ -178,14 +177,14 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	// Create a vertex buffer structure
 	const vertex vertices[] =
 	{
-		{{ -1.0f * scale_factor, -1.0f * scale_factor, -1.0f * scale_factor },	{ 1.0f, 1.0f, 0.0f, 1.0f}}, // Bottom-left-front vertex
-		{{ 1.0f * scale_factor, -1.0f * scale_factor, -1.0f * scale_factor },	{ 1.0f, 0.0f, 0.0f, 1.0f}}, // Bottom-right-front vertex
-		{{ -1.0f * scale_factor, 1.0f * scale_factor, -1.0f * scale_factor },	{ 1.0f, 1.0f, 1.0f, 1.0f}}, // Top-left-front vertex
-		{{ 1.0f * scale_factor, 1.0f * scale_factor, -1.0f * scale_factor },		{ 1.0f, 0.0f, 1.0f, 1.0f}}, // Top-right-front vertex
-		{{ -1.0f * scale_factor, -1.0f * scale_factor, 1.0f * scale_factor },	{ 0.0f, 1.0f, 0.0f, 1.0f}}, // Bottom-left-back vertex
-		{{ 1.0f * scale_factor, -1.0f * scale_factor, 1.0f * scale_factor },		{ 0.0f, 0.0f, 0.0f, 1.0f}}, // Bottom-right-back vertex
-		{{ -1.0f * scale_factor, 1.0f * scale_factor, 1.0f * scale_factor },		{ 0.0f, 1.0f, 1.0f, 1.0f}}, // Top-left-back vertex
-		{{ 1.0f * scale_factor, 1.0f * scale_factor, 1.0f * scale_factor },		{ 0.0f, 0.0f, 1.0f, 1.0f}}, // Top-right-back vertex
+		{ -1.0f * scale_factor, -1.0f * scale_factor, -1.0f * scale_factor },	// Bottom-left-front vertex
+		{ 1.0f * scale_factor, -1.0f * scale_factor, -1.0f * scale_factor },	// Bottom-right-front vertex
+		{ -1.0f * scale_factor, 1.0f * scale_factor, -1.0f * scale_factor },	// Top-left-front vertex
+		{ 1.0f * scale_factor, 1.0f * scale_factor, -1.0f * scale_factor },	// Top-right-front vertex
+		{ -1.0f * scale_factor, -1.0f * scale_factor, 1.0f * scale_factor },	// Bottom-left-back vertex
+		{ 1.0f * scale_factor, -1.0f * scale_factor, 1.0f * scale_factor },	// Bottom-right-back vertex
+		{ -1.0f * scale_factor, 1.0f * scale_factor, 1.0f * scale_factor },	// Top-left-back vertex
+		{ 1.0f * scale_factor, 1.0f * scale_factor, 1.0f * scale_factor },		// Top-right-back vertex
 	};
 
 	// Create the vertex buffer
@@ -252,21 +251,22 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	p_device_context_->IASetIndexBuffer(p_index_buffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R16_UINT, 0u);
 
 	// Create a constant buffer for a transformation matrix
-	struct constant_buffer { dx::XMMATRIX transform; };
-	const constant_buffer constant_buffer = {
+	struct transform_constant_buffer { dx::XMMATRIX transform; };
+	const transform_constant_buffer transform_constant_buffer = {
 		{dx::XMMatrixTranspose(
-			dx::XMMatrixRotationZ(angle) * 
-			dx::XMMatrixRotationX(angle) * 
-			dx::XMMatrixTranslation(x, y, 4.0f) * 
+			dx::XMMatrixRotationX(3 * angle / 3) * 
+			dx::XMMatrixRotationY(5 * angle / 3) *
+			dx::XMMatrixRotationZ(7 * angle / 3) *
+			dx::XMMatrixTranslation(x, y, 4.0f) *
 			dx::XMMatrixPerspectiveLH(1.0f, aspect_ratio, 0.5f, 10.0f)
 		)}
 	};
 
-	wrl::ComPtr<ID3D11Buffer> p_constant_buffer;
+	wrl::ComPtr<ID3D11Buffer> p_transform_constant_buffer;
 
 	// ReSharper disable once CppVariableCanBeMadeConstexpr
-	D3D11_BUFFER_DESC constant_buffer_description = {
-		.ByteWidth = sizeof(constant_buffer),
+	D3D11_BUFFER_DESC transform_constant_buffer_description = {
+		.ByteWidth = sizeof(transform_constant_buffer),
 		.Usage = D3D11_USAGE_DYNAMIC,
 		.BindFlags = D3D11_BIND_CONSTANT_BUFFER,
 		.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
@@ -274,16 +274,61 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 		.StructureByteStride = 0u
 	};
 
-	D3D11_SUBRESOURCE_DATA constant_buffer_subresource_data = {
-		.pSysMem = &constant_buffer,
+	D3D11_SUBRESOURCE_DATA transform_constant_buffer_subresource_data = {
+		.pSysMem = &transform_constant_buffer,
 		.SysMemPitch = 0u,
 		.SysMemSlicePitch = 0u
 	};
 
-	GFX_THROW_INFO(p_device_->CreateBuffer(&constant_buffer_description, &constant_buffer_subresource_data, &p_constant_buffer));
+	GFX_THROW_INFO(p_device_->CreateBuffer(&transform_constant_buffer_description, &transform_constant_buffer_subresource_data, &p_transform_constant_buffer));
 
 	// Bind the constant buffer to the pipeline
-	p_device_context_->VSSetConstantBuffers(0u, 1u, p_constant_buffer.GetAddressOf());
+	p_device_context_->VSSetConstantBuffers(0u, 1u, p_transform_constant_buffer.GetAddressOf());
+
+	struct face_color_constant_buffer
+	{
+		struct
+		{
+			float r;
+			float g;
+			float b;
+			float a;
+		} face_colors[6];
+	};
+	const face_color_constant_buffer face_color_constant_buffer =
+	{
+		{
+			{ 1.0f, 0.0f, 1.0f, 1.0f },
+			{ 1.0f, 0.0f, 0.0f, 1.0f },
+			{ 0.0f, 1.0f, 0.0f, 1.0f },
+			{ 0.0f, 0.0f, 1.0f, 1.0f },
+			{ 1.0f, 1.0f, 0.0f, 1.0f },
+			{ 1.0f, 1.0f, 1.0f, 1.0f },
+		}
+	};
+
+	wrl::ComPtr<ID3D11Buffer> p_face_color_constant_buffer;
+
+	// ReSharper disable once CppVariableCanBeMadeConstexpr
+	D3D11_BUFFER_DESC face_color_constant_buffer_description = {
+		.ByteWidth = sizeof(face_color_constant_buffer),
+		.Usage = D3D11_USAGE_DEFAULT,
+		.BindFlags = D3D11_BIND_CONSTANT_BUFFER,
+		.CPUAccessFlags = 0u,
+		.MiscFlags = 0u,
+		.StructureByteStride = 0u
+	};
+
+	D3D11_SUBRESOURCE_DATA face_color_constant_buffer_subresource_data = {
+		.pSysMem = &face_color_constant_buffer,
+		.SysMemPitch = 0u,
+		.SysMemSlicePitch = 0u
+	};
+
+	GFX_THROW_INFO(p_device_->CreateBuffer(&face_color_constant_buffer_description, &face_color_constant_buffer_subresource_data, &p_face_color_constant_buffer));
+
+	// Bind the constant buffer to the pipeline
+	p_device_context_->PSSetConstantBuffers(0u, 1u, p_face_color_constant_buffer.GetAddressOf());
 
 	{
 		wrl::ComPtr<ID3DBlob> p_blob;
@@ -323,15 +368,6 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 					.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
 					.InputSlot = 0u,
 					.AlignedByteOffset = 0u,
-					.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
-					.InstanceDataStepRate = 0u
-				},
-				{
-					.SemanticName = "COLOR",	// Input in the vertex shader
-					.SemanticIndex = 0u,
-					.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT,
-					.InputSlot = 0u,
-					.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT,
 					.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
 					.InstanceDataStepRate = 0u
 				},
