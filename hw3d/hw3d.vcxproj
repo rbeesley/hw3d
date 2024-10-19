@@ -106,7 +106,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
@@ -129,11 +129,11 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)lib\DXErr</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -150,7 +150,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
@@ -175,18 +175,19 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EntryPointSymbol>
       </EntryPointSymbol>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ProjectDir)lib\DXErr</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\App.cpp" />
-    <ClCompile Include="src\DeviceConfig.cpp" />
+    <ClCompile Include="src\DeviceHAL.cpp" />
     <ClCompile Include="src\DxgiInfoManager.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
+    <ClCompile Include="src\IGraphics.h" />
     <ClCompile Include="src\Keyboard.cpp" />
     <ClCompile Include="src\AtumException.cpp" />
     <ClCompile Include="src\Console.cpp" />
@@ -228,7 +229,7 @@
     <ClInclude Include="3rdparty\plog\WinApi.h" />
     <ClInclude Include="lib\DXErr\DXErr.h" />
     <ClInclude Include="src\App.h" />
-    <ClInclude Include="src\DeviceConfig.h" />
+    <ClInclude Include="src\DeviceHAL.h" />
     <ClInclude Include="src\DxgiInfoManager.h" />
     <ClInclude Include="src\Graphics.h" />
     <ClInclude Include="src\LoggingConfig.h" />

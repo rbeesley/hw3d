@@ -6,7 +6,11 @@
 #include "LoggingConfig.h"
 
 #include <d3dcompiler.h>
+#include <DirectXMath.h>
 #include <sstream>
+
+namespace wrl = Microsoft::WRL;
+namespace dx = DirectX;
 
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "D3DCompiler.lib")
@@ -56,8 +60,6 @@
 // Wrap graphics call with error check for a call which doesn't return an hresult
 #define GFX_THROW_INFO_ONLY(call) (call)
 #endif
-
-namespace wrl = Microsoft::WRL;
 
 graphics::graphics(const HWND parent, int width, int height) :
 	parent_(parent),
@@ -158,7 +160,7 @@ void graphics::clear_buffer(const float red, const float green, const float blue
 }
 
 // Experimental drawing code
-void graphics::draw_test_triangle(const float angle)
+void graphics::draw_test_triangle(const float angle, const float x, const float y)
 {
 	namespace wrl = Microsoft::WRL;
 	HRESULT hresult;
@@ -171,7 +173,7 @@ void graphics::draw_test_triangle(const float angle)
 
 	// 4:3 aspect ratio correction
 	const float aspect_ratio = height_ / width_;
-	constexpr float scale_factor = 2.0f;
+	constexpr float scale_factor = 1.5f;
 
 	// Create a vertex buffer structure
 	const vertex vertices[] =
@@ -183,14 +185,6 @@ void graphics::draw_test_triangle(const float angle)
 		{{-0.433f * scale_factor, -0.25f * scale_factor},	{ 0.0f, 0.0f, 1.0f, 1.0f}},  // Bottom-left vertex
 		{{-0.433f * scale_factor, 0.25f * scale_factor},	{ 1.0f, 0.0f, 1.0f, 1.0f}},  // Top-left vertex
 	};
-
-	PLOGD << "vertices";
-	PLOGD << "[0].pos.x:" << vertices[0].pos.x << ", [0].pos.y:" << vertices[0].pos.y;
-	PLOGD << "[1].pos.x:" << vertices[1].pos.x << ", [1].pos.y:" << vertices[1].pos.y;
-	PLOGD << "[2].pos.x:" << vertices[2].pos.x << ", [2].pos.y:" << vertices[2].pos.y;
-	PLOGD << "[3].pos.x:" << vertices[3].pos.x << ", [3].pos.y:" << vertices[3].pos.y;
-	PLOGD << "[4].pos.x:" << vertices[4].pos.x << ", [4].pos.y:" << vertices[4].pos.y;
-	PLOGD << "[5].pos.x:" << vertices[5].pos.x << ", [5].pos.y:" << vertices[5].pos.y;
 
 	// Create the vertex buffer
 	wrl::ComPtr<ID3D11Buffer> p_vertex_buffer;
@@ -254,14 +248,14 @@ void graphics::draw_test_triangle(const float angle)
 	p_device_context_->IASetIndexBuffer(p_index_buffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R16_UINT, 0u);
 
 	// Create a constant buffer for a transformation matrix
-	struct constant_buffer { struct { float element[4][4]; } transformation; };
+	struct constant_buffer { dx::XMMATRIX transform; };
 	const constant_buffer constant_buffer = {
-		{
-			aspect_ratio * std::cos(angle), std::sin(angle), 0.0f, 0.0f,
-			aspect_ratio * -std::sin(angle), std::cos(angle), 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f,
-		} };
+		{dx::XMMatrixTranspose(
+			dx::XMMatrixRotationZ(angle) * 
+			dx::XMMatrixScaling(aspect_ratio, 1.0f, 1.0f) *
+			dx::XMMatrixTranslation(x, y, 0.0f)
+		)}
+	};
 
 	wrl::ComPtr<ID3D11Buffer> p_constant_buffer;
 

@@ -19,7 +19,7 @@ public:
 	class event
 	{
 	public:
-		enum class event_type
+		enum class event_type : std::uint8_t
 		{
 			l_press,
 			l_release,
@@ -122,6 +122,7 @@ private:
 
 public:
 	[[nodiscard]] std::pair<int, int> get_pos() const noexcept override;
+	[[nodiscard]] position pos() const noexcept override;
 	[[nodiscard]] int get_pos_x() const noexcept override;
 	[[nodiscard]] int get_pos_y() const noexcept override;
 	[[nodiscard]] bool is_in_window() const noexcept override;

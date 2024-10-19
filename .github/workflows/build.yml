@@ -46,8 +46,8 @@ jobs:
           New-Item -ItemType Directory -Path $destinationPath
         }
 
-        # Get all .exe and .pdb files from the platform/configuration directories
-        Get-ChildItem -Path $sourcePath -Recurse -File -Include *.exe, *.pdb | Where-Object {
+        # Get all .exe, .pdb, and .cso files from the platform/configuration directories
+        Get-ChildItem -Path $sourcePath -Recurse -File -Include *.exe, *.pdb, *.cso | Where-Object {
           $_.DirectoryName -match '\\(Win32|x64)\\(Release|Debug)$'
         } | ForEach-Object {
           Copy-Item -Path $_.FullName -Destination $destinationPath -Force

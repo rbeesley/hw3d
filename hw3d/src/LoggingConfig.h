@@ -6,6 +6,7 @@
 /* Log the Window Messages - Window.cpp */
 //#define LOG_WINDOW_MESSAGES
 //#define LOG_WINDOW_MOUSE_MESSAGES
+//#define LOG_WINDOW_MOVEMENT_MESSAGES
 
 /* Log the Keyboard Messages and/or Characters - Keyboard.cpp */
 //#define LOG_KEYBOARD_MESSAGES

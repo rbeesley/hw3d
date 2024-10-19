@@ -20,7 +20,7 @@ public:
 	class event
 	{
 	public:
-		enum class event_type
+		enum class event_type : std::uint8_t
 		{
 			press,
 			release,

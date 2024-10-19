@@ -48,13 +48,27 @@ int app::run() const
 	}
 }
 
+inline float map(const float in, const float in_min, const float in_max, const float out_min, const float out_max)
+{
+	return (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+}
+
+inline float map(const int in, const int in_min, const int in_max, const int out_min, const int out_max)
+{
+	return map(static_cast<float>(in), static_cast<float>(in_min), static_cast<float>(in_max), static_cast<float>(out_min), static_cast<float>(out_max));
+}
+
 void app::render_frame() const
 {
 	const float c = sin(timer_.peek()) / 2.0f + 0.5f;
-	window_.get_graphics().clear_buffer(c, c, 1.0f);
+	window::graphics()->clear_buffer(c, c, 1.0f);
 
 	// Experiment with drawing graphics
-	window_.get_graphics().draw_test_triangle(timer_.peek());
+	window::graphics()->draw_test_triangle(
+		timer_.peek(),
+		map(window::mouse()->pos().x, 0, width-1, -1, 1),
+		map(window::mouse()->pos().y, 0, height-1, 1, -1)
+	);
 
-	window_.get_graphics().end_frame();
+	window::graphics()->end_frame();
 }
