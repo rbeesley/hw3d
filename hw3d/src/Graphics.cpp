@@ -167,23 +167,25 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 
 	struct vertex
 	{
-		struct { float x; float y; } pos;
+		struct { float x; float y; float z; } pos;
 		struct { float r; float g; float b; float a; } color;
 	};
 
 	// 4:3 aspect ratio correction
 	const float aspect_ratio = height_ / width_;
-	constexpr float scale_factor = 1.5f;
+	constexpr float scale_factor = 1.0f;
 
 	// Create a vertex buffer structure
 	const vertex vertices[] =
 	{
-		{{ 0.0f * scale_factor, 0.5f * scale_factor},		{ 1.0f, 0.0f, 0.0f, 1.0f}},  // Top vertex
-		{{ 0.433f * scale_factor, 0.25f * scale_factor},	{ 1.0f, 1.0f, 0.0f, 1.0f}},  // Top-right vertex
-		{{ 0.433f * scale_factor, -0.25f * scale_factor},	{ 0.0f, 1.0f, 0.0f, 1.0f}},  // Bottom-right vertex
-		{{ 0.0f * scale_factor, -0.5f * scale_factor},		{ 0.0f, 1.0f, 1.0f, 1.0f}},  // Bottom vertex
-		{{-0.433f * scale_factor, -0.25f * scale_factor},	{ 0.0f, 0.0f, 1.0f, 1.0f}},  // Bottom-left vertex
-		{{-0.433f * scale_factor, 0.25f * scale_factor},	{ 1.0f, 0.0f, 1.0f, 1.0f}},  // Top-left vertex
+		{{ -1.0f * scale_factor, -1.0f * scale_factor, -1.0f * scale_factor },	{ 1.0f, 1.0f, 0.0f, 1.0f}}, // Bottom-left-front vertex
+		{{ 1.0f * scale_factor, -1.0f * scale_factor, -1.0f * scale_factor },	{ 1.0f, 0.0f, 0.0f, 1.0f}}, // Bottom-right-front vertex
+		{{ -1.0f * scale_factor, 1.0f * scale_factor, -1.0f * scale_factor },	{ 1.0f, 1.0f, 1.0f, 1.0f}}, // Top-left-front vertex
+		{{ 1.0f * scale_factor, 1.0f * scale_factor, -1.0f * scale_factor },		{ 1.0f, 0.0f, 1.0f, 1.0f}}, // Top-right-front vertex
+		{{ -1.0f * scale_factor, -1.0f * scale_factor, 1.0f * scale_factor },	{ 0.0f, 1.0f, 0.0f, 1.0f}}, // Bottom-left-back vertex
+		{{ 1.0f * scale_factor, -1.0f * scale_factor, 1.0f * scale_factor },		{ 0.0f, 0.0f, 0.0f, 1.0f}}, // Bottom-right-back vertex
+		{{ -1.0f * scale_factor, 1.0f * scale_factor, 1.0f * scale_factor },		{ 0.0f, 1.0f, 1.0f, 1.0f}}, // Top-left-back vertex
+		{{ 1.0f * scale_factor, 1.0f * scale_factor, 1.0f * scale_factor },		{ 0.0f, 0.0f, 1.0f, 1.0f}}, // Top-right-back vertex
 	};
 
 	// Create the vertex buffer
@@ -215,10 +217,12 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	// Create an index buffer structure
 	const unsigned short indices[] =
 	{
-		0, 2, 4, // First triangle
-		0, 1, 2, // Second triangle
-		2, 3, 4, // Third triangle
-		4, 5, 0, // Fourth triangle
+		0, 2, 1,  2, 3, 1,
+		1, 3, 5,  3, 7, 5,
+		2, 6, 3,  3, 6, 7,
+		4, 5, 7,  4, 7, 6,
+		0, 4, 2,  2, 4, 6,
+		0, 1, 4,  1, 5, 4,
 	};
 
 	// Create the index buffer
@@ -252,8 +256,9 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	const constant_buffer constant_buffer = {
 		{dx::XMMatrixTranspose(
 			dx::XMMatrixRotationZ(angle) * 
-			dx::XMMatrixScaling(aspect_ratio, 1.0f, 1.0f) *
-			dx::XMMatrixTranslation(x, y, 0.0f)
+			dx::XMMatrixRotationX(angle) * 
+			dx::XMMatrixTranslation(x, y, 4.0f) * 
+			dx::XMMatrixPerspectiveLH(1.0f, aspect_ratio, 0.5f, 10.0f)
 		)}
 	};
 
@@ -315,7 +320,7 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 				{
 					.SemanticName = "POSITION",	// Input in the vertex shader
 					.SemanticIndex = 0u,
-					.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT,
+					.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
 					.InputSlot = 0u,
 					.AlignedByteOffset = 0u,
 					.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
