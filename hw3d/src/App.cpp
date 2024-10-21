@@ -76,7 +76,7 @@ void app::render_frame() const
 		0, 0, 0
 	);
 	window::graphics()->draw_test_triangle(
-		timer_.peek(),
+		-timer_.peek(),
 		0, 0, map(window::mouse()->pos().y, 0, height - 1, 5, -1)
 	);
 

@@ -70,31 +70,31 @@ graphics::graphics(const HWND parent, int width, int height) :
 
 	DXGI_SWAP_CHAIN_DESC swap_chain_desc = {
 		.BufferDesc = {
-			.Width = 0,
-			.Height = 0,
+			.Width = static_cast<UINT>(width),
+			.Height = static_cast<UINT>(height),
 			.RefreshRate = {
-				.Numerator = 0,
-				.Denominator = 0,
+				.Numerator = 0u,
+				.Denominator = 0u,
 			},
 			.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM, // RGBA
-			.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
-			.Scaling = DXGI_MODE_SCALING_UNSPECIFIED,
+			.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER::DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
+			.Scaling = DXGI_MODE_SCALING::DXGI_MODE_SCALING_UNSPECIFIED,
 		},
 		.SampleDesc = {
-			.Count = 1,
-			.Quality = 0,
+			.Count = 1u,
+			.Quality = 0u,
 		},
 		.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
-		.BufferCount = 1,
+		.BufferCount = 1u,
 		.OutputWindow = parent_,
 		.Windowed = TRUE,
-		.SwapEffect = DXGI_SWAP_EFFECT_DISCARD,
-		.Flags = 0,
+		.SwapEffect = DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_DISCARD,
+		.Flags = 0u,
 	};
 
 	UINT swap_create_flags = 0u;
 #if defined(DEBUG) || defined(_DEBUG)
-	swap_create_flags |= D3D11_CREATE_DEVICE_DEBUG;
+	swap_create_flags |= D3D11_CREATE_DEVICE_FLAG::D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
 	// For checking results of D3D functions
@@ -103,7 +103,7 @@ graphics::graphics(const HWND parent, int width, int height) :
 	// Create device and front/back buffers, swap chain, and rendering context
 	GFX_THROW_INFO(D3D11CreateDeviceAndSwapChain(
 		nullptr,
-		D3D_DRIVER_TYPE_HARDWARE,
+		D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_HARDWARE,
 		nullptr,
 		swap_create_flags,
 		nullptr,
@@ -131,6 +131,60 @@ graphics::graphics(const HWND parent, int width, int height) :
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
+
+	// Create depth stencil state
+	D3D11_DEPTH_STENCIL_DESC depth_stencil_desc = {
+		.DepthEnable = TRUE,
+		.DepthWriteMask = D3D11_DEPTH_WRITE_MASK::D3D11_DEPTH_WRITE_MASK_ALL,
+		.DepthFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS,
+		.StencilEnable = FALSE,
+		.StencilReadMask = 0,
+		.StencilWriteMask = 0,
+		.FrontFace = {},
+		.BackFace = {}
+	};
+
+	wrl::ComPtr<ID3D11DepthStencilState> p_depth_stencil_state;
+	GFX_THROW_INFO(p_device_->CreateDepthStencilState(&depth_stencil_desc, &p_depth_stencil_state));
+
+	// Bind depth state to the pipeline
+	p_device_context_->OMSetDepthStencilState(p_depth_stencil_state.Get(), 0u);
+
+	// Create depth stencil texture
+	D3D11_TEXTURE2D_DESC depth_desc = {
+		.Width = static_cast<UINT>(width),
+		.Height = static_cast<UINT>(height),
+		.MipLevels = 1u,
+		.ArraySize = 1u,
+		.Format = DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT,
+		.SampleDesc = {
+			.Count = 1u,
+			.Quality = 0u
+		},
+		.Usage = D3D11_USAGE::D3D11_USAGE_DEFAULT,
+		.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_DEPTH_STENCIL,
+		.CPUAccessFlags = 0u,
+		.MiscFlags = 0u
+	};
+
+	wrl::ComPtr<ID3D11Texture2D> p_depth_stencil;
+	GFX_THROW_INFO(p_device_->CreateTexture2D(&depth_desc, nullptr, &p_depth_stencil));
+
+	// Create view of the depth stencil texture
+	D3D11_DEPTH_STENCIL_VIEW_DESC depth_stencil_view_desc = {
+		.Format = DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT,	// May also be DXGI_FORMAT::DXGI_FORMAT_UNKNOWN, and it will use the same as the depth_desc
+		.ViewDimension = D3D11_DSV_DIMENSION::D3D11_DSV_DIMENSION_TEXTURE2D,
+		.Flags = 0u,
+		.Texture2D = {
+			.MipSlice = 0u,
+		}
+	};
+
+	GFX_THROW_INFO(p_device_->CreateDepthStencilView(p_depth_stencil.Get(), &depth_stencil_view_desc, &p_depth_stencil_view_));
+
+	// Bind the render target and stencil views
+	//  - Output Merger
+	p_device_context_->OMSetRenderTargets(1u, p_target_view_.GetAddressOf(), p_depth_stencil_view_.Get());
 }
 
 void graphics::end_frame()
@@ -157,6 +211,7 @@ void graphics::clear_buffer(const float red, const float green, const float blue
 {
 	const float color[] = { red, green, blue, 1.0f };
 	p_device_context_->ClearRenderTargetView(p_target_view_.Get(), color);
+	p_device_context_->ClearDepthStencilView(p_depth_stencil_view_.Get(), D3D11_CLEAR_FLAG::D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
 // Experimental drawing code
@@ -200,8 +255,8 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 
 	constexpr D3D11_BUFFER_DESC vertex_buffer_desc = {
 		.ByteWidth = sizeof(vertices),
-		.Usage = D3D11_USAGE_DEFAULT,
-		.BindFlags = D3D11_BIND_VERTEX_BUFFER,
+		.Usage = D3D11_USAGE::D3D11_USAGE_DEFAULT,
+		.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER,
 		.CPUAccessFlags = 0u,
 		.MiscFlags = 0u,
 		.StructureByteStride = sizeof(vertex),
@@ -251,8 +306,8 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 
 	constexpr D3D11_BUFFER_DESC index_buffer_desc = {
 		.ByteWidth = sizeof(indices),
-		.Usage = D3D11_USAGE_DEFAULT,
-		.BindFlags = D3D11_BIND_INDEX_BUFFER,
+		.Usage = D3D11_USAGE::D3D11_USAGE_DEFAULT,
+		.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_INDEX_BUFFER,
 		.CPUAccessFlags = 0u,
 		.MiscFlags = 0u,
 		.StructureByteStride = sizeof(unsigned short),
@@ -289,9 +344,9 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	// ReSharper disable once CppVariableCanBeMadeConstexpr
 	D3D11_BUFFER_DESC transform_constant_buffer_description = {
 		.ByteWidth = sizeof(transform_constant_buffer),
-		.Usage = D3D11_USAGE_DYNAMIC,
-		.BindFlags = D3D11_BIND_CONSTANT_BUFFER,
-		.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
+		.Usage = D3D11_USAGE::D3D11_USAGE_DYNAMIC,
+		.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
+		.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE,
 		.MiscFlags = 0u,
 		.StructureByteStride = 0u
 	};
@@ -334,8 +389,8 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	// ReSharper disable once CppVariableCanBeMadeConstexpr
 	D3D11_BUFFER_DESC face_color_constant_buffer_description = {
 		.ByteWidth = sizeof(face_color_constant_buffer),
-		.Usage = D3D11_USAGE_DEFAULT,
-		.BindFlags = D3D11_BIND_CONSTANT_BUFFER,
+		.Usage = D3D11_USAGE::D3D11_USAGE_DEFAULT,
+		.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
 		.CPUAccessFlags = 0u,
 		.MiscFlags = 0u,
 		.StructureByteStride = 0u
@@ -390,7 +445,7 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 					.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
 					.InputSlot = 0u,
 					.AlignedByteOffset = 0u,
-					.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
+					.InputSlotClass = D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
 					.InstanceDataStepRate = 0u
 				},
 			};
@@ -408,11 +463,12 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 
 	// Bind the render target
 	//  - Output Merger
-	p_device_context_->OMSetRenderTargets(1u, p_target_view_.GetAddressOf(), nullptr);
+	// This is now bound in initialization to include the stencil view
+	//p_device_context_->OMSetRenderTargets(1u, p_target_view_.GetAddressOf(), nullptr);
 
 	// Set primitive topology to triangle list
 	//  - Input Assembler
-	p_device_context_->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	p_device_context_->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Configure the viewport
 	//  - Rasterizer
