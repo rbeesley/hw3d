@@ -4,13 +4,11 @@
 #include <optional>
 #include <queue>
 
-#include "IKeyboard.h"
-
-class keyboard final : public i_keyboard
+class keyboard
 {
 public:
 	keyboard() = default;
-	~keyboard() override = default;
+	~keyboard() = default;
 	keyboard(const keyboard&) = delete;
 	keyboard& operator=(const keyboard&) = delete;
 	keyboard(const keyboard&&) = delete;
@@ -67,10 +65,10 @@ private:
 	[[nodiscard]] bool is_key_empty() const noexcept;
 	void clear_event_buffer() noexcept;
 public:
-	[[nodiscard]] bool is_key_pressed(unsigned char keycode) const noexcept override;
-	void on_key_pressed(unsigned char key_code) noexcept override;
-	void on_key_released(unsigned char key_code) noexcept override;
-	void clear_state() noexcept override;
+	[[nodiscard]] bool is_key_pressed(unsigned char keycode) const noexcept;
+	void on_key_pressed(unsigned char key_code) noexcept;
+	void on_key_released(unsigned char key_code) noexcept;
+	void clear_state() noexcept;
 
 	// char event management
 private:
@@ -79,13 +77,13 @@ private:
 	void clear_char_buffer() noexcept;
 	void clear() noexcept;
 public:
-	void on_char(unsigned char character) noexcept override;
+	void on_char(unsigned char character) noexcept;
 
 	// auto repeat control
 public:
-	void enable_autorepeat() noexcept override;
-	void disable_autorepeat() noexcept override;
-	[[nodiscard]] bool is_autorepeat_enabled() const noexcept override;
+	void enable_autorepeat() noexcept;
+	void disable_autorepeat() noexcept;
+	[[nodiscard]] bool is_autorepeat_enabled() const noexcept;
 
 private:
 	static constexpr unsigned int number_of_keys = 256u;

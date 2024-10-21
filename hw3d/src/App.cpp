@@ -68,17 +68,17 @@ constexpr float PIDIV4 = 0.785398163f;
 void app::render_frame() const
 {
 	const float c = map(sin(timer_.peek()), -1.0f, 1.0f, 0.25f, 0.75f);
-	window::graphics()->clear_buffer(c, c, 1.0f);
+	window::get_graphics()->clear_buffer(c, c, 1.0f);
 
 	// Experiment with drawing graphics
-	window::graphics()->draw_test_triangle(
-		map(static_cast<float>(window::mouse()->pos().x), 0.0f, width - 1.0f, 0.0f, 5 * TWOPI) + timer_.peek(),
+	window::get_graphics()->draw_test_triangle(
+		map(static_cast<float>(window::get_mouse()->pos().x), 0.0f, width - 1.0f, 0.0f, 5 * TWOPI) + timer_.peek(),
 		0, 0, 0
 	);
-	window::graphics()->draw_test_triangle(
+	window::get_graphics()->draw_test_triangle(
 		-timer_.peek(),
-		0, 0, map(window::mouse()->pos().y, 0, height - 1, 5, -1)
+		0, 0, map(window::get_mouse()->pos().y, 0, height - 1, 5, -1)
 	);
 
-	window::graphics()->end_frame();
+	window::get_graphics()->end_frame();
 }

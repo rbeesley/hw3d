@@ -6,9 +6,9 @@
 #include "AtumException.h"
 #include "AtumWindows.h"
 #include "DeviceHAL.h"
-#include "IKeyboard.h"
-#include "IMouse.h"
-#include "IGraphics.h"
+#include "Keyboard.h"
+#include "Mouse.h"
+#include "Graphics.h"
 
 class window
 {
@@ -61,9 +61,9 @@ public:
 	~window();
 	[[nodiscard]] HWND get_handle() const;
 	static std::optional<int> process_messages();
-	[[nodiscard]] static std::shared_ptr<i_mouse> mouse();
-	[[nodiscard]] static std::shared_ptr<i_keyboard> keyboard();
-	[[nodiscard]] static std::shared_ptr<i_graphics> graphics();
+	[[nodiscard]] static std::shared_ptr<mouse> get_mouse();
+	[[nodiscard]] static std::shared_ptr<keyboard> get_keyboard();
+	[[nodiscard]] static std::shared_ptr<graphics> get_graphics();
 	window(const window&) = delete;
 	window& operator=(const window&) = delete;
 	window(const window&&) = delete;
@@ -76,9 +76,9 @@ private:
 	static LRESULT CALLBACK handle_msg(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 private:
 	inline static device_hal device_;
-	inline static std::shared_ptr<i_keyboard> p_keyboard_;
-	inline static std::shared_ptr<i_mouse> p_mouse_;
-	inline static std::shared_ptr<i_graphics> p_graphics_;
+	inline static std::shared_ptr<mouse> p_mouse_;
+	inline static std::shared_ptr<keyboard> p_keyboard_;
+	inline static std::shared_ptr<graphics> p_graphics_;
 	inline static int x_{};
 	inline static int y_{};
 	int width_{};

@@ -187,7 +187,6 @@
     <ClCompile Include="src\DeviceHAL.cpp" />
     <ClCompile Include="src\DxgiInfoManager.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
-    <ClCompile Include="src\IGraphics.h" />
     <ClCompile Include="src\Keyboard.cpp" />
     <ClCompile Include="src\AtumException.cpp" />
     <ClCompile Include="src\Console.cpp" />
@@ -233,8 +232,6 @@
     <ClInclude Include="src\DxgiInfoManager.h" />
     <ClInclude Include="src\Graphics.h" />
     <ClInclude Include="src\LoggingConfig.h" />
-    <ClInclude Include="src\IKeyboard.h" />
-    <ClInclude Include="src\IMouse.h" />
     <ClInclude Include="src\Keyboard.h" />
     <ClInclude Include="resources\resource.h" />
     <ClInclude Include="src\AtumException.h" />

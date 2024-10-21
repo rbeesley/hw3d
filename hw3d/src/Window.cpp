@@ -143,17 +143,17 @@ std::optional<int> window::process_messages()
 	return {};
 }
 
-std::shared_ptr<i_mouse> window::mouse()
+std::shared_ptr<mouse> window::get_mouse()
 {
 	return p_mouse_;
 }
 
-std::shared_ptr<i_keyboard> window::keyboard()
+std::shared_ptr<keyboard> window::get_keyboard()
 {
 	return p_keyboard_;
 }
 
-std::shared_ptr<i_graphics> window::graphics()
+std::shared_ptr<graphics> window::get_graphics()
 {
 	return p_graphics_;
 }

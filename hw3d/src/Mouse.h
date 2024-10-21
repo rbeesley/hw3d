@@ -3,13 +3,11 @@
 #include <queue>
 #include <utility>
 
-#include "IMouse.h"
-
-class mouse final : public i_mouse
+class mouse
 {
 public:
 	mouse() = default;
-	~mouse() override = default;
+	~mouse() = default;
 	mouse(const mouse&) = delete;
 	mouse& operator=(const mouse&) = delete;
 	mouse(const mouse&&) = delete;
@@ -121,35 +119,36 @@ private:
 	void clear() noexcept;
 
 public:
-	[[nodiscard]] std::pair<int, int> get_pos() const noexcept override;
-	[[nodiscard]] position pos() const noexcept override;
-	[[nodiscard]] int get_pos_x() const noexcept override;
-	[[nodiscard]] int get_pos_y() const noexcept override;
-	[[nodiscard]] bool is_in_window() const noexcept override;
-	[[nodiscard]] bool is_left_pressed() const noexcept override;
-	[[nodiscard]] bool is_right_pressed() const noexcept override;
-	[[nodiscard]] bool is_middle_pressed() const noexcept override;
-	[[nodiscard]] bool is_x1_pressed() const noexcept override;
-	[[nodiscard]] bool is_x2_pressed() const noexcept override;
-	void on_mouse_move(int x, int y) noexcept override;
-	void on_mouse_leave() noexcept override;
-	void on_mouse_enter(int x, int y) noexcept override;
-	void on_left_pressed(int x, int y) noexcept override;
-	void on_left_released(int x, int y) noexcept override;
-	void on_right_pressed(int x, int y) noexcept override;
-	void on_right_released(int x, int y) noexcept override;
-	void on_middle_pressed(int x, int y) noexcept override;
-	void on_middle_released(int x, int y) noexcept override;
-	void on_x1_pressed(int x, int y) noexcept override;
-	void on_x1_released(int x, int y) noexcept override;
-	void on_x2_pressed(int x, int y) noexcept override;
-	void on_x2_released(int x, int y) noexcept override;
-	void on_wheel_up(int x, int y) noexcept override;
-	void on_wheel_down(int x, int y) noexcept override;
-	void on_wheel_right(int x, int y) noexcept override;
-	void on_wheel_left(int x, int y) noexcept override;
-	void on_v_wheel_delta(int x, int y, int delta) noexcept override;
-	void on_h_wheel_delta(int x, int y, int delta) noexcept override;
+	struct position { int x, y; };
+	[[nodiscard]] std::pair<int, int> get_pos() const noexcept;
+	[[nodiscard]] position pos() const noexcept;
+	[[nodiscard]] int get_pos_x() const noexcept;
+	[[nodiscard]] int get_pos_y() const noexcept;
+	[[nodiscard]] bool is_in_window() const noexcept;
+	[[nodiscard]] bool is_left_pressed() const noexcept;
+	[[nodiscard]] bool is_right_pressed() const noexcept;
+	[[nodiscard]] bool is_middle_pressed() const noexcept;
+	[[nodiscard]] bool is_x1_pressed() const noexcept;
+	[[nodiscard]] bool is_x2_pressed() const noexcept;
+	void on_mouse_move(int x, int y) noexcept;
+	void on_mouse_leave() noexcept;
+	void on_mouse_enter(int x, int y) noexcept;
+	void on_left_pressed(int x, int y) noexcept;
+	void on_left_released(int x, int y) noexcept;
+	void on_right_pressed(int x, int y) noexcept;
+	void on_right_released(int x, int y) noexcept;
+	void on_middle_pressed(int x, int y) noexcept;
+	void on_middle_released(int x, int y) noexcept;
+	void on_x1_pressed(int x, int y) noexcept;
+	void on_x1_released(int x, int y) noexcept;
+	void on_x2_pressed(int x, int y) noexcept;
+	void on_x2_released(int x, int y) noexcept;
+	void on_wheel_up(int x, int y) noexcept;
+	void on_wheel_down(int x, int y) noexcept;
+	void on_wheel_right(int x, int y) noexcept;
+	void on_wheel_left(int x, int y) noexcept;
+	void on_v_wheel_delta(int x, int y, int delta) noexcept;
+	void on_h_wheel_delta(int x, int y, int delta) noexcept;
 
 private:
 	static constexpr unsigned int buffer_size = 16u;

@@ -2,20 +2,20 @@
 
 #include "AtumWindows.h"
 
-#include "IGraphics.h"
-#include "IMouse.h"
-#include "IKeyboard.h"
+#include "Graphics.h"
+#include "Mouse.h"
+#include "Keyboard.h"
 
 class device_hal
 {
 public:
 	device_hal();
 private:
-	std::unique_ptr<i_mouse> p_mouse_;
-	std::unique_ptr<i_keyboard> p_keyboard_;
-	std::unique_ptr<i_graphics> p_graphics_;
+	std::unique_ptr<mouse> p_mouse_;
+	std::unique_ptr<keyboard> p_keyboard_;
+	std::unique_ptr<graphics> p_graphics_;
 public:
-	std::shared_ptr<i_mouse> get_mouse();
-	std::shared_ptr<i_keyboard> get_keyboard();
-	std::shared_ptr<i_graphics> get_graphics(const HWND parent, int width, int height);
+	std::shared_ptr<mouse> get_mouse();
+	std::shared_ptr<keyboard> get_keyboard();
+	std::shared_ptr<graphics> get_graphics(const HWND parent, int width, int height);
 };
