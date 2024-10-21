@@ -1,10 +1,9 @@
-struct ps_in
+cbuffer cbuff
 {
-    float4 pos : SV_POSITION;
-    float4 color : COLOR;
+    float4 face_colors[6];
 };
 
-float4 main(ps_in pin) : SV_TARGET
+float4 main(uint tid : SV_PrimitiveID) : SV_TARGET
 {
-	return pin.color;
+	return face_colors[tid / 2];
 }

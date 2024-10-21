@@ -59,8 +59,7 @@ public:
 	void clear_buffer(float red, float green, float blue) const override;
 
 	// Jam in experimental code to try and draw our first triangle
-	//void draw_test_triangle(float angle, float x, float y);
-	void draw_test_triangle(const float angle, const float x, const float y) override;
+	void draw_test_triangle(const float angle, const float x, const float y, const float z) override;
 
 private:
 	HWND parent_;
@@ -72,4 +71,5 @@ private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain> p_swap_chain_;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> p_device_context_;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> p_target_view_;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> p_depth_stencil_view_;
 };

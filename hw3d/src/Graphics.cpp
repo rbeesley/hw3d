@@ -70,31 +70,31 @@ graphics::graphics(const HWND parent, int width, int height) :
 
 	DXGI_SWAP_CHAIN_DESC swap_chain_desc = {
 		.BufferDesc = {
-			.Width = 0,
-			.Height = 0,
+			.Width = static_cast<UINT>(width),
+			.Height = static_cast<UINT>(height),
 			.RefreshRate = {
-				.Numerator = 0,
-				.Denominator = 0,
+				.Numerator = 0u,
+				.Denominator = 0u,
 			},
 			.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM, // RGBA
-			.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
-			.Scaling = DXGI_MODE_SCALING_UNSPECIFIED,
+			.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER::DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,
+			.Scaling = DXGI_MODE_SCALING::DXGI_MODE_SCALING_UNSPECIFIED,
 		},
 		.SampleDesc = {
-			.Count = 1,
-			.Quality = 0,
+			.Count = 1u,
+			.Quality = 0u,
 		},
 		.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
-		.BufferCount = 1,
+		.BufferCount = 1u,
 		.OutputWindow = parent_,
 		.Windowed = TRUE,
-		.SwapEffect = DXGI_SWAP_EFFECT_DISCARD,
-		.Flags = 0,
+		.SwapEffect = DXGI_SWAP_EFFECT::DXGI_SWAP_EFFECT_DISCARD,
+		.Flags = 0u,
 	};
 
 	UINT swap_create_flags = 0u;
 #if defined(DEBUG) || defined(_DEBUG)
-	swap_create_flags |= D3D11_CREATE_DEVICE_DEBUG;
+	swap_create_flags |= D3D11_CREATE_DEVICE_FLAG::D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
 	// For checking results of D3D functions
@@ -103,7 +103,7 @@ graphics::graphics(const HWND parent, int width, int height) :
 	// Create device and front/back buffers, swap chain, and rendering context
 	GFX_THROW_INFO(D3D11CreateDeviceAndSwapChain(
 		nullptr,
-		D3D_DRIVER_TYPE_HARDWARE,
+		D3D_DRIVER_TYPE::D3D_DRIVER_TYPE_HARDWARE,
 		nullptr,
 		swap_create_flags,
 		nullptr,
@@ -131,6 +131,60 @@ graphics::graphics(const HWND parent, int width, int height) :
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
+
+	// Create depth stencil state
+	D3D11_DEPTH_STENCIL_DESC depth_stencil_desc = {
+		.DepthEnable = TRUE,
+		.DepthWriteMask = D3D11_DEPTH_WRITE_MASK::D3D11_DEPTH_WRITE_MASK_ALL,
+		.DepthFunc = D3D11_COMPARISON_FUNC::D3D11_COMPARISON_LESS,
+		.StencilEnable = FALSE,
+		.StencilReadMask = 0,
+		.StencilWriteMask = 0,
+		.FrontFace = {},
+		.BackFace = {}
+	};
+
+	wrl::ComPtr<ID3D11DepthStencilState> p_depth_stencil_state;
+	GFX_THROW_INFO(p_device_->CreateDepthStencilState(&depth_stencil_desc, &p_depth_stencil_state));
+
+	// Bind depth state to the pipeline
+	p_device_context_->OMSetDepthStencilState(p_depth_stencil_state.Get(), 0u);
+
+	// Create depth stencil texture
+	D3D11_TEXTURE2D_DESC depth_desc = {
+		.Width = static_cast<UINT>(width),
+		.Height = static_cast<UINT>(height),
+		.MipLevels = 1u,
+		.ArraySize = 1u,
+		.Format = DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT,
+		.SampleDesc = {
+			.Count = 1u,
+			.Quality = 0u
+		},
+		.Usage = D3D11_USAGE::D3D11_USAGE_DEFAULT,
+		.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_DEPTH_STENCIL,
+		.CPUAccessFlags = 0u,
+		.MiscFlags = 0u
+	};
+
+	wrl::ComPtr<ID3D11Texture2D> p_depth_stencil;
+	GFX_THROW_INFO(p_device_->CreateTexture2D(&depth_desc, nullptr, &p_depth_stencil));
+
+	// Create view of the depth stencil texture
+	D3D11_DEPTH_STENCIL_VIEW_DESC depth_stencil_view_desc = {
+		.Format = DXGI_FORMAT::DXGI_FORMAT_D32_FLOAT,	// May also be DXGI_FORMAT::DXGI_FORMAT_UNKNOWN, and it will use the same as the depth_desc
+		.ViewDimension = D3D11_DSV_DIMENSION::D3D11_DSV_DIMENSION_TEXTURE2D,
+		.Flags = 0u,
+		.Texture2D = {
+			.MipSlice = 0u,
+		}
+	};
+
+	GFX_THROW_INFO(p_device_->CreateDepthStencilView(p_depth_stencil.Get(), &depth_stencil_view_desc, &p_depth_stencil_view_));
+
+	// Bind the render target and stencil views
+	//  - Output Merger
+	p_device_context_->OMSetRenderTargets(1u, p_target_view_.GetAddressOf(), p_depth_stencil_view_.Get());
 }
 
 void graphics::end_frame()
@@ -157,33 +211,43 @@ void graphics::clear_buffer(const float red, const float green, const float blue
 {
 	const float color[] = { red, green, blue, 1.0f };
 	p_device_context_->ClearRenderTargetView(p_target_view_.Get(), color);
+	p_device_context_->ClearDepthStencilView(p_depth_stencil_view_.Get(), D3D11_CLEAR_FLAG::D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
 // Experimental drawing code
-void graphics::draw_test_triangle(const float angle, const float x, const float y)
+void graphics::draw_test_triangle(const float angle, const float x, const float y, const float z)
 {
 	namespace wrl = Microsoft::WRL;
 	HRESULT hresult;
 
 	struct vertex
 	{
-		struct { float x; float y; } pos;
-		struct { float r; float g; float b; float a; } color;
+		struct { float x; float y; float z; } pos;
 	};
 
 	// 4:3 aspect ratio correction
 	const float aspect_ratio = height_ / width_;
-	constexpr float scale_factor = 1.5f;
+	constexpr float scale_factor = 1.0f;
 
 	// Create a vertex buffer structure
 	const vertex vertices[] =
 	{
-		{{ 0.0f * scale_factor, 0.5f * scale_factor},		{ 1.0f, 0.0f, 0.0f, 1.0f}},  // Top vertex
-		{{ 0.433f * scale_factor, 0.25f * scale_factor},	{ 1.0f, 1.0f, 0.0f, 1.0f}},  // Top-right vertex
-		{{ 0.433f * scale_factor, -0.25f * scale_factor},	{ 0.0f, 1.0f, 0.0f, 1.0f}},  // Bottom-right vertex
-		{{ 0.0f * scale_factor, -0.5f * scale_factor},		{ 0.0f, 1.0f, 1.0f, 1.0f}},  // Bottom vertex
-		{{-0.433f * scale_factor, -0.25f * scale_factor},	{ 0.0f, 0.0f, 1.0f, 1.0f}},  // Bottom-left vertex
-		{{-0.433f * scale_factor, 0.25f * scale_factor},	{ 1.0f, 0.0f, 1.0f, 1.0f}},  // Top-left vertex
+		//    6-------7
+		//   /|      /|
+		//  2-------3 |
+		//  | |     | |
+		//  | 4-----|-5
+		//  |/      |/
+		//  0-------1
+
+		{ -1.0f * scale_factor, -1.0f * scale_factor, -1.0f * scale_factor },	// Bottom-left-front vertex
+		{ 1.0f * scale_factor, -1.0f * scale_factor, -1.0f * scale_factor },	// Bottom-right-front vertex
+		{ -1.0f * scale_factor, 1.0f * scale_factor, -1.0f * scale_factor },	// Top-left-front vertex
+		{ 1.0f * scale_factor, 1.0f * scale_factor, -1.0f * scale_factor },	// Top-right-front vertex
+		{ -1.0f * scale_factor, -1.0f * scale_factor, 1.0f * scale_factor },	// Bottom-left-back vertex
+		{ 1.0f * scale_factor, -1.0f * scale_factor, 1.0f * scale_factor },	// Bottom-right-back vertex
+		{ -1.0f * scale_factor, 1.0f * scale_factor, 1.0f * scale_factor },	// Top-left-back vertex
+		{ 1.0f * scale_factor, 1.0f * scale_factor, 1.0f * scale_factor },		// Top-right-back vertex
 	};
 
 	// Create the vertex buffer
@@ -191,8 +255,8 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 
 	constexpr D3D11_BUFFER_DESC vertex_buffer_desc = {
 		.ByteWidth = sizeof(vertices),
-		.Usage = D3D11_USAGE_DEFAULT,
-		.BindFlags = D3D11_BIND_VERTEX_BUFFER,
+		.Usage = D3D11_USAGE::D3D11_USAGE_DEFAULT,
+		.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER,
 		.CPUAccessFlags = 0u,
 		.MiscFlags = 0u,
 		.StructureByteStride = sizeof(vertex),
@@ -215,10 +279,26 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	// Create an index buffer structure
 	const unsigned short indices[] =
 	{
-		0, 2, 4, // First triangle
-		0, 1, 2, // Second triangle
-		2, 3, 4, // Third triangle
-		4, 5, 0, // Fourth triangle
+		//         2------6
+		//         | 4  //|
+		//	       |  //  |
+		//	       |//  5 |
+		//  2------3------7------6------2
+		//  |\\  1 |\\  3 |\\  7 | 9  //|
+		//  |  \\  |  \\  |  \\  |  //  |
+		//  | 0  \\| 2  \\| 6  \\|//  8 |
+		//  0------1------5------4------0
+		//         |\\ 11 |
+		//	       |  \\  |
+		//	       | 10 \\|
+		//	       0------4
+
+		0, 2, 1,  2, 3, 1,  // White
+		1, 3, 5,  3, 7, 5,  // Green
+		2, 6, 3,  3, 6, 7,  // Red
+		4, 5, 7,  4, 7, 6,  // Yellow
+		0, 4, 2,  2, 4, 6,  // Blue
+		0, 1, 4,  1, 5, 4,  // Orange
 	};
 
 	// Create the index buffer
@@ -226,8 +306,8 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 
 	constexpr D3D11_BUFFER_DESC index_buffer_desc = {
 		.ByteWidth = sizeof(indices),
-		.Usage = D3D11_USAGE_DEFAULT,
-		.BindFlags = D3D11_BIND_INDEX_BUFFER,
+		.Usage = D3D11_USAGE::D3D11_USAGE_DEFAULT,
+		.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_INDEX_BUFFER,
 		.CPUAccessFlags = 0u,
 		.MiscFlags = 0u,
 		.StructureByteStride = sizeof(unsigned short),
@@ -248,37 +328,84 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	p_device_context_->IASetIndexBuffer(p_index_buffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R16_UINT, 0u);
 
 	// Create a constant buffer for a transformation matrix
-	struct constant_buffer { dx::XMMATRIX transform; };
-	const constant_buffer constant_buffer = {
+	struct transform_constant_buffer { dx::XMMATRIX transform; };
+	const transform_constant_buffer transform_constant_buffer = {
 		{dx::XMMatrixTranspose(
-			dx::XMMatrixRotationZ(angle) * 
-			dx::XMMatrixScaling(aspect_ratio, 1.0f, 1.0f) *
-			dx::XMMatrixTranslation(x, y, 0.0f)
+			dx::XMMatrixRotationX(dx::XM_PIDIV4 + angle / 5) * 
+			dx::XMMatrixRotationY(dx::XM_PIDIV4 + 2 * angle / 5) *
+			dx::XMMatrixRotationZ(dx::XM_PIDIV4 + 3 * angle / 5) *
+			dx::XMMatrixTranslation(x, y, z + 4.0f) *
+			dx::XMMatrixPerspectiveLH(1.0f, aspect_ratio, 0.5f, 10.0f)
 		)}
 	};
 
-	wrl::ComPtr<ID3D11Buffer> p_constant_buffer;
+	wrl::ComPtr<ID3D11Buffer> p_transform_constant_buffer;
 
 	// ReSharper disable once CppVariableCanBeMadeConstexpr
-	D3D11_BUFFER_DESC constant_buffer_description = {
-		.ByteWidth = sizeof(constant_buffer),
-		.Usage = D3D11_USAGE_DYNAMIC,
-		.BindFlags = D3D11_BIND_CONSTANT_BUFFER,
-		.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
+	D3D11_BUFFER_DESC transform_constant_buffer_description = {
+		.ByteWidth = sizeof(transform_constant_buffer),
+		.Usage = D3D11_USAGE::D3D11_USAGE_DYNAMIC,
+		.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
+		.CPUAccessFlags = D3D11_CPU_ACCESS_FLAG::D3D11_CPU_ACCESS_WRITE,
 		.MiscFlags = 0u,
 		.StructureByteStride = 0u
 	};
 
-	D3D11_SUBRESOURCE_DATA constant_buffer_subresource_data = {
-		.pSysMem = &constant_buffer,
+	D3D11_SUBRESOURCE_DATA transform_constant_buffer_subresource_data = {
+		.pSysMem = &transform_constant_buffer,
 		.SysMemPitch = 0u,
 		.SysMemSlicePitch = 0u
 	};
 
-	GFX_THROW_INFO(p_device_->CreateBuffer(&constant_buffer_description, &constant_buffer_subresource_data, &p_constant_buffer));
+	GFX_THROW_INFO(p_device_->CreateBuffer(&transform_constant_buffer_description, &transform_constant_buffer_subresource_data, &p_transform_constant_buffer));
 
 	// Bind the constant buffer to the pipeline
-	p_device_context_->VSSetConstantBuffers(0u, 1u, p_constant_buffer.GetAddressOf());
+	p_device_context_->VSSetConstantBuffers(0u, 1u, p_transform_constant_buffer.GetAddressOf());
+
+	struct face_color_constant_buffer
+	{
+		struct
+		{
+			float r;
+			float g;
+			float b;
+			float a;
+		} face_colors[6];
+	};
+	const face_color_constant_buffer face_color_constant_buffer =
+	{
+		{
+			{ 1.0f, 1.0f, 1.0f, 1.0f }, // White
+			{ 0.0f, 1.0f, 0.0f, 1.0f }, // Green
+			{ 1.0f, 0.0f, 0.0f, 1.0f }, // Red
+			{ 1.0f, 1.0f, 0.0f, 1.0f }, // Yellow
+			{ 0.0f, 0.0f, 1.0f, 1.0f }, // Blue
+			{ 1.0f, 0.5f, 0.0f, 1.0f }, // Orange
+		}
+	};
+
+	wrl::ComPtr<ID3D11Buffer> p_face_color_constant_buffer;
+
+	// ReSharper disable once CppVariableCanBeMadeConstexpr
+	D3D11_BUFFER_DESC face_color_constant_buffer_description = {
+		.ByteWidth = sizeof(face_color_constant_buffer),
+		.Usage = D3D11_USAGE::D3D11_USAGE_DEFAULT,
+		.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_CONSTANT_BUFFER,
+		.CPUAccessFlags = 0u,
+		.MiscFlags = 0u,
+		.StructureByteStride = 0u
+	};
+
+	D3D11_SUBRESOURCE_DATA face_color_constant_buffer_subresource_data = {
+		.pSysMem = &face_color_constant_buffer,
+		.SysMemPitch = 0u,
+		.SysMemSlicePitch = 0u
+	};
+
+	GFX_THROW_INFO(p_device_->CreateBuffer(&face_color_constant_buffer_description, &face_color_constant_buffer_subresource_data, &p_face_color_constant_buffer));
+
+	// Bind the constant buffer to the pipeline
+	p_device_context_->PSSetConstantBuffers(0u, 1u, p_face_color_constant_buffer.GetAddressOf());
 
 	{
 		wrl::ComPtr<ID3DBlob> p_blob;
@@ -315,19 +442,10 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 				{
 					.SemanticName = "POSITION",	// Input in the vertex shader
 					.SemanticIndex = 0u,
-					.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT,
+					.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
 					.InputSlot = 0u,
 					.AlignedByteOffset = 0u,
-					.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
-					.InstanceDataStepRate = 0u
-				},
-				{
-					.SemanticName = "COLOR",	// Input in the vertex shader
-					.SemanticIndex = 0u,
-					.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32A32_FLOAT,
-					.InputSlot = 0u,
-					.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT,
-					.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
+					.InputSlotClass = D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
 					.InstanceDataStepRate = 0u
 				},
 			};
@@ -345,11 +463,12 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 
 	// Bind the render target
 	//  - Output Merger
-	p_device_context_->OMSetRenderTargets(1u, p_target_view_.GetAddressOf(), nullptr);
+	// This is now bound in initialization to include the stencil view
+	//p_device_context_->OMSetRenderTargets(1u, p_target_view_.GetAddressOf(), nullptr);
 
 	// Set primitive topology to triangle list
 	//  - Input Assembler
-	p_device_context_->IASetPrimitiveTopology(D3D10_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	p_device_context_->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Configure the viewport
 	//  - Rasterizer

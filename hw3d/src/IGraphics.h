@@ -13,5 +13,5 @@ public:
 public:
 	virtual void end_frame() = 0;
 	virtual void clear_buffer(float red, float green, float blue) const = 0;
-	virtual void draw_test_triangle(float angle, float x, float y) = 0;
+	virtual void draw_test_triangle(float angle, float x, float y, float z) = 0;
 };
