@@ -60,7 +60,7 @@ public:
 
 	// Jam in experimental code to try and draw our first triangle
 	//void draw_test_triangle(float angle, float x, float y);
-	void draw_test_triangle(const float angle, const float x, const float y) override;
+	void draw_test_triangle(const float angle, const float x, const float y, const float z) override;
 
 private:
 	HWND parent_;

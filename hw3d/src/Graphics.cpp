@@ -160,7 +160,7 @@ void graphics::clear_buffer(const float red, const float green, const float blue
 }
 
 // Experimental drawing code
-void graphics::draw_test_triangle(const float angle, const float x, const float y)
+void graphics::draw_test_triangle(const float angle, const float x, const float y, const float z)
 {
 	namespace wrl = Microsoft::WRL;
 	HRESULT hresult;
@@ -177,6 +177,14 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	// Create a vertex buffer structure
 	const vertex vertices[] =
 	{
+		//    6-------7
+		//   /|      /|
+		//  2-------3 |
+		//  | |     | |
+		//  | 4-----|-5
+		//  |/      |/
+		//  0-------1
+
 		{ -1.0f * scale_factor, -1.0f * scale_factor, -1.0f * scale_factor },	// Bottom-left-front vertex
 		{ 1.0f * scale_factor, -1.0f * scale_factor, -1.0f * scale_factor },	// Bottom-right-front vertex
 		{ -1.0f * scale_factor, 1.0f * scale_factor, -1.0f * scale_factor },	// Top-left-front vertex
@@ -216,12 +224,26 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	// Create an index buffer structure
 	const unsigned short indices[] =
 	{
-		0, 2, 1,  2, 3, 1,
-		1, 3, 5,  3, 7, 5,
-		2, 6, 3,  3, 6, 7,
-		4, 5, 7,  4, 7, 6,
-		0, 4, 2,  2, 4, 6,
-		0, 1, 4,  1, 5, 4,
+		//         2------6
+		//         | 4  //|
+		//	       |  //  |
+		//	       |//  5 |
+		//  2------3------7------6------2
+		//  |\\  1 |\\  3 |\\  7 | 9  //|
+		//  |  \\  |  \\  |  \\  |  //  |
+		//  | 0  \\| 2  \\| 6  \\|//  8 |
+		//  0------1------5------4------0
+		//         |\\ 11 |
+		//	       |  \\  |
+		//	       | 10 \\|
+		//	       0------4
+
+		0, 2, 1,  2, 3, 1,  // White
+		1, 3, 5,  3, 7, 5,  // Green
+		2, 6, 3,  3, 6, 7,  // Red
+		4, 5, 7,  4, 7, 6,  // Yellow
+		0, 4, 2,  2, 4, 6,  // Blue
+		0, 1, 4,  1, 5, 4,  // Orange
 	};
 
 	// Create the index buffer
@@ -254,10 +276,10 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	struct transform_constant_buffer { dx::XMMATRIX transform; };
 	const transform_constant_buffer transform_constant_buffer = {
 		{dx::XMMatrixTranspose(
-			dx::XMMatrixRotationX(3 * angle / 3) * 
-			dx::XMMatrixRotationY(5 * angle / 3) *
-			dx::XMMatrixRotationZ(7 * angle / 3) *
-			dx::XMMatrixTranslation(x, y, 4.0f) *
+			dx::XMMatrixRotationX(dx::XM_PIDIV4 + angle / 5) * 
+			dx::XMMatrixRotationY(dx::XM_PIDIV4 + 2 * angle / 5) *
+			dx::XMMatrixRotationZ(dx::XM_PIDIV4 + 3 * angle / 5) *
+			dx::XMMatrixTranslation(x, y, z + 4.0f) *
 			dx::XMMatrixPerspectiveLH(1.0f, aspect_ratio, 0.5f, 10.0f)
 		)}
 	};
@@ -298,12 +320,12 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	const face_color_constant_buffer face_color_constant_buffer =
 	{
 		{
-			{ 1.0f, 0.0f, 1.0f, 1.0f },
-			{ 1.0f, 0.0f, 0.0f, 1.0f },
-			{ 0.0f, 1.0f, 0.0f, 1.0f },
-			{ 0.0f, 0.0f, 1.0f, 1.0f },
-			{ 1.0f, 1.0f, 0.0f, 1.0f },
-			{ 1.0f, 1.0f, 1.0f, 1.0f },
+			{ 1.0f, 1.0f, 1.0f, 1.0f }, // White
+			{ 0.0f, 1.0f, 0.0f, 1.0f }, // Green
+			{ 1.0f, 0.0f, 0.0f, 1.0f }, // Red
+			{ 1.0f, 1.0f, 0.0f, 1.0f }, // Yellow
+			{ 0.0f, 0.0f, 1.0f, 1.0f }, // Blue
+			{ 1.0f, 0.5f, 0.0f, 1.0f }, // Orange
 		}
 	};
 
