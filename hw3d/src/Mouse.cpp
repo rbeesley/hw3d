@@ -49,7 +49,7 @@ std::pair<int, int> mouse::get_pos() const noexcept
 	return { x_, y_ };
 }
 
-i_mouse::position mouse::pos() const noexcept
+mouse::position mouse::pos() const noexcept
 {
 	return position{ x_, y_ };
 }

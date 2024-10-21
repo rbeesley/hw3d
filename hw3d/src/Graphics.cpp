@@ -61,7 +61,7 @@ namespace dx = DirectX;
 #define GFX_THROW_INFO_ONLY(call) (call)
 #endif
 
-graphics::graphics(const HWND parent, int width, int height) :
+graphics::graphics(HWND parent, int width, int height) :
 	parent_(parent),
 	width_(static_cast<float>(width)),
 	height_(static_cast<float>(height))

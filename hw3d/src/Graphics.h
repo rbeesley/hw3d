@@ -7,9 +7,7 @@
 #include <vector>
 #include <wrl.h>
 
-#include "IGraphics.h"
-
-class graphics final : public i_graphics
+class graphics
 {
 public:
 	class graphics_exception : public atum_exception
@@ -50,16 +48,16 @@ public:
 	};
 public:
 	explicit graphics(HWND parent, int width, int height);
-	~graphics() override = default;
+	~graphics() = default;
 	graphics(const graphics&) = delete;
 	graphics& operator=(const graphics&) = delete;
 	graphics(const graphics&&) = delete;
 	graphics& operator=(const graphics&&) = delete;
-	void end_frame() override;
-	void clear_buffer(float red, float green, float blue) const override;
+	void end_frame();
+	void clear_buffer(float red, float green, float blue) const;
 
 	// Jam in experimental code to try and draw our first triangle
-	void draw_test_triangle(const float angle, const float x, const float y, const float z) override;
+	void draw_test_triangle(float angle, float x, float y, float z);
 
 private:
 	HWND parent_;
