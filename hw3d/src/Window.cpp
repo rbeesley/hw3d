@@ -96,11 +96,11 @@ window::window(const int width, const int height, const LPCWSTR name)
 	ShowWindow(window_handle_, SW_SHOWDEFAULT);
 
 	// Get the mouse and keyboard
-	p_mouse_ = device_.get_mouse();
-	p_keyboard_ = device_.get_keyboard();
+	p_mouse_ = std::make_shared<mouse>();
+	p_keyboard_ = std::make_shared<keyboard>();
 
 	// Create the graphics object
-	p_graphics_ = device_.get_graphics(window_handle_, width_, height_);
+	p_graphics_ = std::make_shared<graphics>(window_handle_, width_, height_);
 
 	// Check for an error
 	if (nullptr == p_graphics_)
