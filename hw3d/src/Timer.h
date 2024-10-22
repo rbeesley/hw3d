@@ -4,9 +4,16 @@
 class timer
 {
 public:
-	timer();
-	float mark();
-	float peek() const;
+	timer() noexcept;
+
+	~timer() = default;
+	timer(const timer&) = delete;
+	timer& operator=(const timer&) = delete;
+	timer(const timer&&) = delete;
+	timer& operator=(const timer&&) = delete;
+
+	float mark() noexcept;
+	float peek() const noexcept;
 private:
 	std::chrono::steady_clock::time_point last;
 };

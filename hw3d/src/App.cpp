@@ -1,10 +1,23 @@
 #include "App.h"
+#include "Box.h"
+
+#include <DirectXMath.h>
+#include <random>
+
 #include "Logging.h"
 
 // 1280x720
 // 800x600
 constexpr int width = 800;
 constexpr int height = 600;
+constexpr float aspect_ratio = static_cast<float>(height) / static_cast<float>(width);
+
+constexpr float PI = 3.141592654f;
+constexpr float TWOPI = 6.283185307f;
+constexpr float ONEDIVPI = 0.318309886f;
+constexpr float ONEDIV2PI = 0.159154943f;
+constexpr float PIDIV2 = 1.570796327f;
+constexpr float PIDIV4 = 0.785398163f;
 
 app::app()
 	: window_(width, height, TEXT("Atum D3D Window"))
@@ -13,6 +26,23 @@ app::app()
 #endif
 {
 	PLOGI << "Initializing App";
+	auto seed = std::random_device{}();
+
+	PLOGD << "mt19937 seed: " << seed;
+	std::mt19937 rng(seed);
+	std::uniform_real_distribution<float> distance(6.0f, 20.0f);
+	std::uniform_real_distribution<float> spin_of_box(0.0f, TWOPI);
+	std::uniform_real_distribution<float> spherical_position(0.0f, TWOPI);
+	std::uniform_real_distribution<float> movement_of_box(0.0f, PI * 0.3f);
+
+	PLOGI << "Populating pool of drawables (box)";
+	for(auto i = 0; i < 10; i++)
+	{
+		boxes_.push_back(std::make_unique<box>(window::get_graphics(), rng, distance, spin_of_box, spherical_position, movement_of_box));
+	}
+
+	PLOGI << "Set graphics projection";
+	window::get_graphics().set_projection(DirectX::XMMatrixPerspectiveLH(1.0f, aspect_ratio, 0.5f, 40.0f));
 }
 
 int app::init() const
@@ -34,7 +64,7 @@ int app::init() const
 	return 0;
 }
 
-int app::run() const
+int app::run()
 {
 	PLOGI << "Starting Message Pump and Render Loop";
 
@@ -55,32 +85,21 @@ static float map(const float in, const float in_min, const float in_max, const f
 	return (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
-static float map(const int in, const int in_min, const int in_max, const int out_min, const int out_max)
+[[maybe_unused]] static float map(const int in, const int in_min, const int in_max, const int out_min, const int out_max)
 {
 	return map(static_cast<float>(in), static_cast<float>(in_min), static_cast<float>(in_max), static_cast<float>(out_min), static_cast<float>(out_max));
 }
 
-constexpr float PI = 3.141592654f;
-constexpr float TWOPI = 6.283185307f;
-constexpr float ONEDIVPI = 0.318309886f;
-constexpr float ONEDIV2PI = 0.159154943f;
-constexpr float PIDIV2 = 1.570796327f;
-constexpr float PIDIV4 = 0.785398163f;
-
-void app::render_frame() const
+void app::render_frame()
 {
-	const float c = map(sin(timer_.peek()), -1.0f, 1.0f, 0.25f, 0.75f);
-	window::get_graphics()->clear_buffer(c, c, 1.0f);
+	auto dt = timer_.mark();
 
-	// Experiment with drawing graphics
-	window::get_graphics()->draw_test_triangle(
-		map(static_cast<float>(window::get_mouse()->pos().x), 0.0f, width - 1.0f, 0.0f, 5 * TWOPI) + timer_.peek(),
-		0, 0, 0
-	);
-	window::get_graphics()->draw_test_triangle(
-		-timer_.peek(),
-		0, 0, map(window::get_mouse()->pos().y, 0, height - 1, 5, -1)
-	);
+	window::get_graphics().clear_buffer(0.07f, 0.0f, 0.12f);
+	for(auto& box : boxes_)
+	{
+		box->update(dt);
+		box->draw(window::get_graphics());
+	}
 
-	window::get_graphics()->end_frame();
+	window::get_graphics().end_frame();
 }

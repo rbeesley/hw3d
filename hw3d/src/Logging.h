@@ -28,11 +28,14 @@ public:
 	};
 
 	explicit logging(plog::Severity max_severity) noexcept;
+
+	logging() = delete;
 	~logging() noexcept = default;
 	logging(const logging&) = delete;
 	logging& operator=(const logging&) = delete;
 	logging(const logging&&) = delete;
 	logging& operator=(const logging&&) = delete;
+
 	static void init_console(plog::Severity max_severity);
 	static void init_debug_output(plog::Severity max_severity);
 private:

@@ -97,11 +97,13 @@ window::window(const int width, const int height, const LPCWSTR name)
 	ShowWindow(window_handle_, SW_SHOWDEFAULT);
 
 	// Get the mouse and keyboard
-	p_mouse_ = std::make_shared<mouse>();
-	p_keyboard_ = std::make_shared<keyboard>();
+	PLOGI << "Create references to the mouse and keyboard";
+	p_mouse_ = std::make_unique<mouse>();
+	p_keyboard_ = std::make_unique<keyboard>();
 
 	// Create the graphics object
-	p_graphics_ = std::make_shared<graphics>(window_handle_, width_, height_);
+	PLOGI << "Create the DirectX graphics object";
+	p_graphics_ = std::make_unique<graphics>(window_handle_, width_, height_);
 
 	// Check for an error
 	if (nullptr == p_graphics_)
@@ -144,19 +146,31 @@ std::optional<int> window::process_messages()
 	return {};
 }
 
-std::shared_ptr<mouse> window::get_mouse()
+mouse& window::get_mouse()
 {
-	return p_mouse_;
+	if(!p_mouse_)
+	{
+		throw ATUM_WND_NO_GFX_EXCEPT();
+	}
+	return *p_mouse_;
 }
 
-std::shared_ptr<keyboard> window::get_keyboard()
+keyboard& window::get_keyboard()
 {
-	return p_keyboard_;
+	if(!p_keyboard_)
+	{
+		throw ATUM_WND_NO_GFX_EXCEPT();
+	}
+	return *p_keyboard_;
 }
 
-std::shared_ptr<graphics> window::get_graphics()
+graphics& window::get_graphics()
 {
-	return p_graphics_;
+	if(!p_graphics_)
+	{
+		throw ATUM_WND_NO_GFX_EXCEPT();
+	}
+	return *p_graphics_;
 }
 
 LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept

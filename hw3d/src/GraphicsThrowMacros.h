@@ -34,3 +34,11 @@
 // Wrap graphics call with error check for a call which doesn't return an hresult
 #define GFX_THROW_INFO_ONLY(call) (call)
 #endif
+
+// Macro for importing infomanager into the local scope
+// this.GetInfoManager() must exist
+#if defined(DEBUG) || defined(_DEBUG)
+#define INFOMAN(graphics) HRESULT hresult; dxgi_info_manager& info_manager_ = get_info_manager((graphics))
+#else
+#define INFOMAN() HRESULT hresult
+#endif
