@@ -1,6 +1,8 @@
 #include "App.h"
 #include "Logging.h"
 
+// 1280x720
+// 800x600
 constexpr int width = 800;
 constexpr int height = 600;
 

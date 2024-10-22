@@ -6,6 +6,7 @@
 #include "LoggingConfig.h"
 #include "Logging.h"
 #include "Resources/resource.h"
+#include "WindowsThrowMacros.h"
 
 #if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in LoggingConfig.h
 #include "WindowsMessageMap.h"

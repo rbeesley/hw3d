@@ -229,6 +229,7 @@
     <ClInclude Include="src\App.h" />
     <ClInclude Include="src\DxgiInfoManager.h" />
     <ClInclude Include="src\Graphics.h" />
+    <ClInclude Include="src\GraphicsThrowMacros.h" />
     <ClInclude Include="src\LoggingConfig.h" />
     <ClInclude Include="src\Keyboard.h" />
     <ClInclude Include="resources\resource.h" />
@@ -241,6 +242,7 @@
     <ClInclude Include="src\WindowsMessageMap.h" />
     <ClInclude Include="src\VirtualKeyMap.h" />
     <ClInclude Include="src\Timer.h" />
+    <ClInclude Include="src\WindowsThrowMacros.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hw3d.rc" />
