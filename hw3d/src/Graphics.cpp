@@ -79,7 +79,7 @@ graphics::graphics(HWND parent, int width, int height) :
 		p_swap_chain_.GetAddressOf(),
 		p_device_.GetAddressOf(),
 		nullptr,
-		p_device_context_.GetAddressOf()
+		p_context_.GetAddressOf()
 	));
 
 #ifdef __clang__
@@ -114,7 +114,7 @@ graphics::graphics(HWND parent, int width, int height) :
 	GFX_THROW_INFO(p_device_->CreateDepthStencilState(&depth_stencil_desc, &p_depth_stencil_state));
 
 	// Bind depth state to the pipeline
-	p_device_context_->OMSetDepthStencilState(p_depth_stencil_state.Get(), 0u);
+	p_context_->OMSetDepthStencilState(p_depth_stencil_state.Get(), 0u);
 
 	// Create depth stencil texture
 	D3D11_TEXTURE2D_DESC depth_desc = {
@@ -150,7 +150,7 @@ graphics::graphics(HWND parent, int width, int height) :
 
 	// Bind the render target and stencil views
 	//  - Output Merger
-	p_device_context_->OMSetRenderTargets(1u, p_target_view_.GetAddressOf(), p_depth_stencil_view_.Get());
+	p_context_->OMSetRenderTargets(1u, p_target_view_.GetAddressOf(), p_depth_stencil_view_.Get());
 }
 
 void graphics::end_frame()
@@ -176,8 +176,8 @@ void graphics::end_frame()
 void graphics::clear_buffer(const float red, const float green, const float blue) const
 {
 	const float color[] = { red, green, blue, 1.0f };
-	p_device_context_->ClearRenderTargetView(p_target_view_.Get(), color);
-	p_device_context_->ClearDepthStencilView(p_depth_stencil_view_.Get(), D3D11_CLEAR_FLAG::D3D11_CLEAR_DEPTH, 1.0f, 0u);
+	p_context_->ClearRenderTargetView(p_target_view_.Get(), color);
+	p_context_->ClearDepthStencilView(p_depth_stencil_view_.Get(), D3D11_CLEAR_FLAG::D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
 // Experimental drawing code
@@ -240,7 +240,7 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	// Bind the vertex buffer to the pipeline
 	UINT stride = sizeof(vertex);
 	UINT offset = 0u;
-	p_device_context_->IASetVertexBuffers(0u, 1u, p_vertex_buffer.GetAddressOf(), &stride, &offset);
+	p_context_->IASetVertexBuffers(0u, 1u, p_vertex_buffer.GetAddressOf(), &stride, &offset);
 
 	// Create an index buffer structure
 	const unsigned short indices[] =
@@ -291,7 +291,7 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	// Bind the index buffer to the pipeline
 	stride = sizeof(unsigned short);
 	offset = 0u;
-	p_device_context_->IASetIndexBuffer(p_index_buffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R16_UINT, 0u);
+	p_context_->IASetIndexBuffer(p_index_buffer.Get(), DXGI_FORMAT::DXGI_FORMAT_R16_UINT, 0u);
 
 	// Create a constant buffer for a transformation matrix
 	struct transform_constant_buffer { dx::XMMATRIX transform; };
@@ -326,7 +326,7 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	GFX_THROW_INFO(p_device_->CreateBuffer(&transform_constant_buffer_description, &transform_constant_buffer_subresource_data, &p_transform_constant_buffer));
 
 	// Bind the constant buffer to the pipeline
-	p_device_context_->VSSetConstantBuffers(0u, 1u, p_transform_constant_buffer.GetAddressOf());
+	p_context_->VSSetConstantBuffers(0u, 1u, p_transform_constant_buffer.GetAddressOf());
 
 	struct face_color_constant_buffer
 	{
@@ -371,7 +371,7 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 	GFX_THROW_INFO(p_device_->CreateBuffer(&face_color_constant_buffer_description, &face_color_constant_buffer_subresource_data, &p_face_color_constant_buffer));
 
 	// Bind the constant buffer to the pipeline
-	p_device_context_->PSSetConstantBuffers(0u, 1u, p_face_color_constant_buffer.GetAddressOf());
+	p_context_->PSSetConstantBuffers(0u, 1u, p_face_color_constant_buffer.GetAddressOf());
 
 	{
 		wrl::ComPtr<ID3DBlob> p_blob;
@@ -384,7 +384,7 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 			GFX_THROW_INFO(p_device_->CreatePixelShader(p_blob->GetBufferPointer(), p_blob->GetBufferSize(), nullptr, &p_pixel_shader));
 
 			// Bind the pixel shader
-			p_device_context_->PSSetShader(p_pixel_shader.Get(), nullptr, 0u);
+			p_context_->PSSetShader(p_pixel_shader.Get(), nullptr, 0u);
 		}
 
 		// Create the vertex shader
@@ -396,7 +396,7 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 			GFX_THROW_INFO(p_device_->CreateVertexShader(p_blob->GetBufferPointer(), p_blob->GetBufferSize(), nullptr, &p_vertex_shader));
 
 			// Bind the vertex shader
-			p_device_context_->VSSetShader(p_vertex_shader.Get(), nullptr, 0u);
+			p_context_->VSSetShader(p_vertex_shader.Get(), nullptr, 0u);
 		}
 
 		// Input (vertex) layout (2D position only)
@@ -423,18 +423,18 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 				&p_input_layout));
 
 			// Bind the input layout
-			p_device_context_->IASetInputLayout(p_input_layout.Get());
+			p_context_->IASetInputLayout(p_input_layout.Get());
 		}
 	}
 
 	// Bind the render target
 	//  - Output Merger
 	// This is now bound in initialization to include the stencil view
-	//p_device_context_->OMSetRenderTargets(1u, p_target_view_.GetAddressOf(), nullptr);
+	//p_context_->OMSetRenderTargets(1u, p_target_view_.GetAddressOf(), nullptr);
 
 	// Set primitive topology to triangle list
 	//  - Input Assembler
-	p_device_context_->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	p_context_->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY::D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Configure the viewport
 	//  - Rasterizer
@@ -446,9 +446,9 @@ void graphics::draw_test_triangle(const float angle, const float x, const float 
 		.MinDepth = 0,
 		.MaxDepth = 1
 	};
-	p_device_context_->RSSetViewports(1u, &viewport);
+	p_context_->RSSetViewports(1u, &viewport);
 
-	GFX_THROW_INFO_ONLY(p_device_context_->DrawIndexed(std::size(indices), 0u, 0u));
+	GFX_THROW_INFO_ONLY(p_context_->DrawIndexed(std::size(indices), 0u, 0u));
 }
 
 // Graphics Exception
