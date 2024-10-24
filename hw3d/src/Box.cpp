@@ -4,122 +4,129 @@
 box::box(graphics& graphics,
 	std::mt19937& rng,
 	std::uniform_real_distribution<float>& distance,
-	std::uniform_real_distribution<float>& spin_of_box,
-	std::uniform_real_distribution<float>& spherical_position,
-	std::uniform_real_distribution<float>& movement_of_box)
-	:
-	radius_distance_from_center_(distance(rng)),
-	droll_(spin_of_box(rng)),
-	dpitch_(spin_of_box(rng)),
-	dyaw_(spin_of_box(rng)),
-	theta_(spherical_position(rng)),
-	phi_(spherical_position(rng)),
-	rho_(spherical_position(rng)),
-	dtheta_(movement_of_box(rng)),
-	dphi_(movement_of_box(rng)),
-	drho_(movement_of_box(rng))
+	std::uniform_real_distribution<float>& spherical_coordinate_position,
+	std::uniform_real_distribution<float>& rotation_of_box,
+	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_box)
+	: drawable(),
+	  radius_distance_from_center_(distance(rng)),
+	  theta_(spherical_coordinate_position(rng)),
+	  phi_(spherical_coordinate_position(rng)),
+	  rho_(spherical_coordinate_position(rng)),
+	  droll_(rotation_of_box(rng)),
+	  dpitch_(rotation_of_box(rng)),
+	  dyaw_(rotation_of_box(rng)),
+	  dtheta_(spherical_coordinate_movement_of_box(rng)),
+	  dphi_(spherical_coordinate_movement_of_box(rng)),
+	  drho_(spherical_coordinate_movement_of_box(rng))
 {
-	struct vertex
+	if (!is_static_initialized())
 	{
-		struct
+		struct vertex
 		{
-			float x;
-			float y;
-			float z;
-		} pos;
-	};
-	const std::vector<vertex> vertices =
-	{
-		//    6-------7
-		//   /|      /|
-		//  2-------3 |
-		//  | |     | |
-		//  | 4-----|-5
-		//  |/      |/
-		//  0-------1
-
-		{ -1.0f, -1.0f, -1.0f },	// Bottom-left-front vertex
-		{ 1.0f, -1.0f, -1.0f },	// Bottom-right-front vertex
-		{ -1.0f, 1.0f, -1.0f },	// Top-left-front vertex
-		{ 1.0f, 1.0f, -1.0f },		// Top-right-front vertex
-		{ -1.0f, -1.0f, 1.0f },	// Bottom-left-back vertex
-		{ 1.0f, -1.0f, 1.0f },		// Bottom-right-back vertex
-		{ -1.0f, 1.0f, 1.0f },		// Top-left-back vertex
-		{ 1.0f, 1.0f, 1.0f },		// Top-right-back vertex
-	};
-	add_bind(std::make_unique<vertex_buffer>(graphics, vertices));
-
-	auto p_vertex_shader = std::make_unique<vertex_shader>(graphics, L"VertexShader.cso");
-	auto p_vertex_shader_bytecode = p_vertex_shader->get_byte_code();
-	add_bind(std::move(p_vertex_shader));
-
-	add_bind(std::make_unique<pixel_shader>(graphics, L"PixelShader.cso"));
-
-	const std::vector<unsigned short> indices =
-	{
-		//         2------6
-		//         | 4  //|
-		//	       |  //  |
-		//	       |//  5 |
-		//  2------3------7------6------2
-		//  |\\  1 |\\  3 |\\  7 | 9  //|
-		//  |  \\  |  \\  |  \\  |  //  |
-		//  | 0  \\| 2  \\| 6  \\|//  8 |
-		//  0------1------5------4------0
-		//         |\\ 11 |
-		//	       |  \\  |
-		//	       | 10 \\|
-		//	       0------4
-
-		0, 2, 1,  2, 3, 1,  // Front
-		1, 3, 5,  3, 7, 5,  // Right
-		2, 6, 3,  3, 6, 7,  // Top
-		4, 5, 7,  4, 7, 6,  // Back
-		0, 4, 2,  2, 4, 6,  // Left
-		0, 1, 4,  1, 5, 4,  // Bottom
-	};
-	add_index_buffer(std::make_unique<index_buffer>(graphics, indices));
-
-	struct constant_buffer_struct
-	{
-		struct
+			struct
+			{
+				float x;
+				float y;
+				float z;
+			} pos;
+		};
+		const std::vector<vertex> vertices =
 		{
-			float r;
-			float g;
-			float b;
-			float a;
-		} face_colors[6];
-	};
-	const constant_buffer_struct constant_buffer =
-	{
+			//    6-------7
+			//   /|      /|
+			//  2-------3 |
+			//  | |     | |
+			//  | 4-----|-5
+			//  |/      |/
+			//  0-------1
+
+			{-1.0f, -1.0f, -1.0f}, // Bottom-left-front vertex
+			{1.0f, -1.0f, -1.0f}, // Bottom-right-front vertex
+			{-1.0f, 1.0f, -1.0f}, // Top-left-front vertex
+			{1.0f, 1.0f, -1.0f}, // Top-right-front vertex
+			{-1.0f, -1.0f, 1.0f}, // Bottom-left-back vertex
+			{1.0f, -1.0f, 1.0f}, // Bottom-right-back vertex
+			{-1.0f, 1.0f, 1.0f}, // Top-left-back vertex
+			{1.0f, 1.0f, 1.0f}, // Top-right-back vertex
+		};
+		add_static_bind(std::make_unique<vertex_buffer>(graphics, vertices));
+
+		auto p_vertex_shader = std::make_unique<vertex_shader>(graphics, L"VertexShader.cso");
+		auto p_vertex_shader_bytecode = p_vertex_shader->get_byte_code();
+		add_static_bind(std::move(p_vertex_shader));
+
+		add_static_bind(std::make_unique<pixel_shader>(graphics, L"PixelShader.cso"));
+
+		const std::vector<unsigned short> indices =
 		{
-			{ 1.0f, 1.0f, 1.0f, 1.0f }, // White
-			{ 0.0f, 1.0f, 0.0f, 1.0f }, // Green
-			{ 1.0f, 0.0f, 0.0f, 1.0f }, // Red
-			{ 1.0f, 1.0f, 0.0f, 1.0f }, // Yellow
-			{ 0.0f, 0.0f, 1.0f, 1.0f }, // Blue
-			{ 1.0f, 0.5f, 0.0f, 1.0f }, // Orange
-		}
-	};
-	add_bind(std::make_unique<pixel_constant_buffer<constant_buffer_struct>>(graphics, constant_buffer));
+			//         2------6
+			//         | 4  //|
+			//	       |  //  |
+			//	       |//  5 |
+			//  2------3------7------6------2
+			//  |\\  1 |\\  3 |\\  7 | 9  //|
+			//  |  \\  |  \\  |  \\  |  //  |
+			//  | 0  \\| 2  \\| 6  \\|//  8 |
+			//  0------1------5------4------0
+			//         |\\ 11 |
+			//	       |  \\  |
+			//	       | 10 \\|
+			//	       0------4
 
-	const std::vector<D3D11_INPUT_ELEMENT_DESC> input_element_descs =
-	{
+			0, 2, 1, 2, 3, 1, // Front
+			1, 3, 5, 3, 7, 5, // Right
+			2, 6, 3, 3, 6, 7, // Top
+			4, 5, 7, 4, 7, 6, // Back
+			0, 4, 2, 2, 4, 6, // Left
+			0, 1, 4, 1, 5, 4, // Bottom
+		};
+		add_static_index_buffer(std::make_unique<index_buffer>(graphics, indices));
+
+		struct constant_buffer_struct
 		{
-			.SemanticName = "POSITION",	// Input in the vertex shader
-			.SemanticIndex = 0u,
-			.Format = DXGI_FORMAT_R32G32B32_FLOAT,
-			.InputSlot = 0u,
-			.AlignedByteOffset = 0u,
-			.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
-			.InstanceDataStepRate = 0u
-		},
-	};
-	add_bind(std::make_unique<input_layout>(graphics, input_element_descs, p_vertex_shader_bytecode));
+			struct
+			{
+				float r;
+				float g;
+				float b;
+				float a;
+			} face_colors[6];
+		};
+		const constant_buffer_struct constant_buffer =
+		{
+			{
+				{1.0f, 1.0f, 1.0f, 1.0f}, // White
+				{0.0f, 1.0f, 0.0f, 1.0f}, // Green
+				{1.0f, 0.0f, 0.0f, 1.0f}, // Red
+				{1.0f, 1.0f, 0.0f, 1.0f}, // Yellow
+				{0.0f, 0.0f, 1.0f, 1.0f}, // Blue
+				{1.0f, 0.5f, 0.0f, 1.0f}, // Orange
+			}
+		};
+		add_static_bind(std::make_unique<pixel_constant_buffer<constant_buffer_struct>>(graphics, constant_buffer));
 
-	add_bind(std::make_unique<topology>(graphics, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+		const std::vector<D3D11_INPUT_ELEMENT_DESC> input_element_descs =
+		{
+			{
+				.SemanticName = "POSITION", // Input in the vertex shader
+				.SemanticIndex = 0u,
+				.Format = DXGI_FORMAT_R32G32B32_FLOAT,
+				.InputSlot = 0u,
+				.AlignedByteOffset = 0u,
+				.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA,
+				.InstanceDataStepRate = 0u
+			},
+		};
+		add_static_bind(std::make_unique<input_layout>(graphics, input_element_descs, p_vertex_shader_bytecode));
 
-	add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
+		add_static_bind(std::make_unique<topology>(graphics, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+	}
+	else
+	{
+		set_index_buffer_from_static_binds();
+	}
+
+	drawable_base::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
 }
 
 void box::update(const float dt) noexcept
