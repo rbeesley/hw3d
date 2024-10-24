@@ -186,7 +186,7 @@
     <ClCompile Include="src\Bindable.cpp" />
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\Box.cpp" />
-    <ClCompile Include="src\Drawable.cpp" />
+    <ClCompile Include="src\DrawableBase.cpp" />
     <ClCompile Include="src\DxgiInfoManager.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
     <ClCompile Include="src\IndexBufffer.cpp" />
@@ -242,6 +242,7 @@
     <ClInclude Include="src\Box.h" />
     <ClInclude Include="src\ConstantBuffers.h" />
     <ClInclude Include="src\Drawable.h" />
+    <ClInclude Include="src\DrawableBase.h" />
     <ClInclude Include="src\DxgiInfoManager.h" />
     <ClInclude Include="src\Graphics.h" />
     <ClInclude Include="src\GraphicsThrowMacros.h" />
