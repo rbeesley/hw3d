@@ -17,5 +17,5 @@ protected:
 
 	static ID3D11DeviceContext* get_context(const graphics& graphics) noexcept;
 	static ID3D11Device* get_device(const graphics& graphics) noexcept;
-	static dxgi_info_manager& get_info_manager(graphics& graphics) noexcept(!IS_DEBUG);
+	static dxgi_info_manager& get_info_manager(graphics& graphics) noexcept(IS_DEBUG);
 };

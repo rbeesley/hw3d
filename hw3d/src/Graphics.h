@@ -10,7 +10,9 @@
 
 #if !defined(IS_DEBUG)
 #if defined(DEBUG) || defined(_DEBUG)
-#define IS_DEBUG 1
+#define IS_DEBUG TRUE
+#else
+#define IS_DEBUG FALSE
 #endif
 #endif
 
@@ -72,7 +74,7 @@ public:
 private:
 	HWND parent_;
 	float width_, height_;
-#if defined(DEBUG) || defined(_DEBUG)
+#if IS_DEBUG
 	dxgi_info_manager info_manager_;
 #endif
 	DirectX::XMMATRIX projection_;

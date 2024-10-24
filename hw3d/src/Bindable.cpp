@@ -10,9 +10,9 @@ ID3D11Device* bindable::get_device(const graphics& graphics) noexcept
 	return graphics.p_device_.Get();
 }
 
-dxgi_info_manager& bindable::get_info_manager(graphics& graphics) noexcept(!IS_DEBUG)
+dxgi_info_manager& bindable::get_info_manager(graphics& graphics) noexcept(IS_DEBUG)
 {
-#ifdef _DEBUG
+#if IS_DEBUG
 	return graphics.info_manager_;
 #else
 	throw std::logic_error("Access denied: dxgi_info_manager is not accessible in release builds.");

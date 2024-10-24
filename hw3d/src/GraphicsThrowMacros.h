@@ -40,5 +40,5 @@
 #if defined(DEBUG) || defined(_DEBUG)
 #define INFOMAN(graphics) HRESULT hresult; dxgi_info_manager& info_manager_ = get_info_manager((graphics))
 #else
-#define INFOMAN() HRESULT hresult
+#define INFOMAN(_) HRESULT hresult
 #endif

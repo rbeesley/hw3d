@@ -61,7 +61,7 @@ graphics::graphics(HWND parent, int width, int height) :
 	};
 
 	UINT swap_create_flags = 0u;
-#if defined(DEBUG) || defined(_DEBUG)
+#if IS_DEBUG
 	PLOGI << "Enable D3D11 Device Debugging";
 	swap_create_flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
