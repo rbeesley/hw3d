@@ -3,12 +3,22 @@
 #include "DxgiInfoManager.h"
 
 #include <d3d11.h>
+#include <DirectXMath.h>
 #include <locale>
 #include <vector>
 #include <wrl.h>
 
+#if !defined(IS_DEBUG)
+#if defined(DEBUG) || defined(_DEBUG)
+#define IS_DEBUG TRUE
+#else
+#define IS_DEBUG FALSE
+#endif
+#endif
+
 class graphics
 {
+	friend class bindable;
 public:
 	class graphics_exception : public atum_exception
 	{
@@ -48,26 +58,29 @@ public:
 	};
 public:
 	explicit graphics(HWND parent, int width, int height);
+
+	graphics() = delete;
 	~graphics() = default;
 	graphics(const graphics&) = delete;
 	graphics& operator=(const graphics&) = delete;
 	graphics(const graphics&&) = delete;
 	graphics& operator=(const graphics&&) = delete;
+
 	void end_frame();
 	void clear_buffer(float red, float green, float blue) const;
-
-	// Jam in experimental code to try and draw our first triangle
-	void draw_test_triangle(float angle, float x, float y, float z);
-
+	void draw_indexed(UINT count) noexcept(!IS_DEBUG);
+	void set_projection(DirectX::FXMMATRIX& projection) noexcept;
+	DirectX::XMMATRIX get_projection() const noexcept;
 private:
 	HWND parent_;
 	float width_, height_;
-#if defined(DEBUG) || defined(_DEBUG)
+#if IS_DEBUG
 	dxgi_info_manager info_manager_;
 #endif
+	DirectX::XMMATRIX projection_;
 	Microsoft::WRL::ComPtr<ID3D11Device> p_device_;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> p_swap_chain_;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> p_device_context_;
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> p_context_;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> p_target_view_;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> p_depth_stencil_view_;
 };

@@ -5,6 +5,8 @@
 class atum_exception : public std::exception {
 public:
 	atum_exception(int line, const char* file) noexcept;
+	atum_exception() = delete;
+
 	const char* what() const noexcept override;
 	virtual const char* get_type() const noexcept;
 	int get_line() const noexcept;

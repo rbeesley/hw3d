@@ -183,19 +183,29 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Bindable.cpp" />
     <ClCompile Include="src\App.cpp" />
+    <ClCompile Include="src\Box.cpp" />
+    <ClCompile Include="src\Drawable.cpp" />
     <ClCompile Include="src\DxgiInfoManager.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
+    <ClCompile Include="src\IndexBufffer.cpp" />
+    <ClCompile Include="src\InputLayout.cpp" />
     <ClCompile Include="src\Keyboard.cpp" />
     <ClCompile Include="src\AtumException.cpp" />
     <ClCompile Include="src\Console.cpp" />
     <ClCompile Include="src\Logging.cpp" />
     <ClCompile Include="src\Mouse.cpp" />
+    <ClCompile Include="src\PixelShader.cpp" />
+    <ClCompile Include="src\Topology.cpp" />
+    <ClCompile Include="src\TransformConstantBuffer.cpp" />
+    <ClCompile Include="src\VertexShader.cpp" />
     <ClCompile Include="src\Window.cpp" />
     <ClCompile Include="src\WindowsMessageMap.cpp" />
     <ClCompile Include="src\WinMain.cpp" />
     <ClCompile Include="src\VirtualKeyMap.cpp" />
     <ClCompile Include="src\Timer.cpp" />
+    <ClCompile Include="src\VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="3rdparty\plog\Appenders\AndroidAppender.h" />
@@ -225,10 +235,18 @@
     <ClInclude Include="3rdparty\plog\Severity.h" />
     <ClInclude Include="3rdparty\plog\Util.h" />
     <ClInclude Include="3rdparty\plog\WinApi.h" />
+    <ClInclude Include="src\BindableBase.h" />
+    <ClInclude Include="src\Bindable.h" />
     <ClInclude Include="lib\DXErr\DXErr.h" />
     <ClInclude Include="src\App.h" />
+    <ClInclude Include="src\Box.h" />
+    <ClInclude Include="src\ConstantBuffers.h" />
+    <ClInclude Include="src\Drawable.h" />
     <ClInclude Include="src\DxgiInfoManager.h" />
     <ClInclude Include="src\Graphics.h" />
+    <ClInclude Include="src\GraphicsThrowMacros.h" />
+    <ClInclude Include="src\IndexBuffer.h" />
+    <ClInclude Include="src\InputLayout.h" />
     <ClInclude Include="src\LoggingConfig.h" />
     <ClInclude Include="src\Keyboard.h" />
     <ClInclude Include="resources\resource.h" />
@@ -237,10 +255,16 @@
     <ClInclude Include="src\Console.h" />
     <ClInclude Include="src\Logging.h" />
     <ClInclude Include="src\Mouse.h" />
+    <ClInclude Include="src\PixelShader.h" />
+    <ClInclude Include="src\Topology.h" />
+    <ClInclude Include="src\TransformConstantBuffer.h" />
+    <ClInclude Include="src\VertexShader.h" />
     <ClInclude Include="src\Window.h" />
     <ClInclude Include="src\WindowsMessageMap.h" />
     <ClInclude Include="src\VirtualKeyMap.h" />
     <ClInclude Include="src\Timer.h" />
+    <ClInclude Include="src\WindowsThrowMacros.h" />
+    <ClInclude Include="src\VertexBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hw3d.rc" />

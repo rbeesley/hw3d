@@ -58,15 +58,17 @@ public:
 public:
 	window(int width, int height, LPCWSTR name);
 	~window();
-	[[nodiscard]] HWND get_handle() const;
-	static std::optional<int> process_messages();
-	[[nodiscard]] static std::shared_ptr<mouse> get_mouse();
-	[[nodiscard]] static std::shared_ptr<keyboard> get_keyboard();
-	[[nodiscard]] static std::shared_ptr<graphics> get_graphics();
+
 	window(const window&) = delete;
 	window& operator=(const window&) = delete;
 	window(const window&&) = delete;
 	window& operator=(const window&&) = delete;
+
+	[[nodiscard]] HWND get_handle() const;
+	static std::optional<int> process_messages();
+	[[nodiscard]] static mouse& get_mouse();
+	[[nodiscard]] static keyboard& get_keyboard();
+	[[nodiscard]] static graphics& get_graphics();
 private:
 	void set_title(const std::wstring& title) const;
 	static LRESULT CALLBACK handle_msg_setup(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
@@ -74,17 +76,12 @@ private:
 	static HWND set_active(HWND window_handle);
 	static LRESULT CALLBACK handle_msg(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 private:
-	inline static std::shared_ptr<mouse> p_mouse_;
-	inline static std::shared_ptr<keyboard> p_keyboard_;
-	inline static std::shared_ptr<graphics> p_graphics_;
+	inline static std::unique_ptr<mouse> p_mouse_;
+	inline static std::unique_ptr<keyboard> p_keyboard_;
+	inline static std::unique_ptr<graphics> p_graphics_;
 	inline static int x_{};
 	inline static int y_{};
 	int width_{};
 	int height_{};
 	HWND window_handle_;
 };
-
-// Error exception helper macro
-#define ATUM_WND_EXCEPT(h_result) window::hresult_exception(__LINE__, __FILE__, h_result)
-#define ATUM_WND_LAST_EXCEPT() window::hresult_exception(__LINE__, __FILE__, GetLastError())
-#define ATUM_WND_NO_GFX_EXCEPT() window::no_gfx_exception(__LINE__, __FILE__)
