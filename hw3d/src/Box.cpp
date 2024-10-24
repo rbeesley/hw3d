@@ -4,20 +4,20 @@
 box::box(graphics& graphics,
 	std::mt19937& rng,
 	std::uniform_real_distribution<float>& distance,
-	std::uniform_real_distribution<float>& spin_of_box,
-	std::uniform_real_distribution<float>& spherical_position,
-	std::uniform_real_distribution<float>& movement_of_box)
+	std::uniform_real_distribution<float>& rotation_of_box,
+	std::uniform_real_distribution<float>& spherical_coordinate_position,
+	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_box)
 	:
 	radius_distance_from_center_(distance(rng)),
-	droll_(spin_of_box(rng)),
-	dpitch_(spin_of_box(rng)),
-	dyaw_(spin_of_box(rng)),
-	theta_(spherical_position(rng)),
-	phi_(spherical_position(rng)),
-	rho_(spherical_position(rng)),
-	dtheta_(movement_of_box(rng)),
-	dphi_(movement_of_box(rng)),
-	drho_(movement_of_box(rng))
+	droll_(rotation_of_box(rng)),
+	dpitch_(rotation_of_box(rng)),
+	dyaw_(rotation_of_box(rng)),
+	theta_(spherical_coordinate_position(rng)),
+	phi_(spherical_coordinate_position(rng)),
+	rho_(spherical_coordinate_position(rng)),
+	dtheta_(spherical_coordinate_movement_of_box(rng)),
+	dphi_(spherical_coordinate_movement_of_box(rng)),
+	drho_(spherical_coordinate_movement_of_box(rng))
 {
 	struct vertex
 	{

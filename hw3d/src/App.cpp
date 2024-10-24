@@ -31,14 +31,14 @@ app::app()
 	PLOGD << "mt19937 seed: " << seed;
 	std::mt19937 rng(seed);
 	std::uniform_real_distribution<float> distance(6.0f, 20.0f);
-	std::uniform_real_distribution<float> spin_of_box(0.0f, TWOPI);
-	std::uniform_real_distribution<float> spherical_position(0.0f, TWOPI);
-	std::uniform_real_distribution<float> movement_of_box(0.0f, PI * 0.3f);
+	std::uniform_real_distribution<float> rotation_of_box(0.0f, TWOPI);
+	std::uniform_real_distribution<float> spherical_coordinate_position(0.0f, TWOPI);
+	std::uniform_real_distribution<float> spherical_coordinate_movement_of_box(0.0f, PI * 0.3f);
 
 	PLOGI << "Populating pool of drawables (box)";
 	for(auto i = 0; i < 10; i++)
 	{
-		boxes_.push_back(std::make_unique<box>(window::get_graphics(), rng, distance, spin_of_box, spherical_position, movement_of_box));
+		boxes_.push_back(std::make_unique<box>(window::get_graphics(), rng, distance, rotation_of_box, spherical_coordinate_position, spherical_coordinate_movement_of_box));
 	}
 
 	PLOGI << "Set graphics projection";

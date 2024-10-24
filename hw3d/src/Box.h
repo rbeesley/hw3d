@@ -10,9 +10,9 @@ class box : public drawable
 public:
 	box(graphics& graphics, std::mt19937& rng,
 		std::uniform_real_distribution<float>& distance,
-		std::uniform_real_distribution<float>& spin_of_box,
-		std::uniform_real_distribution<float>& spherical_position,
-		std::uniform_real_distribution<float>& movement_of_box);
+		std::uniform_real_distribution<float>& rotation_of_box,
+		std::uniform_real_distribution<float>& spherical_coordinate_position,
+		std::uniform_real_distribution<float>& spherical_coordinate_movement_of_box);
 
 	box(const box&) = delete;
 	box& operator=(const box&) = delete;
