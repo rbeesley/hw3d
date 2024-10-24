@@ -22,7 +22,7 @@ public:
 	static void add_static_bind(std::unique_ptr<bindable> p_bind) noexcept(!IS_DEBUG)
 	{
 		PLOGD << "static binding " << typeid(*p_bind).name();
-		assert("*Must* use add_index_buffer to bind index buffer" && typeid(*p_bind) != typeid(index_buffer));
+		assert("*Must* use add_index_buffer or add_static_index_buffer to bind index buffer" && typeid(*p_bind) != typeid(index_buffer));
 		static_binds_.push_back(std::move(p_bind));
 	}
 

@@ -19,7 +19,7 @@ void drawable_base::draw(graphics& graphics) const noexcept(!IS_DEBUG)
 void drawable_base::add_bind(std::unique_ptr<bindable> p_bind) noexcept(!IS_DEBUG)
 {
 	PLOGD << "       binding " << typeid(*p_bind).name();
-	assert("*Must* use add_index_buffer to bind index buffer" && typeid(*bind) != typeid(index_buffer));
+	assert("*Must* use add_index_buffer or add_static_index_buffer to bind index buffer" && typeid(*bind) != typeid(index_buffer));
 	binds_.push_back(std::move(p_bind));
 }
 

@@ -36,7 +36,7 @@ app::app()
 	std::uniform_real_distribution<float> spherical_coordinate_movement_of_box(0.0f, PI * 0.3f);
 
 	PLOGI << "Populating pool of drawables (box)";
-	for(auto i = 0; i < 10; i++)
+	for(auto i = 0; i < 80; i++)
 	{
 		boxes_.push_back(std::make_unique<box>(window::get_graphics(), rng, distance, rotation_of_box, spherical_coordinate_position, spherical_coordinate_movement_of_box));
 	}

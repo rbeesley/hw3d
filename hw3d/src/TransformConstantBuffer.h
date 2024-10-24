@@ -19,6 +19,6 @@ public:
 
 	void bind(graphics& graphics) noexcept override;
 private:
-	vertex_constant_buffer<DirectX::XMMATRIX> vertex_constant_buffer_;
+	static std::unique_ptr<vertex_constant_buffer<DirectX::XMMATRIX>> p_vertex_constant_buffer_;
 	const drawable_base& parent_;
 };
