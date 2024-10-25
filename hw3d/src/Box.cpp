@@ -1,12 +1,18 @@
 #include "Box.h"
+
 #include "BindableBase.h"
+#include "Cone.h"
+#include "Cube.h"
+#include "Cylinder.h"
+#include "Plane.h"
+#include "Sphere.h"
 
 box::box(graphics& graphics,
-	std::mt19937& rng,
-	std::uniform_real_distribution<float>& distance,
-	std::uniform_real_distribution<float>& spherical_coordinate_position,
-	std::uniform_real_distribution<float>& rotation_of_box,
-	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_box)
+         std::mt19937& rng,
+         std::uniform_real_distribution<float>& distance,								// rdist
+         std::uniform_real_distribution<float>& spherical_coordinate_position,			// adist
+         std::uniform_real_distribution<float>& rotation_of_box,						// ddist
+         std::uniform_real_distribution<float>& spherical_coordinate_movement_of_box)	// odist
 	: drawable(),
 	  radius_distance_from_center_(distance(rng)),
 	  theta_(spherical_coordinate_position(rng)),
@@ -19,37 +25,19 @@ box::box(graphics& graphics,
 	  dphi_(spherical_coordinate_movement_of_box(rng)),
 	  drho_(spherical_coordinate_movement_of_box(rng))
 {
+	namespace dx = DirectX;
+
 	if (!is_static_initialized())
 	{
 		struct vertex
 		{
-			struct
-			{
-				float x;
-				float y;
-				float z;
-			} pos;
+			dx::XMFLOAT3 pos;
 		};
-		const std::vector<vertex> vertices =
-		{
-			//    6-------7
-			//   /|      /|
-			//  2-------3 |
-			//  | |     | |
-			//  | 4-----|-5
-			//  |/      |/
-			//  0-------1
 
-			{-1.0f, -1.0f, -1.0f}, // Bottom-left-front vertex
-			{1.0f, -1.0f, -1.0f}, // Bottom-right-front vertex
-			{-1.0f, 1.0f, -1.0f}, // Top-left-front vertex
-			{1.0f, 1.0f, -1.0f}, // Top-right-front vertex
-			{-1.0f, -1.0f, 1.0f}, // Bottom-left-back vertex
-			{1.0f, -1.0f, 1.0f}, // Bottom-right-back vertex
-			{-1.0f, 1.0f, 1.0f}, // Top-left-back vertex
-			{1.0f, 1.0f, 1.0f}, // Top-right-back vertex
-		};
-		add_static_bind(std::make_unique<vertex_buffer>(graphics, vertices));
+		auto model = cube::make<vertex>();
+		model.transform(dx::XMMatrixScaling(1.0f, 1.0f, 1.0f));
+
+		add_static_bind(std::make_unique<vertex_buffer>(graphics, model.vertices()));
 
 		auto p_vertex_shader = std::make_unique<vertex_shader>(graphics, L"VertexShader.cso");
 		auto p_vertex_shader_bytecode = p_vertex_shader->get_byte_code();
@@ -57,30 +45,7 @@ box::box(graphics& graphics,
 
 		add_static_bind(std::make_unique<pixel_shader>(graphics, L"PixelShader.cso"));
 
-		const std::vector<unsigned short> indices =
-		{
-			//         2------6
-			//         | 4  //|
-			//	       |  //  |
-			//	       |//  5 |
-			//  2------3------7------6------2
-			//  |\\  1 |\\  3 |\\  7 | 9  //|
-			//  |  \\  |  \\  |  \\  |  //  |
-			//  | 0  \\| 2  \\| 6  \\|//  8 |
-			//  0------1------5------4------0
-			//         |\\ 11 |
-			//	       |  \\  |
-			//	       | 10 \\|
-			//	       0------4
-
-			0, 2, 1, 2, 3, 1, // Front
-			1, 3, 5, 3, 7, 5, // Right
-			2, 6, 3, 3, 6, 7, // Top
-			4, 5, 7, 4, 7, 6, // Back
-			0, 4, 2, 2, 4, 6, // Left
-			0, 1, 4, 1, 5, 4, // Bottom
-		};
-		add_static_index_buffer(std::make_unique<index_buffer>(graphics, indices));
+		add_static_index_buffer(std::make_unique<index_buffer>(graphics, model.indices()));
 
 		struct constant_buffer_struct
 		{

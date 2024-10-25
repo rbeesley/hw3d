@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 #include <random>
 
+#include "AtumMath.h"
 #include "Logging.h"
 
 // 1280x720
@@ -11,13 +12,6 @@
 constexpr int width = 800;
 constexpr int height = 600;
 constexpr float aspect_ratio = static_cast<float>(height) / static_cast<float>(width);
-
-constexpr float PI = 3.141592654f;
-constexpr float TWOPI = 6.283185307f;
-constexpr float ONEDIVPI = 0.318309886f;
-constexpr float ONEDIV2PI = 0.159154943f;
-constexpr float PIDIV2 = 1.570796327f;
-constexpr float PIDIV4 = 0.785398163f;
 
 app::app()
 	: window_(width, height, TEXT("Atum D3D Window"))
@@ -30,19 +24,24 @@ app::app()
 
 	PLOGD << "mt19937 seed: " << seed;
 	std::mt19937 rng(seed);
-	std::uniform_real_distribution<float> distance(6.0f, 20.0f);
-	std::uniform_real_distribution<float> rotation_of_box(0.0f, TWOPI);
-	std::uniform_real_distribution<float> spherical_coordinate_position(0.0f, TWOPI);
-	std::uniform_real_distribution<float> spherical_coordinate_movement_of_box(0.0f, PI * 0.3f);
+	std::uniform_real_distribution<float> distance(6.0f, 20.0f);									// rdist
+	std::uniform_real_distribution<float> spherical_coordinate_position(0.0f, TWOPI);				// adist
+	std::uniform_real_distribution<float> rotation_of_box(0.0f, PI);								// ddist
+	std::uniform_real_distribution<float> spherical_coordinate_movement_of_box(0.0f, PI * 0.08f);	// odist
 
-	PLOGI << "Populating pool of drawables (box)";
-	for(auto i = 0; i < 80; i++)
+	PLOGI << "Populating pool of drawables";
+	for(auto i = 0; i < 180; i++)
 	{
-		boxes_.push_back(std::make_unique<box>(window::get_graphics(), rng, distance, rotation_of_box, spherical_coordinate_position, spherical_coordinate_movement_of_box));
+		boxes_.push_back(std::make_unique<box>(window::get_graphics(), rng, distance, spherical_coordinate_position, rotation_of_box, spherical_coordinate_movement_of_box));
 	}
 
 	PLOGI << "Set graphics projection";
-	window::get_graphics().set_projection(DirectX::XMMatrixPerspectiveLH(1.0f, aspect_ratio, 0.5f, 40.0f));
+	window::get_graphics().set_projection(
+		DirectX::XMMatrixPerspectiveLH(
+			1.0f, 
+			aspect_ratio, 
+			0.5f, 
+			40.0f));
 }
 
 int app::init() const
@@ -78,16 +77,6 @@ int app::run()
 		}
 		render_frame();
 	}
-}
-
-static float map(const float in, const float in_min, const float in_max, const float out_min, const float out_max)
-{
-	return (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
-
-[[maybe_unused]] static float map(const int in, const int in_min, const int in_max, const int out_min, const int out_max)
-{
-	return map(static_cast<float>(in), static_cast<float>(in_min), static_cast<float>(in_max), static_cast<float>(out_min), static_cast<float>(out_max));
 }
 
 void app::render_frame()
