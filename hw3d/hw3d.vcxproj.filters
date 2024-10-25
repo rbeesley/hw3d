@@ -84,6 +84,15 @@
     <ClCompile Include="src\VertexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="3rdParty\wikibooks.org\fps_class.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="3rdParty\wikibooks.org\cpu_class.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="3rdParty\wikibooks.org\timer_class.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\AtumException.h">
@@ -279,6 +288,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Cylinder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\wikibooks.org\fps_class.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\wikibooks.org\cpu_class.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="3rdParty\wikibooks.org\timer_class.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -9,8 +9,8 @@
 
 // 1280x720
 // 800x600
-constexpr int width = 800;
-constexpr int height = 600;
+constexpr int width = 1280;
+constexpr int height = 720;
 constexpr float aspect_ratio = static_cast<float>(height) / static_cast<float>(width);
 
 app::app()
@@ -44,7 +44,14 @@ app::app()
 			40.0f));
 }
 
-int app::init() const
+app::~app()
+{
+#if defined(DEBUG) || defined(_DEBUG)
+	cpu_.shutdown();
+#endif
+}
+
+int app::init()
 {
 	if (!window_.get_handle())
 	{
@@ -58,10 +65,21 @@ int app::init() const
 		PLOGE << "Failed to create Debug Console";
 		return -3;
 	}
+
+	fps_.initialize();
+	cpu_.initialize();
 #endif
 
 	return 0;
 }
+
+#if defined(DEBUG) || defined(_DEBUG)
+static std::wstring get_fps_cpu_window_title(const int fps, const int cpu_percentage) {
+	wchar_t buffer[50];
+	std::swprintf(buffer, 50, L"fps: %d / cpu: %d%%", fps, cpu_percentage);
+	return std::wstring(buffer);
+}
+#endif
 
 int app::run()
 {
@@ -75,16 +93,21 @@ int app::run()
 			// If the optional return has a value, it is the exit code
 			return *exit_code;
 		}
+#if defined(DEBUG) || defined(_DEBUG)
+		fps_.frame();
+		cpu_.frame();
+		window_.set_title(get_fps_cpu_window_title(fps_.get_fps(), cpu_.get_cpu_percentage()));
+#endif
 		render_frame();
 	}
 }
 
 void app::render_frame()
 {
-	auto dt = timer_.mark();
+	const auto dt = timer_.mark();
 
 	window::get_graphics().clear_buffer(0.07f, 0.0f, 0.12f);
-	for(auto& box : boxes_)
+	for(const auto& box : boxes_)
 	{
 		box->update(dt);
 		box->draw(window::get_graphics());

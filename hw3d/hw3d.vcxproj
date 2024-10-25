@@ -183,6 +183,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="3rdParty\wikibooks.org\cpu_class.cpp" />
+    <ClCompile Include="3rdParty\wikibooks.org\fps_class.cpp" />
+    <ClCompile Include="3rdParty\wikibooks.org\timer_class.cpp" />
     <ClCompile Include="src\Bindable.cpp" />
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\Box.cpp" />
@@ -235,6 +238,9 @@
     <ClInclude Include="3rdparty\plog\Severity.h" />
     <ClInclude Include="3rdparty\plog\Util.h" />
     <ClInclude Include="3rdparty\plog\WinApi.h" />
+    <ClInclude Include="3rdParty\wikibooks.org\cpu_class.h" />
+    <ClInclude Include="3rdParty\wikibooks.org\fps_class.h" />
+    <ClInclude Include="3rdParty\wikibooks.org\timer_class.h" />
     <ClInclude Include="src\AtumMath.h" />
     <ClInclude Include="src\BindableBase.h" />
     <ClInclude Include="src\Bindable.h" />

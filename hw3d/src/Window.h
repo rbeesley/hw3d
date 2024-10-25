@@ -69,8 +69,8 @@ public:
 	[[nodiscard]] static mouse& get_mouse();
 	[[nodiscard]] static keyboard& get_keyboard();
 	[[nodiscard]] static graphics& get_graphics();
-private:
 	void set_title(const std::wstring& title) const;
+private:
 	static LRESULT CALLBACK handle_msg_setup(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 	static LRESULT CALLBACK handle_msg_thunk(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 	static HWND set_active(HWND window_handle);
