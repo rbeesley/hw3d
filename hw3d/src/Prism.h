@@ -4,13 +4,13 @@
 #include <DirectXMath.h>
 #include "AtumMath.h"
 
-class cylinder
+class prism
 {
 public:
 	template<class V>
 	static indexed_triangle_list<V> make()
 	{
-		return cylinder::make_tessellated<V>(24);
+		return make_tessellated<V>(24);
 	}
 
 	template<class V>

@@ -10,7 +10,7 @@ public:
 	template<class V>
 	static indexed_triangle_list<V> make()
 	{
-		return plane::make_tessellated<V>(1, 1);
+		return make_tessellated<V>(1, 1);
 	}
 
 	template<class V>

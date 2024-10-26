@@ -30,5 +30,6 @@ private:
 	cpu_class cpu_{};
 #endif
 	timer timer_;
-	std::vector<std::unique_ptr<box>> boxes_;
+	std::vector<std::unique_ptr<class drawable_base>> drawables_;
+	static constexpr size_t number_of_drawables_ = 180;
 };

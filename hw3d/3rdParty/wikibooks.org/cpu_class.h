@@ -35,6 +35,6 @@ private:
 	bool can_read_cpu_;
 	HQUERY query_handle_;
 	HCOUNTER counter_handle_;
-	unsigned long last_sample_time_;
+	unsigned long long last_sample_time_;
 	long cpu_usage_;
 };

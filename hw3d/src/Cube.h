@@ -37,8 +37,7 @@ public:
 			indices[i].pos = vertices[i];
 		}
 
-		return
-		{
+		return indexed_triangle_list<V>{
 			std::move(indices), {
 				//         2------6
 				//         | 4  //|

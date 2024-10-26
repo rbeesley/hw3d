@@ -22,7 +22,7 @@ void cpu_class::initialize()
 		this->can_read_cpu_ = false;
 	}
 
-	this->last_sample_time_ = GetTickCount();
+	this->last_sample_time_ = GetTickCount64();
 
 	this->cpu_usage_ = 0;
 }
@@ -43,9 +43,9 @@ void cpu_class::frame()
 
 	if (this->can_read_cpu_)
 	{
-		if ((this->last_sample_time_ + 1000) < GetTickCount())
+		if ((this->last_sample_time_ + 1000) < GetTickCount64())
 		{
-			this->last_sample_time_ = GetTickCount();
+			this->last_sample_time_ = GetTickCount64();
 
 			PdhCollectQueryData(this->query_handle_);
 

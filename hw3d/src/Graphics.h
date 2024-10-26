@@ -1,4 +1,5 @@
 #pragma once
+#include "AtumWindows.h"
 #include "AtumException.h"
 #include "DxgiInfoManager.h"
 
@@ -7,6 +8,9 @@
 #include <locale>
 #include <vector>
 #include <wrl.h>
+#include <d3dcompiler.h>
+#include <memory>
+#include <random>
 
 #if !defined(IS_DEBUG)
 #if defined(DEBUG) || defined(_DEBUG)
