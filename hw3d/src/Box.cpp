@@ -1,6 +1,6 @@
 #include "Box.h"
 
-#include "BindableBase.h"
+#include "BindableIncludes.h"
 #include "Cube.h"
 
 box::box(graphics& graphics,
@@ -11,7 +11,7 @@ box::box(graphics& graphics,
          std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution, // odist 
 	     std::uniform_real_distribution<float>& z_axis_distortion_distribution							// bdist
 )
-	: drawable(),
+	: drawable_static_storage(),
 	  radius_distance_from_center_(distance_distribution(rng)),
 	  theta_(spherical_coordinate_position_distribution(rng)),
 	  phi_(spherical_coordinate_position_distribution(rng)),
@@ -91,7 +91,7 @@ box::box(graphics& graphics,
 		set_index_buffer_from_static_binds();
 	}
 
-	drawable_base::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
+	drawable::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
 
 	// model deformation transform (per instance, not stored as bind)
 	dx::XMStoreFloat3x3(

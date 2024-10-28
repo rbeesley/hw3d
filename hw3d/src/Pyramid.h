@@ -1,7 +1,7 @@
 #pragma once
-#include "Drawable.h"
+#include "DrawableStaticStorage.h"
 
-class pyramid : public drawable<pyramid>
+class pyramid : public drawable_static_storage<pyramid>
 {
 public:
 	pyramid(graphics& graphics, std::mt19937& rng,
@@ -21,6 +21,7 @@ private:
 	float theta_;
 	float phi_;
 	float rho_; // chi
+
 	// speed (delta/s)
 	float droll_;
 	float dpitch_;

@@ -20,6 +20,8 @@ window::window_class::window_class() noexcept
 	:
 	instance_handle_(GetModuleHandle(nullptr))
 {
+	PLOGI << "Instantiating Window Class singleton";
+
 	WNDCLASSEX wcex = {
 		.style = CS_OWNDC,
 		.lpfnWndProc = handle_msg_setup,

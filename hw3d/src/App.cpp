@@ -21,38 +21,18 @@ app::app()
 	, console_(TEXT("Debug Console"))
 #endif
 {
-	//PLOGI << "Initializing App";
-	//auto seed = std::random_device{}();
+	PLOGI << "Initializing App";
 
-	//PLOGD << "mt19937 seed: " << seed;
-	//std::mt19937 rng(seed);
-	//std::uniform_real_distribution<float> distance(6.0f, 20.0f);									// rdist
-	//std::uniform_real_distribution<float> spherical_coordinate_position(0.0f, TWOPI);				// adist
-	//std::uniform_real_distribution<float> rotation_of_box(0.0f, PI);								// ddist
-	//std::uniform_real_distribution<float> spherical_coordinate_movement_of_box(0.0f, PI * 0.08f);	// odist
-
-	//PLOGI << "Populating pool of drawables";
-	//for(auto i = 0; i < 180; i++)
-	//{
-	//	boxes_.push_back(std::make_unique<box>(window::get_graphics(), rng, distance, spherical_coordinate_position, rotation_of_box, spherical_coordinate_movement_of_box));
-	//}
-
-	//PLOGI << "Set graphics projection";
-	//window::get_graphics().set_projection(
-	//	DirectX::XMMatrixPerspectiveLH(
-	//		1.0f, 
-	//		aspect_ratio, 
-	//		0.5f, 
-	//		40.0f));
 	class factory
 	{
 	public:
-		factory(graphics& graphics)
+		factory(graphics& graphics, const unsigned int rng_seed)
 			:
-		graphics_(graphics)
+			graphics_{ graphics },
+			rng_{ rng_seed }
 		{}
 
-		std::unique_ptr<drawable_base> operator()()
+		std::unique_ptr<drawable> operator()()
 		{
 			switch (drawable_type_distribution_(rng_))
 			{
@@ -77,7 +57,7 @@ app::app()
 			}
 		}	private:
 		graphics& graphics_;
-		std::mt19937 rng_{ std::random_device{}() };
+		std::mt19937 rng_;
 		std::uniform_real_distribution<float> spherical_coordinate_position_distribution_{ 0.0f,PI * 2.0f };				// adist
 		std::uniform_real_distribution<float> rotation_of_drawable_distribution_{ 0.0f,PI * 0.5f };						// ddist
 		std::uniform_real_distribution<float> spherical_coordinate_movement_of_drawable_distribution_{ 0.0f,PI * 0.08f };	// odist
@@ -88,8 +68,13 @@ app::app()
 		std::uniform_int_distribution<int> drawable_type_distribution_{ 0,2 };												// typedist
 	};
 
-	factory drawable_factory(window_.get_graphics());
+	const auto rng_seed = std::random_device{}();
+	PLOGI << "mt19937 rng seed: " << rng_seed;
+
+	const factory drawable_factory(window_.get_graphics(), rng_seed);
 	drawables_.reserve(number_of_drawables_);
+
+	PLOGI << "Populating pool of drawables";
 	std::generate_n(std::back_inserter(drawables_), number_of_drawables_, drawable_factory);
 
 	PLOGI << "Set graphics projection";
@@ -99,13 +84,6 @@ app::app()
 			aspect_ratio, 
 			0.5f, 
 			40.0f));
-}
-
-app::~app()
-{
-#if defined(DEBUG) || defined(_DEBUG)
-	cpu_.shutdown();
-#endif
 }
 
 int app::init()
@@ -131,9 +109,9 @@ int app::init()
 }
 
 #if defined(DEBUG) || defined(_DEBUG)
-static std::wstring get_fps_cpu_window_title(const int fps, const int cpu_percentage) {
+static std::wstring get_fps_cpu_window_title(const int fps, const double cpu_percentage) {
 	wchar_t buffer[50];
-	std::swprintf(buffer, 50, L"fps: %d / cpu: %d%%", fps, cpu_percentage);
+	std::swprintf(buffer, 50, L"fps: %d / cpu: %00.2f%%", fps, cpu_percentage);
 	return std::wstring(buffer);
 }
 #endif

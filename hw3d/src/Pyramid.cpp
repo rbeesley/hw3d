@@ -1,5 +1,5 @@
 #include "Pyramid.h"
-#include "BindableBase.h"
+#include "BindableIncludes.h"
 #include "GraphicsThrowMacros.h"
 #include "Cone.h"
 
@@ -52,12 +52,12 @@ pyramid::pyramid(graphics& graphics,
 
 		// Define vertex colors
 		std::vector<color> new_colors = {
-			{255, 0, 0, 255},
-			{255, 255, 0, 255},
-			{0, 255, 0, 255},
-			{0, 0, 255, 255},
-			{63, 63, 63, 255},
-			{191, 191, 191, 255}
+			{255, 63, 63, 255},
+			{127, 237, 16, 255},
+			{0, 191, 191, 255},
+			{127, 16, 237, 255},
+			{0, 0, 0, 255},
+			{255, 255, 255, 255}
 		};
 
 		// Lambda to set colors
@@ -97,7 +97,7 @@ pyramid::pyramid(graphics& graphics,
 		set_index_buffer_from_static_binds();
 	}
 
-	drawable_base::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
+	drawable::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
 }
 
 void pyramid::update(float dt) noexcept

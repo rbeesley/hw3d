@@ -2,10 +2,10 @@
 #include <DirectXMath.h>
 #include <random>
 
-#include "Drawable.h"
+#include "DrawableStaticStorage.h"
 #include "Graphics.h"
 
-class box : public drawable<box>
+class box : public drawable_static_storage<box>
 {
 public:
 	box(graphics& graphics, std::mt19937& rng,

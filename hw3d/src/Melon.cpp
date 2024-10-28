@@ -1,6 +1,6 @@
 #include "Melon.h"
 
-#include "BindableBase.h"
+#include "BindableIncludes.h"
 #include "GraphicsThrowMacros.h"
 #include "Sphere.h"
 
@@ -70,9 +70,9 @@ melon::melon(graphics& graphics,
 	auto model = sphere::make_tessellated<Vertex>(latitude_distribution(rng), longitude_distribution(rng));
 	// deform vertices of model by linear transformation
 	model.transform(dx::XMMatrixScaling(1.0f, 1.0f, 1.2f));
-	drawable_base::add_bind(std::make_unique<vertex_buffer>(graphics, model.vertices()));
-	drawable_base::add_index_buffer(std::make_unique<index_buffer>(graphics, model.indices()));
-	drawable_base::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
+	drawable::add_bind(std::make_unique<vertex_buffer>(graphics, model.vertices()));
+	drawable::add_index_buffer(std::make_unique<index_buffer>(graphics, model.indices()));
+	drawable::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
 }
 void melon::update(const float dt) noexcept
 {

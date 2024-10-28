@@ -2,9 +2,9 @@
 
 #include <random>
 
-#include "Drawable.h"
+#include "DrawableStaticStorage.h"
 
-class melon : public drawable<melon>
+class melon : public drawable_static_storage<melon>
 {
 public:
 	melon(graphics& graphics,

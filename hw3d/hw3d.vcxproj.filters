@@ -60,7 +60,7 @@
     <ClCompile Include="src\Box.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\DrawableBase.cpp">
+    <ClCompile Include="src\Drawable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\IndexBufffer.cpp">
@@ -87,7 +87,7 @@
     <ClCompile Include="3rdParty\wikibooks.org\fps_class.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="3rdParty\wikibooks.org\cpu_class.cpp">
+    <ClCompile Include="src\CpuMetric.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="3rdParty\wikibooks.org\timer_class.cpp">
@@ -230,7 +230,7 @@
     <ClInclude Include="lib\DXErr\DXErr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\BindableBase.h">
+    <ClInclude Include="src\BindableIncludes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Bindable.h">
@@ -242,10 +242,10 @@
     <ClInclude Include="src\ConstantBuffers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Drawable.h">
+    <ClInclude Include="src\DrawableStaticStorage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\DrawableBase.h">
+    <ClInclude Include="src\Drawable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\GraphicsThrowMacros.h">
@@ -299,7 +299,7 @@
     <ClInclude Include="3rdParty\wikibooks.org\fps_class.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="3rdParty\wikibooks.org\cpu_class.h">
+    <ClInclude Include="src\CpuMetric.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdParty\wikibooks.org\timer_class.h">
