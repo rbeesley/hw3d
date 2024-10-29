@@ -25,7 +25,7 @@ private:
 
 private:
 	std::unique_ptr<window> p_window_;
-#if defined(DEBUG) || defined(_DEBUG)
+#if (IS_DEBUG)
 	std::unique_ptr<console> p_console_;
 	fps_class fps_{};
 	cpu_metric cpu_{};

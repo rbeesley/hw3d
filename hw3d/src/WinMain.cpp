@@ -2,7 +2,6 @@
 
 #include "App.h"
 #include "Logging.h"
-#include "LoggingConfig.h"
 
 // Global Variables:
 HINSTANCE root_instance; // current instance
@@ -23,44 +22,17 @@ int APIENTRY WinMain(
 	{
 		root_instance = hInstance;
 
-#ifndef LOG_LEVEL_FULL // defined in LoggingConfig.h
 		// Initialize logging
-		//logging log(plog::none); // Effectively turns off logging
-		//logging log(plog::fatal);
-		//logging log(plog::error);
-		//logging log(plog::warning);
-		logging log(plog::info); // default
-		//logging log(plog::debug);
-		//logging log(plog::verbose);
+		logging::initialize(LOG_LEVEL_DEFAULT);
 
-		// Set up DebugOutput Logger
-		//logging::init_debug_output_logger(plog::fatal);
-		//logging::init_debug_output_logger(plog::error);
-		//logging::init_debug_output_logger(plog::warning);
-		logging::init_debug_output_logger(plog::info); // default
-		//logging::init_debug_output_logger(plog::debug);
-		//logging::init_debug_output_logger(plog::verbose);
-#else
-		logging log(plog::verbose);
-		logging::init_debug_output_logger(plog::verbose);
-#endif
+		// Set up Debug Output Logger
+		logging::initialize_debug_output_logger(LOG_LEVEL_DEBUG_OUTPUT);
 
 		app app;
 		if (const int result = app.initialize() < 0)
 		{
 			return result;
 		}
-
-#if defined(DEBUG) || defined(_DEBUG)
-		// Check Logging
-		PLOG_VERBOSE << "This is a VERBOSE message";
-		PLOG_DEBUG << "This is a DEBUG message";
-		PLOG_INFO << "This is an INFO message";
-		PLOG_WARNING << "This is a WARNING message";
-		PLOG_ERROR << "This is an ERROR message";
-		PLOG_FATAL << "This is a FATAL message";
-		//PLOG_NONE << "This is a NONE message";
-#endif
 
 		// Start Window Message Pump
 		PLOGI << "Running App";

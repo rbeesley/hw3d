@@ -1,4 +1,6 @@
 #pragma once
+#include <random>
+
 #include "DrawableStaticStorage.h"
 
 class pyramid : public drawable_static_storage<pyramid>

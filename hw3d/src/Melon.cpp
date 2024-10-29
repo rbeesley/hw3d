@@ -1,7 +1,6 @@
 #include "Melon.h"
 
 #include "BindableIncludes.h"
-#include "GraphicsThrowMacros.h"
 #include "Sphere.h"
 
 melon::melon(graphics& graphics,

@@ -19,19 +19,36 @@ app::app()
 {
 	PLOGI << "Initializing App";
 	p_window_ = std::make_unique<window>();
+#if (IS_DEBUG)
 	p_console_ = std::make_unique<console>();
+#endif
 }
 
 int app::initialize()
 {
-#if defined(DEBUG) || defined(_DEBUG)
+#if (IS_DEBUG)
 	p_console_->initialize(TEXT("Debug Console"));
+
+	// Check Logging
+	// This is the earliest this can be done if utilizing the console logger.
+	PLOG_NONE << "";
+	PLOG_NONE << "This is a NONE message";
+	PLOG_FATAL << "This is a FATAL message";
+	PLOG_ERROR << "This is an ERROR message";
+	PLOG_WARNING << "This is a WARNING message";
+	PLOG_INFO << "This is an INFO message";
+	PLOG_DEBUG << "This is a DEBUG message";
+	PLOG_VERBOSE << "This is a VERBOSE message";
+	PLOG_NONE << "";
+
+	// If the console failed to load, we want to make sure this is the last log message so that it is easier to spot.
 	if (!p_console_->get_handle())
 	{
 		PLOGE << "Failed to create Debug Console";
 		return -3;
 	}
 
+	// Initialize the FPS Counter and CPU Counter
 	fps_.initialize();
 	cpu_.initialize();
 #endif
@@ -112,7 +129,7 @@ int app::initialize()
 	return 0;
 }
 
-#if defined(DEBUG) || defined(_DEBUG)
+#if (IS_DEBUG)
 static std::wstring compose_fps_cpu_window_title(const int fps, const double cpu_percentage) {
 	wchar_t buffer[50];
 	std::swprintf(buffer, 50, L"fps: %d / cpu: %00.2f%%", fps, cpu_percentage);
@@ -133,7 +150,7 @@ int app::run()
 			return *exit_code;
 		}
 
-#if defined(DEBUG) || defined(_DEBUG)
+#if (IS_DEBUG)
 		fps_.frame();
 		cpu_.frame();
 		p_window_->set_title(compose_fps_cpu_window_title(fps_.get_fps(), cpu_.get_cpu_percentage()));
@@ -145,7 +162,9 @@ int app::run()
 void app::shutdown() const
 {
 	PLOGI << "Shutdown App";
+#if (IS_DEBUG)
 	p_console_->shutdown();
+#endif
 	p_window_->shutdown();
 }
 

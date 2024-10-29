@@ -20,12 +20,12 @@ public:
 		assert(divisions_x >= 1);
 		assert(divisions_y >= 1);
 
-		constexpr float width = 2.0f;
-		constexpr float height = 2.0f;
 		const int number_vertices_x = divisions_x + 1;
 		const int number_vertices_y = divisions_y + 1;
 		std::vector<V> vertices(number_vertices_x * number_vertices_y);
 		{
+			constexpr float height = 2.0f;
+			constexpr float width = 2.0f;
 			constexpr float side_x = width / 2.0f;
 			constexpr float side_y = height / 2.0f;
 			const float division_size_x = width / static_cast<float>(divisions_x);

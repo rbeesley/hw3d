@@ -3,7 +3,6 @@
 #include <system_error>
 
 #include "AtumWindows.h"
-#include "LoggingConfig.h"
 #include "Logging.h"
 #include "Resources/resource.h"
 #include "WindowsThrowMacros.h"
@@ -255,6 +254,7 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_COMMAND:
 		{
 			const int window_message_id = LOWORD(w_param);
+			// ReSharper disable once CppDeclaratorNeverUsed
 			const int window_message_event = HIWORD(w_param);
 			switch (window_message_id)
 			{

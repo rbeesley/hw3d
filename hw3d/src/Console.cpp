@@ -75,14 +75,8 @@ void console::initialize(const LPCWSTR name) noexcept {
 	PLOGV << "Show the Console Window";
 	ShowWindow(GetConsoleWindow(), SW_SHOW);
 
-#ifndef LOG_LEVEL_FULL // defined in LoggingConfig.h
 	// Set up Console Logger
-	//logging::init_console_logger(plog::info);
-	logging::init_console_logger(plog::debug); // default
-	//logging::init_console_logger(plog::verbose);
-#else
-	logging::init_console_logger(plog::verbose);
-#endif
+	logging::initialize_console_logger(LOG_LEVEL_CONSOLE);
 }
 
 void console::shutdown()

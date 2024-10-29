@@ -54,6 +54,7 @@ public:
 		vertices.emplace_back();
 		dx::XMStoreFloat3(&vertices.back().pos, dx::XMVectorNegate(base));
 
+		// ReSharper disable once CppLambdaCaptureNeverUsed
 		const auto calc_index = [latitudinal_divisions, longitudinal_divisions](const unsigned short index_latitude, const unsigned short index_longitude)
 			{ return index_latitude * longitudinal_divisions + index_longitude; };
 

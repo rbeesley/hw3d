@@ -4,7 +4,6 @@
 #include "DXErr.h"
 
 #include "Logging.h"
-#include "LoggingConfig.h"
 
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
@@ -62,7 +61,7 @@ graphics::graphics(HWND parent, int width, int height) :
 	};
 
 	UINT swap_create_flags = 0u;
-#if IS_DEBUG
+#if (IS_DEBUG)
 	PLOGD << "Enable D3D11 Device Debugging";
 	swap_create_flags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
@@ -174,7 +173,7 @@ graphics::graphics(HWND parent, int width, int height) :
 void graphics::end_frame()
 {
 	HRESULT hresult;
-#if defined(DEBUG) || defined(_DEBUG)
+#if (IS_DEBUG)
 	info_manager_.set();
 #endif
 	if (FAILED(hresult = p_swap_chain_->Present(1u, 0u)))

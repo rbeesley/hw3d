@@ -1,6 +1,6 @@
 #pragma once
+
 #include <bitset>
-#include <memory>
 #include <optional>
 #include <queue>
 

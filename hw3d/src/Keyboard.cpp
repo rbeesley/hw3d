@@ -2,11 +2,10 @@
 
 #include <optional>
 
-#include "LoggingConfig.h"
+#include "Logging.h"
 
 #if defined(LOG_KEYBOARD_MESSAGES) || defined(LOG_KEYBOARD_CHARS)  // defined in LoggingConfig.h
 #include <format>
-#include "Logging.h"
 #include "VirtualKeyMap.h"
 
 const static virtual_key_map virtual_key_map;
