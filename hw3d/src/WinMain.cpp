@@ -8,10 +8,13 @@
 HINSTANCE root_instance; // current instance
 
 int APIENTRY WinMain(
+	// ReSharper disable CppInconsistentNaming
 	_In_ const HINSTANCE hInstance,
 	_In_opt_ const HINSTANCE hPrevInstance,
 	_In_ const LPSTR lpCmdLine,
-	_In_ const int nShowCmd)
+	_In_ const int nShowCmd
+	// ReSharper enable CppInconsistentNaming
+)
 {
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
@@ -31,29 +34,24 @@ int APIENTRY WinMain(
 		//logging log(plog::verbose);
 
 		// Set up DebugOutput Logger
-		//logging::init_debug_output(plog::fatal);
-		//logging::init_debug_output(plog::error);
-		//logging::init_debug_output(plog::warning);
-		logging::init_debug_output(plog::info); // default
-		//logging::init_debug_output(plog::debug);
-		//logging::init_debug_output(plog::verbose);
+		//logging::init_debug_output_logger(plog::fatal);
+		//logging::init_debug_output_logger(plog::error);
+		//logging::init_debug_output_logger(plog::warning);
+		logging::init_debug_output_logger(plog::info); // default
+		//logging::init_debug_output_logger(plog::debug);
+		//logging::init_debug_output_logger(plog::verbose);
 #else
 		logging log(plog::verbose);
-		logging::init_debug_output(plog::verbose);
+		logging::init_debug_output_logger(plog::verbose);
 #endif
 
 		app app;
+		if (const int result = app.initialize() < 0)
+		{
+			return result;
+		}
 
 #if defined(DEBUG) || defined(_DEBUG)
-#ifndef LOG_LEVEL_FULL // defined in LoggingConfig.h
-		// Set up Console Logger
-		//logging::init_console(plog::info);
-		logging::init_console(plog::debug); // default
-		//logging::init_console(plog::verbose);
-#else
-		logging::init_console(plog::verbose);
-#endif
-
 		// Check Logging
 		PLOG_VERBOSE << "This is a VERBOSE message";
 		PLOG_DEBUG << "This is a DEBUG message";
@@ -64,17 +62,13 @@ int APIENTRY WinMain(
 		//PLOG_NONE << "This is a NONE message";
 #endif
 
-		if(const int result = app.init() < 0)
-		{
-			return result;
-		}
-
 		// Start Window Message Pump
 		PLOGI << "Running App";
-
 		const int result = app.run();
 
 		PLOGI << "Closing App";
+		app.shutdown();
+
 		return result;
 	}
 
@@ -91,5 +85,6 @@ int APIENTRY WinMain(
 		PLOGF << "Unknown Exception:" << "\n" << "No further details about the exception are available.";
 		MessageBox(nullptr, TEXT("No details available"), TEXT("Unknown Exception"), MB_OK | MB_ICONEXCLAMATION);
 	}
+
 	return -1;
 }

@@ -16,22 +16,25 @@ public:
 		console_class& operator=(const console_class&&) = delete;
 	private:
 		console_class() noexcept;
-		~console_class();
+		~console_class() noexcept;
 		static constexpr LPCWSTR console_class_name = L"Atum.D3D.Console";
 		static console_class console_class_;
 		HINSTANCE instance_handle_;
 	};
 
 public:
-	HWND get_window_handle() const noexcept;
-	explicit console(LPCWSTR name) noexcept;
-	~console() noexcept = default;
+	console() noexcept;
+	~console() noexcept;
 	console(const console&) = delete;
 	console& operator=(const console&) = delete;
 	console(const console&&) = delete;
 	console& operator=(const console&&) = delete;
+
+	void initialize(LPCWSTR name) noexcept;
+	HWND get_handle() const noexcept;
+	static void shutdown();
 private:
-	HWND window_handle;
+	HWND console_window_handle_;
 	FILE* p_cin_ = nullptr;
 	FILE* p_cout_ = nullptr;
 	FILE* p_cerr_ = nullptr;

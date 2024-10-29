@@ -6,11 +6,13 @@ console::console_class console::console_class::console_class_;
 
 console::console_class::console_class() noexcept
 	:instance_handle_(GetModuleHandle(nullptr))
-{}
-
-console::console_class::~console_class()
 {
-	FreeConsole();
+	PLOGD << "Instantiate Console Class";
+}
+
+console::console_class::~console_class() noexcept
+{
+	PLOGD << "Destroy Console Class";
 }
 
 LPCWSTR console::console_class::get_name() noexcept
@@ -23,11 +25,19 @@ HINSTANCE console::console_class::get_instance() noexcept
 	return console_class_.instance_handle_;
 }
 
-console::console(const LPCWSTR name) noexcept {
-	PLOGI << "Initializing Console";
+console::console() noexcept
+		:
+	console_window_handle_(nullptr)
+{
+	PLOGD << "Instantiate Console";
+}
+
+
+void console::initialize(const LPCWSTR name) noexcept {
+	PLOGI << "Initialize Console";
 
 	AllocConsole();
-	window_handle = GetConsoleWindow();
+	console_window_handle_ = GetConsoleWindow();
 
 	PLOGV << "Initialize STD File Streams";
 	errno_t result = 0;
@@ -48,7 +58,7 @@ console::console(const LPCWSTR name) noexcept {
 
 	// Disable System Close Button and Menu Item
 	PLOGV << "Disable Console Window System Close Button and Menu Item";
-	const auto menu = GetSystemMenu(window_handle, FALSE);
+	const auto menu = GetSystemMenu(console_window_handle_, FALSE);
 	EnableMenuItem(menu, SC_CLOSE, MF_GRAYED);
 
 
@@ -64,10 +74,32 @@ console::console(const LPCWSTR name) noexcept {
 
 	PLOGV << "Show the Console Window";
 	ShowWindow(GetConsoleWindow(), SW_SHOW);
+
+#ifndef LOG_LEVEL_FULL // defined in LoggingConfig.h
+	// Set up Console Logger
+	//logging::init_console_logger(plog::info);
+	logging::init_console_logger(plog::debug); // default
+	//logging::init_console_logger(plog::verbose);
+#else
+	logging::init_console_logger(plog::verbose);
+#endif
 }
 
-HWND console::get_window_handle() const noexcept {
-	return this->window_handle;
+void console::shutdown()
+{
+	PLOGI << "Shutdown Console";
+	logging::shutdown_console_logger();
+	FreeConsole();
+}
+
+console::~console() noexcept
+{
+	PLOGD << "Destroy Console";
+}
+
+
+HWND console::get_handle() const noexcept {
+	return console_window_handle_;
 }
 
 BOOL console::ctrl_handler(const DWORD ctrl_type) noexcept

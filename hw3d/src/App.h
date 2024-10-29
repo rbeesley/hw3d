@@ -16,16 +16,17 @@ public:
 	app(const app&&) = delete;
 	app& operator=(const app&&) = delete;
 
-	[[nodiscard]] int init();
+	[[nodiscard]] int initialize();
 	int run();
+	void shutdown() const;
 
 private:
 	void render_frame();
 
 private:
-	const window window_;
+	std::unique_ptr<window> p_window_;
 #if defined(DEBUG) || defined(_DEBUG)
-	const console console_;
+	std::unique_ptr<console> p_console_;
 	fps_class fps_{};
 	cpu_metric cpu_{};
 #endif

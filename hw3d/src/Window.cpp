@@ -14,13 +14,16 @@
 const static windows_message_map windows_message_map;
 #endif
 
-window::window_class window::window_class::window_class_;
-
-window::window_class::window_class() noexcept
+window::window_class::window_class()
 	:
-	instance_handle_(GetModuleHandle(nullptr))
+instance_handle_(GetModuleHandle(nullptr))
 {
-	PLOGI << "Instantiating Window Class singleton";
+	PLOGV << "Instantiate Window Class";
+}
+
+void window::window_class::initialize() const noexcept
+{
+	PLOGD << "Initialize Window Class";
 
 	WNDCLASSEX wcex = {
 		.style = CS_OWNDC,
@@ -40,9 +43,15 @@ window::window_class::window_class() noexcept
 	RegisterClassEx(&wcex);
 }
 
+void window::window_class::shutdown() const noexcept
+{
+	PLOGV << "Shutdown Window Class";
+	UnregisterClass(window_class_name, get_instance());
+}
+
 window::window_class::~window_class()
 {
-	UnregisterClass(window_class_name, get_instance());
+	PLOGD << "Destroy Window Class";
 }
 
 LPCWSTR window::window_class::get_name() noexcept
@@ -50,17 +59,20 @@ LPCWSTR window::window_class::get_name() noexcept
 	return window_class_name;
 }
 
-HINSTANCE window::window_class::get_instance() noexcept
+HINSTANCE window::window_class::get_instance() const noexcept
 {
-	return window_class_.instance_handle_;
+	return instance_handle_;
 }
 
-window::window(const int width, const int height, const LPCWSTR name)
-	:
-	width_(width),
-	height_(height)
+void window::initialize(const int width, const int height, const LPCWSTR name)
 {
-	PLOGI << "Initializing Window";
+	PLOGI << "Initialize Window";
+
+	width_ = width;
+	height_ = height;
+
+	window_class_ = std::make_unique<window_class>();
+	window_class_->initialize();
 
 	// ReSharper disable once CppInitializedValueIsAlwaysRewritten
 	RECT window_rect{};
@@ -85,7 +97,7 @@ window::window(const int width, const int height, const LPCWSTR name)
 		window_rect.bottom - window_rect.top,
 		nullptr,
 		nullptr,
-		window_class::get_instance(),
+		window_class_->get_instance(),
 		this
 	);
 
@@ -99,12 +111,12 @@ window::window(const int width, const int height, const LPCWSTR name)
 	ShowWindow(window_handle_, SW_SHOWDEFAULT);
 
 	// Get the mouse and keyboard
-	PLOGI << "Create references to the mouse and keyboard";
+	PLOGD << "Create references to the mouse and keyboard";
 	p_mouse_ = std::make_unique<mouse>();
 	p_keyboard_ = std::make_unique<keyboard>();
 
 	// Create the graphics object
-	PLOGI << "Create the DirectX graphics object";
+	PLOGD << "Create the DirectX graphics object";
 	p_graphics_ = std::make_unique<graphics>(window_handle_, width_, height_);
 
 	// Check for an error
@@ -114,17 +126,24 @@ window::window(const int width, const int height, const LPCWSTR name)
 	}
 }
 
-HWND window::get_handle() const
+HWND window::get_handle()
 {
 	return window_handle_;
 }
 
+void window::shutdown() const
+{
+	PLOGI << "Shutdown Window";
+	window_class_->shutdown();
+}
+
 window::~window()
 {
+	PLOGD << "Destroy Window";
 	DestroyWindow(window_handle_);
 }
 
-void window::set_title(const std::wstring& title) const
+void window::set_title(const std::wstring& title)
 {
 	if(!SetWindowText(window_handle_, title.c_str()))
 	{
