@@ -4,65 +4,138 @@
 #include <DirectXMath.h>
 #include <random>
 
+#include "AtumMath.h"
 #include "Logging.h"
+#include "Melon.h"
+#include "Pyramid.h"
 
 // 1280x720
 // 800x600
-constexpr int width = 800;
-constexpr int height = 600;
+constexpr int width = 1280;
+constexpr int height = 720;
 constexpr float aspect_ratio = static_cast<float>(height) / static_cast<float>(width);
 
-constexpr float PI = 3.141592654f;
-constexpr float TWOPI = 6.283185307f;
-constexpr float ONEDIVPI = 0.318309886f;
-constexpr float ONEDIV2PI = 0.159154943f;
-constexpr float PIDIV2 = 1.570796327f;
-constexpr float PIDIV4 = 0.785398163f;
-
 app::app()
-	: window_(width, height, TEXT("Atum D3D Window"))
-#if defined(DEBUG) || defined(_DEBUG)
-	, console_(TEXT("Debug Console"))
-#endif
 {
 	PLOGI << "Initializing App";
-	auto seed = std::random_device{}();
-
-	PLOGD << "mt19937 seed: " << seed;
-	std::mt19937 rng(seed);
-	std::uniform_real_distribution<float> distance(6.0f, 20.0f);
-	std::uniform_real_distribution<float> rotation_of_box(0.0f, TWOPI);
-	std::uniform_real_distribution<float> spherical_coordinate_position(0.0f, TWOPI);
-	std::uniform_real_distribution<float> spherical_coordinate_movement_of_box(0.0f, PI * 0.3f);
-
-	PLOGI << "Populating pool of drawables (box)";
-	for(auto i = 0; i < 80; i++)
-	{
-		boxes_.push_back(std::make_unique<box>(window::get_graphics(), rng, distance, rotation_of_box, spherical_coordinate_position, spherical_coordinate_movement_of_box));
-	}
-
-	PLOGI << "Set graphics projection";
-	window::get_graphics().set_projection(DirectX::XMMatrixPerspectiveLH(1.0f, aspect_ratio, 0.5f, 40.0f));
+	p_window_ = std::make_unique<window>();
+#if (IS_DEBUG)
+	p_console_ = std::make_unique<console>();
+#endif
 }
 
-int app::init() const
+int app::initialize()
 {
-	if (!window_.get_handle())
+#if (IS_DEBUG)
+	p_console_->initialize(TEXT("Debug Console"));
+
+	// Check Logging
+	// This is the earliest this can be done if utilizing the console logger.
+	PLOG_NONE << "";
+	PLOG_NONE << "This is a NONE message";
+	PLOG_FATAL << "This is a FATAL message";
+	PLOG_ERROR << "This is an ERROR message";
+	PLOG_WARNING << "This is a WARNING message";
+	PLOG_INFO << "This is an INFO message";
+	PLOG_DEBUG << "This is a DEBUG message";
+	PLOG_VERBOSE << "This is a VERBOSE message";
+	PLOG_NONE << "";
+
+	// If the console failed to load, we want to make sure this is the last log message so that it is easier to spot.
+	if (!p_console_->get_handle())
+	{
+		PLOGE << "Failed to create Debug Console";
+		return -3;
+	}
+
+	// Initialize the FPS Counter and CPU Counter
+	fps_.initialize();
+	cpu_.initialize();
+#endif
+
+	p_window_->initialize(width, height, TEXT("Atum D3D Window"));
+	if (!p_window_->get_handle())
 	{
 		PLOGF << "Failed to create Window";
 		return -2;
 	}
 
-#if defined(DEBUG) || defined(_DEBUG)
-	if (!console_.get_window_handle())
+	const auto rng_seed = std::random_device{}();
+	PLOGI << "mt19937 rng seed: " << rng_seed;
+
+	class drawable_factory
 	{
-		PLOGE << "Failed to create Debug Console";
-		return -3;
-	}
-#endif
+	public:
+		drawable_factory(graphics& graphics, const unsigned int rng_seed)
+			:
+			graphics_{ graphics },
+			rng_{ rng_seed }
+		{}
+
+		int count = 0;
+		std::unique_ptr<drawable> operator()()
+		{
+			switch (drawable_type_distribution_(rng_))
+			{
+			case 0:
+				LOGV << "Drawable <pyramid> #" << ++count;
+				return std::make_unique<pyramid>(
+					graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_,
+					spherical_coordinate_movement_of_drawable_distribution_
+				);
+			case 1:
+				LOGV << "Drawable <box>     #" << ++count;
+				return std::make_unique<box>(
+					graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_,
+					spherical_coordinate_movement_of_drawable_distribution_, z_axis_distortion_distribution_
+				);
+			case 2:
+				LOGV << "Drawable <melon>   #" << ++count;
+				return std::make_unique<melon>(
+					graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_,
+					spherical_coordinate_movement_of_drawable_distribution_, latitude_distribution_, longitude_distribution_
+				);
+			default:
+				assert(false && "bad drawable type in factory");
+				return {};
+			}
+		}	private:
+			graphics& graphics_;
+			std::mt19937 rng_;
+			std::uniform_real_distribution<float> spherical_coordinate_position_distribution_{ 0.0f,PI * 2.0f };				// adist
+			std::uniform_real_distribution<float> rotation_of_drawable_distribution_{ 0.0f,PI * 0.5f };						// ddist
+			std::uniform_real_distribution<float> spherical_coordinate_movement_of_drawable_distribution_{ 0.0f,PI * 0.08f };	// odist
+			std::uniform_real_distribution<float> distance_distribution_{ 6.0f,20.0f };										// rdist
+			std::uniform_real_distribution<float> z_axis_distortion_distribution_{ 0.4f,3.0f };								// bdist
+			std::uniform_int_distribution<int> latitude_distribution_{ 5,20 };													// latdist
+			std::uniform_int_distribution<int> longitude_distribution_{ 10,40 };												// longdist
+			std::uniform_int_distribution<int> drawable_type_distribution_{ 0,2 };												// typedist
+	};
+
+	const drawable_factory drawable_factory(p_window_->get_graphics(), rng_seed);
+	drawables_.reserve(number_of_drawables_);
+
+	PLOGD << "Populating pool of drawables";
+	std::generate_n(std::back_inserter(drawables_), number_of_drawables_, drawable_factory);
+
+	PLOGD << "Set graphics projection";
+	p_window_->get_graphics().set_projection(
+		DirectX::XMMatrixPerspectiveLH(
+			1.0f,
+			aspect_ratio,
+			0.5f,
+			40.0f));
 
 	return 0;
 }
+
+#if (IS_DEBUG)
+static std::wstring compose_fps_cpu_window_title(const int fps, const double cpu_percentage) {
+	wchar_t buffer[50];
+	std::swprintf(buffer, 50, L"fps: %d / cpu: %00.2f%%", fps, cpu_percentage);
+	return std::wstring(buffer);
+}
+#endif
 
 int app::run()
 {
@@ -76,29 +149,34 @@ int app::run()
 			// If the optional return has a value, it is the exit code
 			return *exit_code;
 		}
+
+#if (IS_DEBUG)
+		fps_.frame();
+		cpu_.frame();
+		p_window_->set_title(compose_fps_cpu_window_title(fps_.get_fps(), cpu_.get_cpu_percentage()));
+#endif
 		render_frame();
 	}
 }
 
-static float map(const float in, const float in_min, const float in_max, const float out_min, const float out_max)
+void app::shutdown() const
 {
-	return (in - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
-}
-
-[[maybe_unused]] static float map(const int in, const int in_min, const int in_max, const int out_min, const int out_max)
-{
-	return map(static_cast<float>(in), static_cast<float>(in_min), static_cast<float>(in_max), static_cast<float>(out_min), static_cast<float>(out_max));
+	PLOGI << "Shutdown App";
+#if (IS_DEBUG)
+	p_console_->shutdown();
+#endif
+	p_window_->shutdown();
 }
 
 void app::render_frame()
 {
-	auto dt = timer_.mark();
+	const auto dt = timer_.mark();
 
 	window::get_graphics().clear_buffer(0.07f, 0.0f, 0.12f);
-	for(auto& box : boxes_)
+	for(const auto& drawable : drawables_)
 	{
-		box->update(dt);
-		box->draw(window::get_graphics());
+		drawable->update(dt);
+		drawable->draw(window::get_graphics());
 	}
 
 	window::get_graphics().end_frame();

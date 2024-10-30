@@ -15,17 +15,18 @@ private:
 	// singleton
 	class window_class {
 	public:
-		static LPCWSTR get_name() noexcept;
-		static HINSTANCE get_instance() noexcept;
+		window_class();
+		~window_class();
 		window_class(const window_class&) = delete;
 		window_class& operator=(const window_class&) = delete;
 		window_class(const window_class&&) = delete;
 		window_class& operator=(const window_class&&) = delete;
+		void initialize() const noexcept;
+		void shutdown() const noexcept;
+		static LPCWSTR get_name() noexcept;
+		HINSTANCE get_instance() const noexcept;
 	private:
-		window_class() noexcept;
-		~window_class();
 		static constexpr LPCWSTR window_class_name = L"Atum.D3D";
-		static window_class window_class_;
 		HINSTANCE instance_handle_;
 	};
 public:
@@ -56,7 +57,7 @@ public:
 
 	};
 public:
-	window(int width, int height, LPCWSTR name);
+	window() noexcept = default;
 	~window();
 
 	window(const window&) = delete;
@@ -64,13 +65,15 @@ public:
 	window(const window&&) = delete;
 	window& operator=(const window&&) = delete;
 
-	[[nodiscard]] HWND get_handle() const;
+	void initialize(int width, int height, LPCWSTR name);
+	[[nodiscard]] static HWND get_handle();
+	void shutdown() const;
 	static std::optional<int> process_messages();
 	[[nodiscard]] static mouse& get_mouse();
 	[[nodiscard]] static keyboard& get_keyboard();
 	[[nodiscard]] static graphics& get_graphics();
+	static void set_title(const std::wstring& title);
 private:
-	void set_title(const std::wstring& title) const;
 	static LRESULT CALLBACK handle_msg_setup(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 	static LRESULT CALLBACK handle_msg_thunk(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 	static HWND set_active(HWND window_handle);
@@ -83,5 +86,6 @@ private:
 	inline static int y_{};
 	int width_{};
 	int height_{};
-	HWND window_handle_;
+	std::unique_ptr<window_class> window_class_;
+	static inline HWND window_handle_;
 };

@@ -1,6 +1,6 @@
 #include "TransformConstantBuffer.h"
 
-transform_constant_buffer::transform_constant_buffer(graphics& graphics, const drawable_base& parent)
+transform_constant_buffer::transform_constant_buffer(graphics& graphics, const drawable& parent)
 	:
 	  parent_(parent)
 {

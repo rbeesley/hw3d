@@ -9,7 +9,7 @@
 // Has a dependency that HRESULT hresult; is allocated
 #define GFX_THROW_NOINFO(hresult_call) if( FAILED(hresult = (hresult_call)) ) { throw graphics::hresult_exception(__LINE__, __FILE__, hresult); }
 
-#if defined(DEBUG) || defined(_DEBUG)
+#if (IS_DEBUG)
 // Get the resulting error message and log the exception
 // Has a dependency that HRESULT hresult; is allocated and assigned a value
 #define GFX_EXCEPT(hresult) graphics::hresult_exception(__LINE__, __FILE__, (hresult), info_manager_.get_messages())
@@ -37,8 +37,8 @@
 
 // Macro for importing infomanager into the local scope
 // this.GetInfoManager() must exist
-#if defined(DEBUG) || defined(_DEBUG)
-#define INFOMAN(graphics) HRESULT hresult; dxgi_info_manager& info_manager_ = get_info_manager((graphics))
+#if (IS_DEBUG)
+#define INFOMAN(graphics) HRESULT hresult; dxgi_info_manager& info_manager_ = get_info_manager(graphics)
 #else
 #define INFOMAN(_) HRESULT hresult
 #endif

@@ -5,16 +5,6 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <locale>
-#include <vector>
-#include <wrl.h>
-
-#if !defined(IS_DEBUG)
-#if defined(DEBUG) || defined(_DEBUG)
-#define IS_DEBUG TRUE
-#else
-#define IS_DEBUG FALSE
-#endif
-#endif
 
 class graphics
 {
@@ -74,7 +64,7 @@ public:
 private:
 	HWND parent_;
 	float width_, height_;
-#if IS_DEBUG
+#if (IS_DEBUG)
 	dxgi_info_manager info_manager_;
 #endif
 	DirectX::XMMATRIX projection_;

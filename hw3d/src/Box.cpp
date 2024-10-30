@@ -1,88 +1,51 @@
 #include "Box.h"
-#include "BindableBase.h"
+
+#include "BindableIncludes.h"
+#include "Cube.h"
 
 box::box(graphics& graphics,
-	std::mt19937& rng,
-	std::uniform_real_distribution<float>& distance,
-	std::uniform_real_distribution<float>& spherical_coordinate_position,
-	std::uniform_real_distribution<float>& rotation_of_box,
-	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_box)
-	: drawable(),
-	  radius_distance_from_center_(distance(rng)),
-	  theta_(spherical_coordinate_position(rng)),
-	  phi_(spherical_coordinate_position(rng)),
-	  rho_(spherical_coordinate_position(rng)),
-	  droll_(rotation_of_box(rng)),
-	  dpitch_(rotation_of_box(rng)),
-	  dyaw_(rotation_of_box(rng)),
-	  dtheta_(spherical_coordinate_movement_of_box(rng)),
-	  dphi_(spherical_coordinate_movement_of_box(rng)),
-	  drho_(spherical_coordinate_movement_of_box(rng))
+         std::mt19937& rng,
+         std::uniform_real_distribution<float>& distance_distribution,									// rdist
+         std::uniform_real_distribution<float>& spherical_coordinate_position_distribution,				// adist
+         std::uniform_real_distribution<float>& rotation_of_drawable_distribution,						// ddist
+         std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution, // odist 
+	     std::uniform_real_distribution<float>& z_axis_distortion_distribution							// bdist
+)
+	: drawable_static_storage(),
+	  radius_distance_from_center_(distance_distribution(rng)),
+	  theta_(spherical_coordinate_position_distribution(rng)),
+	  phi_(spherical_coordinate_position_distribution(rng)),
+	  rho_(spherical_coordinate_position_distribution(rng)),
+	  droll_(rotation_of_drawable_distribution(rng)),
+	  dpitch_(rotation_of_drawable_distribution(rng)),
+	  dyaw_(rotation_of_drawable_distribution(rng)),
+	  dtheta_(spherical_coordinate_movement_of_drawable_distribution(rng)),
+	  dphi_(spherical_coordinate_movement_of_drawable_distribution(rng)),
+	  drho_(spherical_coordinate_movement_of_drawable_distribution(rng))
 {
+	namespace dx = DirectX;
+
 	if (!is_static_initialized())
 	{
 		struct vertex
 		{
-			struct
-			{
-				float x;
-				float y;
-				float z;
-			} pos;
+			dx::XMFLOAT3 pos;
 		};
-		const std::vector<vertex> vertices =
-		{
-			//    6-------7
-			//   /|      /|
-			//  2-------3 |
-			//  | |     | |
-			//  | 4-----|-5
-			//  |/      |/
-			//  0-------1
 
-			{-1.0f, -1.0f, -1.0f}, // Bottom-left-front vertex
-			{1.0f, -1.0f, -1.0f}, // Bottom-right-front vertex
-			{-1.0f, 1.0f, -1.0f}, // Top-left-front vertex
-			{1.0f, 1.0f, -1.0f}, // Top-right-front vertex
-			{-1.0f, -1.0f, 1.0f}, // Bottom-left-back vertex
-			{1.0f, -1.0f, 1.0f}, // Bottom-right-back vertex
-			{-1.0f, 1.0f, 1.0f}, // Top-left-back vertex
-			{1.0f, 1.0f, 1.0f}, // Top-right-back vertex
-		};
-		add_static_bind(std::make_unique<vertex_buffer>(graphics, vertices));
+		auto model = cube::make<vertex>();
+		//model.transform(dx::XMMatrixScaling(1.0f, 1.0f, 1.0f));
 
-		auto p_vertex_shader = std::make_unique<vertex_shader>(graphics, L"VertexShader.cso");
+		add_static_bind(std::make_unique<vertex_buffer>(graphics, model.vertices()));
+
+		auto p_vertex_shader = std::make_unique<vertex_shader>(graphics, L"ColorIndexVS.cso");
 		auto p_vertex_shader_bytecode = p_vertex_shader->get_byte_code();
 		add_static_bind(std::move(p_vertex_shader));
 
-		add_static_bind(std::make_unique<pixel_shader>(graphics, L"PixelShader.cso"));
+		add_static_bind(std::make_unique<pixel_shader>(graphics, L"ColorIndexPS.cso"));
 
-		const std::vector<unsigned short> indices =
-		{
-			//         2------6
-			//         | 4  //|
-			//	       |  //  |
-			//	       |//  5 |
-			//  2------3------7------6------2
-			//  |\\  1 |\\  3 |\\  7 | 9  //|
-			//  |  \\  |  \\  |  \\  |  //  |
-			//  | 0  \\| 2  \\| 6  \\|//  8 |
-			//  0------1------5------4------0
-			//         |\\ 11 |
-			//	       |  \\  |
-			//	       | 10 \\|
-			//	       0------4
+		add_static_index_buffer(std::make_unique<index_buffer>(graphics, model.indices()));
 
-			0, 2, 1, 2, 3, 1, // Front
-			1, 3, 5, 3, 7, 5, // Right
-			2, 6, 3, 3, 6, 7, // Top
-			4, 5, 7, 4, 7, 6, // Back
-			0, 4, 2, 2, 4, 6, // Left
-			0, 1, 4, 1, 5, 4, // Bottom
-		};
-		add_static_index_buffer(std::make_unique<index_buffer>(graphics, indices));
-
-		struct constant_buffer_struct
+		struct pixel_shader_constants
 		{
 			struct
 			{
@@ -90,9 +53,9 @@ box::box(graphics& graphics,
 				float g;
 				float b;
 				float a;
-			} face_colors[6];
+			} face_colors[8];
 		};
-		const constant_buffer_struct constant_buffer =
+		const pixel_shader_constants constant_buffer =
 		{
 			{
 				{1.0f, 1.0f, 1.0f, 1.0f}, // White
@@ -101,9 +64,11 @@ box::box(graphics& graphics,
 				{1.0f, 1.0f, 0.0f, 1.0f}, // Yellow
 				{0.0f, 0.0f, 1.0f, 1.0f}, // Blue
 				{1.0f, 0.5f, 0.0f, 1.0f}, // Orange
+				{1.0f, 0.0f, 1.0f, 1.0f}, // Magenta
+				{0.0f, 1.0f, 1.0f, 1.0f}, // Cyan
 			}
 		};
-		add_static_bind(std::make_unique<pixel_constant_buffer<constant_buffer_struct>>(graphics, constant_buffer));
+		add_static_bind(std::make_unique<pixel_constant_buffer<pixel_shader_constants>>(graphics, constant_buffer));
 
 		const std::vector<D3D11_INPUT_ELEMENT_DESC> input_element_descs =
 		{
@@ -126,7 +91,13 @@ box::box(graphics& graphics,
 		set_index_buffer_from_static_binds();
 	}
 
-	drawable_base::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
+	drawable::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
+
+	// model deformation transform (per instance, not stored as bind)
+	dx::XMStoreFloat3x3(
+		&model_transform_,
+		dx::XMMatrixScaling(1.0f, 1.0f, z_axis_distortion_distribution(rng))
+	);
 }
 
 void box::update(const float dt) noexcept

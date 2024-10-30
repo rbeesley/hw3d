@@ -98,7 +98,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;IS_DEBUG=TRUE;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -119,7 +119,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;IS_DEBUG=FALSE;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
@@ -140,7 +140,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;IS_DEBUG=TRUE;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -163,7 +163,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>IS_DEBUG=FALSE;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
@@ -183,10 +183,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\CpuMetric.cpp" />
+    <ClCompile Include="3rdParty\wikibooks.org\fps_class.cpp" />
+    <ClCompile Include="3rdParty\wikibooks.org\timer_class.cpp" />
     <ClCompile Include="src\Bindable.cpp" />
     <ClCompile Include="src\App.cpp" />
     <ClCompile Include="src\Box.cpp" />
-    <ClCompile Include="src\DrawableBase.cpp" />
+    <ClCompile Include="src\Drawable.cpp" />
     <ClCompile Include="src\DxgiInfoManager.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
     <ClCompile Include="src\IndexBufffer.cpp" />
@@ -195,8 +198,10 @@
     <ClCompile Include="src\AtumException.cpp" />
     <ClCompile Include="src\Console.cpp" />
     <ClCompile Include="src\Logging.cpp" />
+    <ClCompile Include="src\Melon.cpp" />
     <ClCompile Include="src\Mouse.cpp" />
     <ClCompile Include="src\PixelShader.cpp" />
+    <ClCompile Include="src\Pyramid.cpp" />
     <ClCompile Include="src\Topology.cpp" />
     <ClCompile Include="src\TransformConstantBuffer.cpp" />
     <ClCompile Include="src\VertexShader.cpp" />
@@ -235,18 +240,25 @@
     <ClInclude Include="3rdparty\plog\Severity.h" />
     <ClInclude Include="3rdparty\plog\Util.h" />
     <ClInclude Include="3rdparty\plog\WinApi.h" />
-    <ClInclude Include="src\BindableBase.h" />
+    <ClInclude Include="src\CpuMetric.h" />
+    <ClInclude Include="3rdParty\wikibooks.org\fps_class.h" />
+    <ClInclude Include="3rdParty\wikibooks.org\timer_class.h" />
+    <ClInclude Include="src\AtumMath.h" />
+    <ClInclude Include="src\BindableIncludes.h" />
     <ClInclude Include="src\Bindable.h" />
     <ClInclude Include="lib\DXErr\DXErr.h" />
     <ClInclude Include="src\App.h" />
     <ClInclude Include="src\Box.h" />
+    <ClInclude Include="src\Cone.h" />
     <ClInclude Include="src\ConstantBuffers.h" />
+    <ClInclude Include="src\Cube.h" />
+    <ClInclude Include="src\DrawableStaticStorage.h" />
     <ClInclude Include="src\Drawable.h" />
-    <ClInclude Include="src\DrawableBase.h" />
     <ClInclude Include="src\DxgiInfoManager.h" />
     <ClInclude Include="src\Graphics.h" />
     <ClInclude Include="src\GraphicsThrowMacros.h" />
     <ClInclude Include="src\IndexBuffer.h" />
+    <ClInclude Include="src\IndexedTriangleList.h" />
     <ClInclude Include="src\InputLayout.h" />
     <ClInclude Include="src\LoggingConfig.h" />
     <ClInclude Include="src\Keyboard.h" />
@@ -255,8 +267,13 @@
     <ClInclude Include="src\AtumWindows.h" />
     <ClInclude Include="src\Console.h" />
     <ClInclude Include="src\Logging.h" />
+    <ClInclude Include="src\Melon.h" />
     <ClInclude Include="src\Mouse.h" />
     <ClInclude Include="src\PixelShader.h" />
+    <ClInclude Include="src\Plane.h" />
+    <ClInclude Include="src\Prism.h" />
+    <ClInclude Include="src\Pyramid.h" />
+    <ClInclude Include="src\Sphere.h" />
     <ClInclude Include="src\Topology.h" />
     <ClInclude Include="src\TransformConstantBuffer.h" />
     <ClInclude Include="src\VertexShader.h" />
@@ -274,7 +291,27 @@
     <Image Include="resources\hw3d.ico" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shaders\PixelShader.hlsl">
+    <FxCompile Include="shaders\ColorBlendPS.hlsl">
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="shaders\ColorBlendVS.hlsl">
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="shaders\ColorIndexPS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
@@ -284,7 +321,7 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
-    <FxCompile Include="shaders\VertexShader.hlsl">
+    <FxCompile Include="shaders\ColorIndexVS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>

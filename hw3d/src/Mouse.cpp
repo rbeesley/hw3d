@@ -3,11 +3,10 @@
 #include <optional>
 
 #include "AtumWindows.h"
-#include "LoggingConfig.h"
+#include "Logging.h"
 
 #if defined(LOG_MOUSE_MESSAGES) // defined in LoggingConfig.h
 #include <format>
-#include "Logging.h"
 #include "VirtualKeyMap.h"
 
 const static virtual_key_map virtual_key_map;
