@@ -1,4 +1,7 @@
 #include "CpuMetric.h"
+#include <mmsystem.h>
+
+#pragma comment(lib, "winmm.lib")
 
 // Mostly based on code found in this stackoverflow post: https://stackoverflow.com/a/64166
 

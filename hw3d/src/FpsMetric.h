@@ -1,6 +1,6 @@
 #pragma once
 ////////////////////////////////////////////////////////////////////////////////
-// Filename: fps_class.h
+// Filename: FpsMetric.h
 ////////////////////////////////////////////////////////////////////////////////
 #pragma once
 
@@ -12,21 +12,21 @@
 //////////////
 // INCLUDES //
 //////////////
-#include <windows.h>
-#include <mmsystem.h>
+#define FPS_METRIC_
+#include "AtumWindows.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class name: fps_class
 ////////////////////////////////////////////////////////////////////////////////
-class fps_class
+class fps_metric
 {
 public:
-	fps_class() = default;
-	~fps_class() = default;
-	fps_class(const fps_class&) = delete;
-	fps_class& operator=(const fps_class&) = delete;
-	fps_class(const fps_class&&) = delete;
-	fps_class& operator=(const fps_class&&) = delete;
+	fps_metric() = default;
+	~fps_metric() = default;
+	fps_metric(const fps_metric&) = delete;
+	fps_metric& operator=(const fps_metric&) = delete;
+	fps_metric(const fps_metric&&) = delete;
+	fps_metric& operator=(const fps_metric&&) = delete;
 
 	void initialize();
 	void frame();

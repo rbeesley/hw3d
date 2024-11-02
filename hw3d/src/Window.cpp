@@ -2,7 +2,6 @@
 
 #include <system_error>
 
-#include "AtumWindows.h"
 #include "Logging.h"
 #include "Resources/resource.h"
 #include "WindowsThrowMacros.h"

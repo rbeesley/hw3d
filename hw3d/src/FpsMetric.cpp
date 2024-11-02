@@ -1,16 +1,17 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Filename: fps_class.cpp
+// Filename: FpsMetric.cpp
 ///////////////////////////////////////////////////////////////////////////////
-#include "fps_class.h"
+#include "FpsMetric.h"
+#include <mmsystem.h>
 
-void fps_class::initialize()
+void fps_metric::initialize()
 {
 	this->fps_ = 0;
 	this->count_ = 0;
 	this->start_time_ = timeGetTime();
 }
 
-void fps_class::frame()
+void fps_metric::frame()
 {
 	this->count_++;
 
@@ -23,7 +24,7 @@ void fps_class::frame()
 	}
 }
 
-int fps_class::get_fps() const
+int fps_metric::get_fps() const
 {
 	return this->fps_;
 }

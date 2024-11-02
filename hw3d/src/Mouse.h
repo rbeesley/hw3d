@@ -3,6 +3,9 @@
 #include <queue>
 #include <utility>
 
+#define MOUSE_
+#include "AtumWindows.h"
+
 class mouse
 {
 public:

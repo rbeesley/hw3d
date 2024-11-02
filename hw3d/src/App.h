@@ -4,7 +4,7 @@
 #include "Console.h"
 #include "Timer.h"
 #include "CpuMetric.h"
-#include "wikibooks.org/fps_class.h"
+#include "FpsMetric.h"
 
 class app
 {
@@ -27,7 +27,7 @@ private:
 	std::unique_ptr<window> p_window_;
 #if (IS_DEBUG)
 	std::unique_ptr<console> p_console_;
-	fps_class fps_{};
+	fps_metric fps_{};
 	cpu_metric cpu_{};
 #endif
 	timer timer_;

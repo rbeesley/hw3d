@@ -5,9 +5,13 @@
 #include <random>
 
 #include "AtumMath.h"
+#include "GDIPlusManager.h"
 #include "Logging.h"
 #include "Melon.h"
 #include "Pyramid.h"
+#include "surface.h"
+
+class gdi_plus_manager gdi_plus_manager;
 
 // 1280x720
 // 800x600
@@ -24,6 +28,15 @@ app::app()
 #endif
 }
 
+#if (IS_DEBUG)
+static std::wstring exe_path() {
+	TCHAR buffer[MAX_PATH] = { 0 };
+	GetModuleFileName(nullptr, buffer, MAX_PATH);
+	const std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
+	return std::wstring(buffer).substr(0, pos);
+}
+#endif
+
 int app::initialize()
 {
 #if (IS_DEBUG)
@@ -31,6 +44,7 @@ int app::initialize()
 
 	// Check Logging
 	// This is the earliest this can be done if utilizing the console logger.
+	PLOGN << "CWD: " << exe_path();
 	PLOG_NONE << "";
 	PLOG_NONE << "This is a NONE message";
 	PLOG_FATAL << "This is a FATAL message";
@@ -117,6 +131,8 @@ int app::initialize()
 
 	//PLOGD << "Populating pool of drawables";
 	//std::generate_n(std::back_inserter(drawables_), number_of_drawables_, drawable_factory);
+
+	const auto s = surface::from_file(L"kappa50.png");
 
 	PLOGD << "Set graphics projection";
 	p_window_->get_graphics().set_projection(

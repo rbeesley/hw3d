@@ -1,7 +1,9 @@
 #pragma once
 #include <string>
 #include <unordered_map>
-#include <Windows.h>
+
+#define VIRTUAL_KEY_MAP_
+#include "AtumWindows.h"
 
 class virtual_key_map
 {

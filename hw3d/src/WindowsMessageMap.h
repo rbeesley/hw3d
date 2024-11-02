@@ -1,7 +1,9 @@
 #pragma once
 #include <string>
 #include <unordered_map>
-#include <Windows.h>
+
+#define WINDOWS_MESSAGE_MAP_
+#include "AtumWindows.h"
 
 class windows_message_map
 {

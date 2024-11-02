@@ -4,7 +4,10 @@
 #include <memory>
 
 #include "AtumException.h"
+
+#define WINDOW_
 #include "AtumWindows.h"
+
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "Graphics.h"

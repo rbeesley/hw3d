@@ -8,7 +8,7 @@
 #include <format>
 #include "VirtualKeyMap.h"
 
-const static virtual_key_map virtual_key_map;
+const static class virtual_key_map virtual_key_map;
 #endif
 
 bool keyboard::is_key_pressed(const unsigned char keycode) const noexcept

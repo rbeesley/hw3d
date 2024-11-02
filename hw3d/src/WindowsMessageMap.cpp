@@ -11,112 +11,116 @@
 windows_message_map::windows_message_map()
 	:
 	map_({
-		{0x1,"WM_CREATE"},
-		{0x2,"WM_DESTROY"},
-		{0x3,"WM_MOVE"},
-		{0x5,"WM_SIZE"},
-		{0x6,"WM_ACTIVATE"},
-		{0x7,"WM_SETFOCUS"},
-		{0x8,"WM_KILLFOCUS"},
-		{0xA,"WM_ENABLE"},
-		{0xB,"WM_SETREDRAW"},
-		{0xC,"WM_SETTEXT"},
-		{0xD,"WM_GETTEXT"},
-		{0xE,"WM_GETTEXTLENGTH"},
-		{0xF,"WM_PAINT"},
-		{0x10,"WM_CLOSE"},
-		{0x11,"WM_QUERYENDSESSION"},
-		{0x12,"WM_QUIT"},
-		{0x13,"WM_QUERYOPEN"},
-		{0x14,"WM_ERASEBKGND"},
-		{0x15,"WM_SYSCOLORCHANGE"},
-		{0x16,"WM_ENDSESSION"},
-		{0x18,"WM_SHOWWINDOW"},
+		{ 0x1,"WM_CREATE" },
+		{ 0x2,"WM_DESTROY" },
+		{ 0x3,"WM_MOVE" },
+		{ 0x5,"WM_SIZE" },
+		{ 0x6,"WM_ACTIVATE" },
+		{ 0x7,"WM_SETFOCUS" },
+		{ 0x8,"WM_KILLFOCUS" },
+		{ 0xA,"WM_ENABLE" },
+		{ 0xB,"WM_SETREDRAW" },
+		{ 0xC,"WM_SETTEXT" },
+		{ 0xD,"WM_GETTEXT" },
+		{ 0xE,"WM_GETTEXTLENGTH" },
+		{ 0xF,"WM_PAINT" },
+		{ 0x10,"WM_CLOSE" },
+		{ 0x11,"WM_QUERYENDSESSION" },
+		{ 0x12,"WM_QUIT" },
+		{ 0x13,"WM_QUERYOPEN" },
+		{ 0x14,"WM_ERASEBKGND" },
+		{ 0x15,"WM_SYSCOLORCHANGE" },
+		{ 0x16,"WM_ENDSESSION" },
+		{ 0x18,"WM_SHOWWINDOW" },
 		// Adding WM_CTLCOLOR
-		{0x19,"WM_CTLCOLOR"},
-		{0x1A,"WM_WININICHANGE"},
+		{ 0x19,"WM_CTLCOLOR" },
+		{ 0x1A,"WM_WININICHANGE" },
 		// Missing WM_SETTINGCHANGE
-		{0x1B,"WM_DEVMODECHANGE"},
-		{0x1C,"WM_ACTIVATEAPP"},
-		{0x1D,"WM_FONTCHANGE"},
-		{0x1E,"WM_TIMECHANGE"},
-		{0x1F,"WM_CANCELMODE"},
-		{0x20,"WM_SETCURSOR"},
-		{0x21,"WM_MOUSEACTIVATE"},
-		{0x22,"WM_CHILDACTIVATE"},
-		{0x23,"WM_QUEUESYNC"},
-		{0x24,"WM_GETMINMAXINFO"},
+		{ 0x1B,"WM_DEVMODECHANGE" },
+		{ 0x1C,"WM_ACTIVATEAPP" },
+		{ 0x1D,"WM_FONTCHANGE" },
+		{ 0x1E,"WM_TIMECHANGE" },
+		{ 0x1F,"WM_CANCELMODE" },
+		{ 0x20,"WM_SETCURSOR" },
+		{ 0x21,"WM_MOUSEACTIVATE" },
+		{ 0x22,"WM_CHILDACTIVATE" },
+		{ 0x23,"WM_QUEUESYNC" },
+		{ 0x24,"WM_GETMINMAXINFO" },
 		// Adding WM_PAINTICON
-		{0x26,"WM_PAINTICON"},
-		{0x27,"WM_ICONERASEBKGND"},
-		{0x28,"WM_NEXTDLGCTL"},
-		{0x2A,"WM_SPOOLERSTATUS"},
-		{0x2B,"WM_DRAWITEM"},
-		{0x2C,"WM_MEASUREITEM"},
-		{0x2D,"WM_DELETEITEM"},
-		{0x2E,"WM_VKEYTOITEM"},
-		{0x2F,"WM_CHARTOITEM"},
-		{0x30,"WM_SETFONT"},
-		{0x31,"WM_GETFONT"},
-		{0x32,"WM_SETHOTKEY"},
-		{0x33,"WM_GETHOTKEY"},
-		{0x37,"WM_QUERYDRAGICON"},
-		{0x39,"WM_COMPAREITEM"},
-		{0x3D,"WM_GETOBJECT"},
-		{0x41,"WM_COMPACTING"},
-		{0x44,"WM_COMMNOTIFY"},
-		{0x46,"WM_WINDOWPOSCHANGING"},
-		{0x47,"WM_WINDOWPOSCHANGED"},
-		{0x48,"WM_POWER"},
-		{0x49,"WM_COPYGLOBALDATA"},
-		{0x4A,"WM_COPYDATA"},
-		{0x4B,"WM_CANCELJOURNAL"},
-		{0x4E,"WM_NOTIFY"},
-		{0x50,"WM_INPUTLANGCHANGEREQUEST"},
-		{0x51,"WM_INPUTLANGCHANGE"},
-		{0x52,"WM_TCARD"},
-		{0x53,"WM_HELP"},
-		{0x54,"WM_USERCHANGED"},
-		{0x55,"WM_NOTIFYFORMAT"},
-		{0x7B,"WM_CONTEXTMENU"},
-		{0x7C,"WM_STYLECHANGING"},
-		{0x7D,"WM_STYLECHANGED"},
-		{0x7E,"WM_DISPLAYCHANGE"},
-		{0x7F,"WM_GETICON"},
-		{0x80,"WM_SETICON"},
-		{0x81,"WM_NCCREATE"},
-		{0x82,"WM_NCDESTROY"},
-		{0x83,"WM_NCCALCSIZE"},
-		{0x84,"WM_NCHITTEST"},
-		{0x85,"WM_NCPAINT"},
-		{0x86,"WM_NCACTIVATE"},
-		{0x87,"WM_GETDLGCODE"},
-		{0x88,"WM_SYNCPAINT"},
+		{ 0x26,"WM_PAINTICON" },
+		{ 0x27,"WM_ICONERASEBKGND" },
+		{ 0x28,"WM_NEXTDLGCTL" },
+		{ 0x2A,"WM_SPOOLERSTATUS" },
+		{ 0x2B,"WM_DRAWITEM" },
+		{ 0x2C,"WM_MEASUREITEM" },
+		{ 0x2D,"WM_DELETEITEM" },
+		{ 0x2E,"WM_VKEYTOITEM" },
+		{ 0x2F,"WM_CHARTOITEM" },
+		{ 0x30,"WM_SETFONT" },
+		{ 0x31,"WM_GETFONT" },
+		{ 0x32,"WM_SETHOTKEY" },
+		{ 0x33,"WM_GETHOTKEY" },
+		{ 0x37,"WM_QUERYDRAGICON" },
+		{ 0x39,"WM_COMPAREITEM" },
+		{ 0x3D,"WM_GETOBJECT" },
+		{ 0x41,"WM_COMPACTING" },
+		{ 0x44,"WM_COMMNOTIFY" },
+		{ 0x46,"WM_WINDOWPOSCHANGING" },
+		{ 0x47,"WM_WINDOWPOSCHANGED" },
+		{ 0x48,"WM_POWER" },
+		{ 0x49,"WM_COPYGLOBALDATA" },
+		{ 0x4A,"WM_COPYDATA" },
+		{ 0x4B,"WM_CANCELJOURNAL" },
+		{ 0x4E,"WM_NOTIFY" },
+		{ 0x50,"WM_INPUTLANGCHANGEREQUEST" },
+		{ 0x51,"WM_INPUTLANGCHANGE" },
+		{ 0x52,"WM_TCARD" },
+		{ 0x53,"WM_HELP" },
+		{ 0x54,"WM_USERCHANGED" },
+		{ 0x55,"WM_NOTIFYFORMAT" },
+		{ 0x7B,"WM_CONTEXTMENU" },
+		{ 0x7C,"WM_STYLECHANGING" },
+		{ 0x7D,"WM_STYLECHANGED" },
+		{ 0x7E,"WM_DISPLAYCHANGE" },
+		{ 0x7F,"WM_GETICON" },
+		{ 0x80,"WM_SETICON" },
+		{ 0x81,"WM_NCCREATE" },
+		{ 0x82,"WM_NCDESTROY" },
+		{ 0x83,"WM_NCCALCSIZE" },
+		{ 0x84,"WM_NCHITTEST" },
+		{ 0x85,"WM_NCPAINT" },
+		{ 0x86,"WM_NCACTIVATE" },
+		{ 0x87,"WM_GETDLGCODE" },
+		{ 0x88,"WM_SYNCPAINT" },
 
 		// "Secret"
-		{0x90,"WM_UAHDESTROYWINDOW"},
-		{0x91,"WM_UAHDRAWMENU"},
-		{0x92,"WM_UAHDRAWMENUITEM"},
-		{0x93,"WM_UAHINITMENU"},
-		{0x94,"WM_UAHMEASUREMENUITEM"},
-		{0x95,"WM_UAHNCPAINTMEUNPOPUP"},
+		{ 0x90,"WM_UAHDESTROYWINDOW" },
+		{ 0x91,"WM_UAHDRAWMENU" },
+		{ 0x92,"WM_UAHDRAWMENUITEM" },
+		{ 0x93,"WM_UAHINITMENU" },
+		{ 0x94,"WM_UAHMEASUREMENUITEM" },
+		{ 0x95,"WM_UAHNCPAINTMEUNPOPUP" },
 
 #if ALLMOUSEMESSAGES
-		{0xA0,"WM_NCMOUSEMOVE"},
-		{0xA1,"WM_NCLBUTTONDOWN"},
-		{0xA2,"WM_NCLBUTTONUP"},
-		{0xA3,"WM_NCLBUTTONDBLCLK"},
-		{0xA4,"WM_NCRBUTTONDOWN"},
-		{0xA5,"WM_NCRBUTTONUP"},
-		{0xA6,"WM_NCRBUTTONDBLCLK"},
-		{0xA7,"WM_NCMBUTTONDOWN"},
-		{0xA8,"WM_NCMBUTTONUP"},
-		{0xA9,"WM_NCMBUTTONDBLCLK"},
-		{0xAB,"WM_NCXBUTTONDOWN"},
-		{0xAC,"WM_NCXBUTTONUP"},
-		{0xAD,"WM_NCXBUTTONDBLCLK"},
+		{ 0xA0,"WM_NCMOUSEMOVE" },
+		{ 0xA1,"WM_NCLBUTTONDOWN" },
+		{ 0xA2,"WM_NCLBUTTONUP" },
+		{ 0xA3,"WM_NCLBUTTONDBLCLK" },
+		{ 0xA4,"WM_NCRBUTTONDOWN" },
+		{ 0xA5,"WM_NCRBUTTONUP" },
+		{ 0xA6,"WM_NCRBUTTONDBLCLK" },
+		{ 0xA7,"WM_NCMBUTTONDOWN" },
+		{ 0xA8,"WM_NCMBUTTONUP" },
+		{ 0xA9,"WM_NCMBUTTONDBLCLK" },
+		{ 0xAB,"WM_NCXBUTTONDOWN" },
+		{ 0xAC,"WM_NCXBUTTONUP" },
+		{ 0xAD,"WM_NCXBUTTONDBLCLK" },
 #endif // ALLMOUSEMESSAGES
 
+		// Adding
+		{ 0xAE,"WM_CAPTIONCHANGED" },
+		{ 0xAF,"WM_NCCALCSIZE" },
+		
 		// Adding
 #if ALLMESSAGES
 		{0xB0,"EM_GETSEL"},
@@ -179,6 +183,14 @@ windows_message_map::windows_message_map()
 		{0xF7,"BM_SETIMAGE"},
 		{0xF8,"BM_SETDONTCLICK"},
 #endif // ALLMESSAGES
+
+		// Adding
+		{ 0xF9,"WM_HOTKEY" },
+		{ 0xFA,"WM_PRINT" },
+		{ 0xFB,"WM_PRINTCLIENT" },
+		{ 0xFC,"WM_PARENTNOTIFY" },
+		{ 0xFD,"WM_USER" },
+		{ 0xFE,"WM_REFLECT" },
 
 		{ 0xFF,"WM_INPUT" },
 		{0x100,"WM_KEYDOWN"},
@@ -1108,26 +1120,22 @@ windows_message_map::windows_message_map()
 
 std::string windows_message_map::operator()(const DWORD msg, const LPARAM l_param, const WPARAM w_param) const
 {
-	constexpr int first_col_width = 25;
+	constexpr int first_col_width = 28;
 	const auto it = map_.find(msg);
 
 	std::ostringstream out;
-	std::string window_message;
 	if (it != map_.end())
 	{
-		const auto& [key, value] = *it;
-		window_message = std::format("{:<{}}", value, first_col_width);
+		out << std::setw(first_col_width) << std::left << it->second;
 	}
 	else
 	{
-		auto msg_hex = std::format("{:04x}", msg);
-		window_message = std::format(" Unknown message: 0x{:<{}}", msg_hex, first_col_width - 20); // " Unknown message: 0x" has 20 characters
+		out << std::setw(static_cast<std::streamsize>(first_col_width) - 8) << std::left << " Unknown message: 0x"
+			<< std::setw(8) << std::right << std::setfill('0') << std::hex << msg;
 	}
 
-	const auto l_param_hex = std::format("  LP: 0x{:016x}", static_cast<unsigned long long>(l_param));
-	const auto w_param_hex = std::format("  WP: 0x{:016x}", static_cast<unsigned long long>(w_param));
-
-	out << window_message << l_param_hex << w_param_hex;
+	out << "  LP: 0x" << std::setw(16) << std::setfill('0') << std::hex << l_param
+		<< "  WP: 0x" << std::setw(16) << std::setfill('0') << std::hex << w_param;
 
 	return out.str();
 }
