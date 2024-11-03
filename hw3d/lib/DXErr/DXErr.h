@@ -21,21 +21,9 @@
 
 // Minimum required Windows.h defines for DXErr
 //#define NOGDI // - All GDI defines and routines
-#if defined(NOGDI)
-#undef NOGDI
-#endif
 //#define NOUSER // - All USER defines and routines
-#if defined(NOUSER)
-#undef NOUSER
-#endif
 //#define NOMB // - MB_ * and MessageBox()
-#if defined(NOMB)
-#undef NOMB
-#endif
 //#define NOMSG // - typedef MSG and associated routines
-#if defined(NOMSG)
-#undef NOMSG
-#endif
 
 // Not required for DXErr
 #define NOGDICAPMASKS // - CC_*, LC_*, PC_*, CP_*, TC_*, RC_
@@ -89,31 +77,73 @@
 #include <Windows.h>
 #include <sal.h>
 
-#ifdef _WIN64
-#ifdef _UNICODE
-#ifdef _DEBUG	// x64/UNICODE/DEBUG
+#if defined(_M_ARM64EC)
+#if defined(_UNICODE)
+#if defined(_DEBUG)	// ARM64EC/UNICODE/DEBUG
+#pragma comment(lib, "DXErr_ARM64EC_ud.lib")
+#else				// ARM64EC/UNICODE/RELEASE
+#pragma comment(lib, "DXErr_ARM64EC_ur.lib")
+#endif
+#else
+#if defined(_DEBUG)	// ARM64EC/ANSI/DEBUG
+#pragma comment(lib, "DXErr_ARM64EC_ad.lib")
+#else				// ARM64EC/ANSI/RELEASE
+#pragma comment(lib, "DXErr_ARM64EC_ar.lib")
+#endif
+#endif
+#elif defined(_M_ARM64)
+#if defined(_UNICODE)
+#if defined(_DEBUG)	// ARM64/UNICODE/DEBUG
+#pragma comment(lib, "DXErr_ARM64_ud.lib")
+#else				// ARM64/UNICODE/RELEASE
+#pragma comment(lib, "DXErr_ARM64_ur.lib")
+#endif
+#else
+#if defined(_DEBUG)	// ARM64/ANSI/DEBUG
+#pragma comment(lib, "DXErr_ARM64_ad.lib")
+#else				// ARM64/ANSI/RELEASE
+#pragma comment(lib, "DXErr_ARM64_ar.lib")
+#endif
+#endif
+#elif defined(_M_ARM)
+#if defined(_UNICODE)
+#if defined(_DEBUG)	// ARM/UNICODE/DEBUG
+#pragma comment(lib, "DXErr_ARM_ud.lib")
+#else				// ARM/UNICODE/RELEASE
+#pragma comment(lib, "DXErr_ARM_ur.lib")
+#endif
+#else
+#if defined(_DEBUG)	// ARM/ANSI/DEBUG
+#pragma comment(lib, "DXErr_ARM_ad.lib")
+#else				// ARM/ANSI/RELEASE
+#pragma comment(lib, "DXErr_ARM_ar.lib")
+#endif
+#endif
+#elif defined(_M_X64) && !defined(_M_ARM64EC)
+#if defined(_UNICODE)
+#if defined(_DEBUG)	// x64/UNICODE/DEBUG
 #pragma comment(lib, "DXErr_x64_ud.lib")
-#else			// x64/UNICODE/RELEASE
+#else				// x64/UNICODE/RELEASE
 #pragma comment(lib, "DXErr_x64_ur.lib")
 #endif
 #else
-#ifdef _DEBUG	// x64/ANSI/DEBUG
+#if defined(_DEBUG)	// x64/ANSI/DEBUG
 #pragma comment(lib, "DXErr_x64_ad.lib")
-#else			// x64/ANSI/RELEASE
+#else				// x64/ANSI/RELEASE
 #pragma comment(lib, "DXErr_x64_ar.lib")
 #endif
 #endif
-#else
-#ifdef _UNICODE
-#ifdef _DEBUG	// x86/UNICODE/DEBUG
+#elif defined(_WIN32) && !(defined(_M_ARM) || defined(_M_ARM64) || defined(_WIN64))
+#if defined(_UNICODE)
+#if defined(_DEBUG)	// x86/UNICODE/DEBUG
 #pragma comment(lib, "DXErr_x86_ud.lib")
-#else			// x86/UNICODE/RELEASE
+#else				// x86/UNICODE/RELEASE
 #pragma comment(lib, "DXErr_x86_ur.lib")
 #endif
 #else
-#ifdef _DEBUG	// x86/ANSI/DEBUG
+#if defined(_DEBUG)	// x86/ANSI/DEBUG
 #pragma comment(lib, "DXErr_x86_ad.lib")
-#else			// x86/ANSI/RELEASE
+#else				// x86/ANSI/RELEASE
 #pragma comment(lib, "DXErr_x86_ar.lib")
 #endif
 #endif
