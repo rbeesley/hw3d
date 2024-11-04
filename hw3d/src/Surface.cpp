@@ -33,9 +33,9 @@ namespace Gdiplus
 	using std::max;
 }
 
-surface::surface(const unsigned int width, const unsigned int height, const unsigned int pitch) noexcept
+surface::surface(const unsigned int width, const unsigned int height) noexcept
 	:
-	p_buffer_(std::make_unique<color[]>(static_cast<size_t>(pitch) * height)),
+	p_buffer_(std::make_unique<color[]>(static_cast<size_t>(width) * height)),
 	width_(width),
 	height_(height)
 {}
@@ -48,11 +48,6 @@ surface& surface::operator=(surface&& donor) noexcept
 	donor.p_buffer_ = nullptr;
 	return *this;
 }
-
-surface::surface(const unsigned int width, const unsigned int height) noexcept
-	:
-	surface(width, height, width)
-{}
 
 surface::surface(surface&& source) noexcept
 	:
@@ -129,14 +124,13 @@ surface surface::from_file(const std::wstring& name) {
 
 		height = bitmap->GetHeight();
 		width = bitmap->GetWidth();
-		const unsigned int pitch = width;
 		p_buffer = std::make_unique<color[]>(static_cast<size_t>(width) * height);
 
 		for (unsigned int y = 0; y < height; y++) {
 			for (unsigned int x = 0; x < width; x++) {
 				Gdiplus::Color c;
 				bitmap->GetPixel(static_cast<int>(x), static_cast<int>(y), &c);
-				p_buffer[static_cast<size_t>(y) * pitch + x] = c.GetValue();
+				p_buffer[static_cast<size_t>(y) * width + x] = c.GetValue();
 			}
 		}
 	}

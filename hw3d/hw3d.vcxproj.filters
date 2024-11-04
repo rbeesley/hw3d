@@ -105,6 +105,18 @@
     <ClCompile Include="src\Surface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Sheet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Sampler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SkinnedBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\AtumException.h">
@@ -317,6 +329,18 @@
     <ClInclude Include="src\Surface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Sheet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sampler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SkinnedBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hw3d.rc">
@@ -333,9 +357,14 @@
     <FxCompile Include="shaders\ColorIndexPS.hlsl" />
     <FxCompile Include="shaders\ColorBlendPS.hlsl" />
     <FxCompile Include="shaders\ColorBlendVS.hlsl" />
+    <FxCompile Include="shaders\TexturePS.hlsl" />
+    <FxCompile Include="shaders\TextureVS.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="images\kappa50.png">
+      <Filter>Resource Files</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="images\cube.png">
       <Filter>Resource Files</Filter>
     </CopyFileToFolders>
   </ItemGroup>

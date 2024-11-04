@@ -17,6 +17,6 @@ public:
 protected:
 	vertex_shader() = default;
 
-	Microsoft::WRL::ComPtr<ID3DBlob> p_bytecode_blob;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> p_vertex_shader;
+	Microsoft::WRL::ComPtr<ID3DBlob> p_bytecode_blob_;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> p_vertex_shader_;
 };

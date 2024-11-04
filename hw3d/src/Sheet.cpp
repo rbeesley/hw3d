@@ -1,16 +1,19 @@
-#include "Pyramid.h"
+#include "Sheet.h"
 #include "BindableIncludes.h"
-#include "Cone.h"
+#include "Plane.h"
+#include "Surface.h"
+#include "Texture.h"
+#include "Sampler.h"
 
 
-pyramid::pyramid(graphics& graphics,
+sheet::sheet(graphics& graphics,
 	std::mt19937& rng,
 	std::uniform_real_distribution<float>& distance_distribution,									// rdist
 	std::uniform_real_distribution<float>& spherical_coordinate_position_distribution,				// adist
 	std::uniform_real_distribution<float>& rotation_of_drawable_distribution,						// ddist
-	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution	// odist 
+	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution	// odist
 )
-	:
+		:
 	radius_distance_from_center_(distance_distribution(rng)),
 	theta_(spherical_coordinate_position_distribution(rng)),
 	phi_(spherical_coordinate_position_distribution(rng)),
@@ -26,66 +29,52 @@ pyramid::pyramid(graphics& graphics,
 
 	if (!is_static_initialized())
 	{
-		struct color
+		struct texture_position
 		{
-			unsigned char r;
-			unsigned char g;
-			unsigned char b;
-			unsigned char a;
+			float u;
+			float v;
 		};
 
 		struct vertex
 		{
 			dx::XMFLOAT3 pos;
-			color color;
-		};
-		//auto model = cone::make_tessellated<vertex>(4);
-
-		// set vertex colors for mesh
-		//model.vertices()[0].color = { 255,0,0 };
-		//model.vertices()[1].color = { 255,255,0 };
-		//model.vertices()[2].color = { 0,255,0 };
-		//model.vertices()[3].color = { 0,0,255 };
-		//model.vertices()[4].color = { 63,63,63 };
-		//model.vertices()[5].color = { 191,191,191 };
-
-		// Define vertex colors
-		std::vector<color> colors  = {
-			{255, 63, 63, 255},
-			{127, 237, 16, 255},
-			{0, 191, 191, 255},
-			{127, 16, 237, 255},
-			{0, 0, 0, 255},
-			{255, 255, 255, 255}
+			texture_position texture_position;
 		};
 
-		// Lambda to set colors
-		auto set_colors = [colors](std::vector<vertex>& vertices) {
-			for (size_t i = 0; i < vertices.size() && i < colors.size(); ++i) {
-				vertices[i].color = colors [i];
+		std::vector<texture_position> textures = {
+			{ 0.0f,0.0f },
+			{ 1.0f,0.0f },
+			{ 0.0f,1.0f },
+			{ 1.0f,1.0f }
+		};
+
+		// Lambda to set textures
+		auto set_texture = [textures](std::vector<vertex>& vertices) {
+			for (size_t i = 0; i < vertices.size() && i < textures.size(); ++i) {
+				vertices[i].texture_position = textures[i];
 			}
 		};
 
-		// Create the model with vertices, indices, and the lambda
-		auto model = cone::make_tessellated<vertex>(4, set_colors);
+		auto model = plane::make<vertex>(set_texture);
 
-		// deform mesh linearly
-		model.transform(dx::XMMatrixScaling(1.0f, 1.0f, 0.7f));
+		add_static_bind(std::make_unique<texture>(graphics, surface::from_file(L"kappa50.png")));
 
 		add_static_bind(std::make_unique<vertex_buffer>(graphics, model.vertices()));
 
-		auto p_vertex_shader = std::make_unique<vertex_shader>(graphics, L"ColorBlendVS.cso");
+		add_static_bind(std::make_unique<sampler>(graphics));
+
+		auto p_vertex_shader = std::make_unique<vertex_shader>(graphics, L"TextureVS.cso");
 		auto p_vertex_shader_bytecode = p_vertex_shader->get_byte_code();
 		add_static_bind(std::move(p_vertex_shader));
 
-		add_static_bind(std::make_unique<pixel_shader>(graphics, L"ColorBlendPS.cso"));
+		add_static_bind(std::make_unique<pixel_shader>(graphics, L"TexturePS.cso"));
 
 		add_static_index_buffer(std::make_unique<index_buffer>(graphics, model.indices()));
 
 		const std::vector<D3D11_INPUT_ELEMENT_DESC> input_element_descs =
 		{
 			{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-			{ "Color",0,DXGI_FORMAT_R8G8B8A8_UNORM,0,12,D3D11_INPUT_PER_VERTEX_DATA,0 },
+			{ "TexCoord",0,DXGI_FORMAT_R32G32_FLOAT,0,12,D3D11_INPUT_PER_VERTEX_DATA,0 },
 		};
 		add_static_bind(std::make_unique<input_layout>(graphics, input_element_descs, p_vertex_shader_bytecode));
 
@@ -99,7 +88,7 @@ pyramid::pyramid(graphics& graphics,
 	drawable::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
 }
 
-void pyramid::update(float dt) noexcept
+void sheet::update(const float dt) noexcept
 {
 	roll_ += droll_ * dt;
 	pitch_ += dpitch_ * dt;
@@ -109,7 +98,7 @@ void pyramid::update(float dt) noexcept
 	rho_ += drho_ * dt;
 }
 
-DirectX::XMMATRIX pyramid::get_transform_xm() const noexcept
+DirectX::XMMATRIX sheet::get_transform_xm() const noexcept
 {
 	namespace dx = DirectX;
 	return dx::XMMatrixRotationRollPitchYaw(pitch_, yaw_, roll_) *

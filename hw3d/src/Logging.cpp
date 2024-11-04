@@ -7,7 +7,7 @@
 plog::DynamicAppender logging::dynamic_appender_;
 
 void logging::initialize(const plog::Severity max_severity) {
-    plog::init<PLOG_DEFAULT_INSTANCE_ID>(max_severity, &dynamic_appender_);
+    root_logger_ = &plog::init<PLOG_DEFAULT_INSTANCE_ID>(max_severity, &dynamic_appender_);
 }
 
 void logging::initialize_console_logger(const plog::Severity max_severity) {

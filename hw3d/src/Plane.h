@@ -8,13 +8,13 @@ class plane
 {
 public:
 	template<class V>
-	static indexed_triangle_list<V> make()
+	static indexed_triangle_list<V> make(std::function<void(std::vector<V>&)> set_attributes = nullptr)
 	{
-		return make_tessellated<V>(1, 1);
+		return make_tessellated<V>(1, 1, set_attributes);
 	}
 
 	template<class V>
-	static indexed_triangle_list<V> make_tessellated(const int divisions_x, const int divisions_y)
+	static indexed_triangle_list<V> make_tessellated(const int divisions_x, const int divisions_y, std::function<void(std::vector<V>&)> set_attributes = nullptr)
 	{
 		namespace dx = DirectX;
 		assert(divisions_x >= 1);
@@ -71,6 +71,10 @@ public:
 					indices.push_back(index_array[3]);
 				}
 			}
+		}
+
+		if (set_attributes) {
+			set_attributes(vertices);
 		}
 
 		return

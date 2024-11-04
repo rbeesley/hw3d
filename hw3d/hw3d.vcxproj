@@ -203,7 +203,10 @@
     <ClCompile Include="src\Mouse.cpp" />
     <ClCompile Include="src\PixelShader.cpp" />
     <ClCompile Include="src\Pyramid.cpp" />
+    <ClCompile Include="src\Sampler.cpp" />
+    <ClCompile Include="src\Sheet.cpp" />
     <ClCompile Include="src\Surface.cpp" />
+    <ClCompile Include="src\Texture.cpp" />
     <ClCompile Include="src\Topology.cpp" />
     <ClCompile Include="src\TransformConstantBuffer.cpp" />
     <ClCompile Include="src\VertexShader.cpp" />
@@ -274,8 +277,11 @@
     <ClInclude Include="src\Plane.h" />
     <ClInclude Include="src\Prism.h" />
     <ClInclude Include="src\Pyramid.h" />
+    <ClInclude Include="src\Sampler.h" />
+    <ClInclude Include="src\Sheet.h" />
     <ClInclude Include="src\Sphere.h" />
     <ClInclude Include="src\Surface.h" />
+    <ClInclude Include="src\Texture.h" />
     <ClInclude Include="src\Topology.h" />
     <ClInclude Include="src\TransformConstantBuffer.h" />
     <ClInclude Include="src\VertexShader.h" />
@@ -335,6 +341,14 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="shaders\TexturePS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="shaders\TextureVS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

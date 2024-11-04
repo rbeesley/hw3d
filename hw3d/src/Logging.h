@@ -16,9 +16,12 @@ public:
     static void initialize_debug_output_logger(plog::Severity max_severity);
     static void shutdown_console_logger();
     static void shutdown_debug_output_logger();
-
+    static void set_logger_severity(plog::Severity max_severity) { root_logger_->setMaxSeverity(max_severity); };
+    static void set_console_logger_severity(plog::Severity max_severity) { console_logger_->setMaxSeverity(max_severity); };
+    static void set_debug_output_logger_severity(plog::Severity max_severity) { debug_output_logger_->setMaxSeverity(max_severity); };
 private:
     static plog::DynamicAppender dynamic_appender_;
+    static inline plog::Logger<PLOG_DEFAULT_INSTANCE_ID>* root_logger_;
     static inline plog::Logger<console>* console_logger_;
     static inline plog::Logger<debug_output>* debug_output_logger_;
 };
