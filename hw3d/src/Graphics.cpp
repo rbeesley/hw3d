@@ -67,7 +67,7 @@ graphics::graphics(HWND parent, int width, int height) :
 #endif
 
 	// For checking results of D3D functions
-	HRESULT hresult;
+	HRESULT hresult = {};
 
 	PLOGV << "Create device, front/back buffers, swap chain, and rendering context";
 	GFX_THROW_INFO(D3D11CreateDeviceAndSwapChain(
@@ -187,7 +187,6 @@ void graphics::end_frame()
 			throw GFX_EXCEPT(hresult);
 		}
 	}
-	
 }
 
 void graphics::clear_buffer(const float red, const float green, const float blue) const
@@ -197,6 +196,7 @@ void graphics::clear_buffer(const float red, const float green, const float blue
 	p_context_->ClearDepthStencilView(p_depth_stencil_view_.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void graphics::draw_indexed(const UINT count) noexcept(!IS_DEBUG)
 {
 	GFX_THROW_INFO_ONLY(p_context_->DrawIndexed(count, 0u, 0u));

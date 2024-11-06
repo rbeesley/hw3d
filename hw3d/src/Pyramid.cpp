@@ -101,12 +101,12 @@ pyramid::pyramid(graphics& graphics,
 
 void pyramid::update(float dt) noexcept
 {
-	roll_ += droll_ * dt;
-	pitch_ += dpitch_ * dt;
-	yaw_ += dyaw_ * dt;
-	theta_ += dtheta_ * dt;
-	phi_ += dphi_ * dt;
-	rho_ += drho_ * dt;
+	roll_ += wrap_angle(droll_ * dt);
+	pitch_ += wrap_angle(dpitch_ * dt);
+	yaw_ += wrap_angle(dyaw_ * dt);
+	theta_ += wrap_angle(dtheta_ * dt);
+	phi_ += wrap_angle(dphi_ * dt);
+	rho_ += wrap_angle(drho_ * dt);
 }
 
 DirectX::XMMATRIX pyramid::get_transform_xm() const noexcept
