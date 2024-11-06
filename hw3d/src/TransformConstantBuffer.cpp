@@ -2,9 +2,9 @@
 
 transform_constant_buffer::transform_constant_buffer(graphics& graphics, const drawable& parent)
 	:
-	  parent_(parent)
+	parent_(parent)
 {
-	if(!p_vertex_constant_buffer_)
+	if (!p_vertex_constant_buffer_)
 	{
 		p_vertex_constant_buffer_ = std::make_unique<vertex_constant_buffer<DirectX::XMMATRIX>>(graphics);
 	}

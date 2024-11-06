@@ -67,7 +67,7 @@ graphics::graphics(HWND parent, int width, int height) :
 #endif
 
 	// For checking results of D3D functions
-	HRESULT hresult;
+	HRESULT hresult = {};
 
 	PLOGV << "Create device, front/back buffers, swap chain, and rendering context";
 	GFX_THROW_INFO(D3D11CreateDeviceAndSwapChain(
@@ -187,7 +187,6 @@ void graphics::end_frame()
 			throw GFX_EXCEPT(hresult);
 		}
 	}
-	
 }
 
 void graphics::clear_buffer(const float red, const float green, const float blue) const
@@ -197,6 +196,7 @@ void graphics::clear_buffer(const float red, const float green, const float blue
 	p_context_->ClearDepthStencilView(p_depth_stencil_view_.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
+// ReSharper disable once CppMemberFunctionMayBeConst
 void graphics::draw_indexed(const UINT count) noexcept(!IS_DEBUG)
 {
 	GFX_THROW_INFO_ONLY(p_context_->DrawIndexed(count, 0u, 0u));
@@ -238,11 +238,11 @@ graphics::hresult_exception::hresult_exception(const int line, const char* file,
 const char* graphics::hresult_exception::what() const noexcept
 {
 	std::ostringstream out;
-	out	<< "[Error Code] 0x" << std::hex << std::uppercase << get_error_code()
+	out << "[Error Code] 0x" << std::hex << std::uppercase << get_error_code()
 		<< std::dec << " (" << static_cast<unsigned long>(get_error_code()) << ")" << '\n'
 		<< "[Error String] " << get_error_string() << '\n'
 		<< "[Description] " << get_error_description() << '\n';
-	if(!info_message_.empty())
+	if (!info_message_.empty())
 	{
 		out << "[Error Info]\n" << get_error_info() << '\n';
 	}

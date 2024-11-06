@@ -8,13 +8,13 @@ class plane
 {
 public:
 	template<class V>
-	static indexed_triangle_list<V> make()
+	static indexed_triangle_list<V> make(std::function<void(std::vector<V>&)> set_attributes = nullptr)
 	{
-		return make_tessellated<V>(1, 1);
+		return make_tessellated<V>(1, 1, set_attributes);
 	}
 
 	template<class V>
-	static indexed_triangle_list<V> make_tessellated(const int divisions_x, const int divisions_y)
+	static indexed_triangle_list<V> make_tessellated(const int divisions_x, const int divisions_y, std::function<void(std::vector<V>&)> set_attributes = nullptr)
 	{
 		namespace dx = DirectX;
 		assert(divisions_x >= 1);
@@ -32,10 +32,10 @@ public:
 			const float division_size_y = height / static_cast<float>(divisions_y);
 			const auto bottom_left = dx::XMVectorSet(-side_x, -side_y, 0.0f, 0.0f);
 
-			for(int y = 0, i = 0; y < number_vertices_y; y++)
+			for (int y = 0, i = 0; y < number_vertices_y; y++)
 			{
 				const float y_pos = static_cast<float>(y) * division_size_y;
-				for(int x = 0; x < number_vertices_x; x++, i++)
+				for (int x = 0; x < number_vertices_x; x++, i++)
 				{
 					const auto vertex = dx::XMVectorAdd(
 						bottom_left,
@@ -50,7 +50,9 @@ public:
 		indices.reserve(static_cast<std::vector<unsigned short>::size_type>(sq(divisions_x * divisions_y)) * 6);
 		{
 			const auto vertex_pos_to_index = [number_vertices_x](const size_t x, const size_t y)
-				{ return static_cast<unsigned short>(y * number_vertices_x + x); };
+			{
+				return static_cast<unsigned short>(y * number_vertices_x + x);
+			};
 
 			for (size_t y = 0; y < divisions_y; y++)
 			{
@@ -71,6 +73,10 @@ public:
 					indices.push_back(index_array[3]);
 				}
 			}
+		}
+
+		if (set_attributes) {
+			set_attributes(vertices);
 		}
 
 		return

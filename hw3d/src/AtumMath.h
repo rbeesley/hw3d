@@ -30,9 +30,9 @@ constexpr auto sq(const T& x)
 template<typename T>
 T wrap_angle(T theta)
 {
-	const auto modded = fmod(theta, 2.0 * PI_D);
+	const auto modded = fmod(theta, TWOPI_D);
 	return (modded > PI_D) ?
-		static_cast<T>(modded - 2.0 * PI_D) :
+		static_cast<T>(modded - TWOPI_D) :
 		static_cast<T>(modded);
 }
 
@@ -52,4 +52,10 @@ template<typename T>
 constexpr T to_rad(T deg)
 {
 	return static_cast<T>(deg * PI_D / 180.0);
+}
+
+template<typename T>
+constexpr T to_deg(T rad)
+{
+	return static_cast<T>(rad / PI_D * 180.0);
 }

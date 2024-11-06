@@ -26,12 +26,12 @@ public:
 		// near center
 		std::vector<V> vertices;
 		vertices.emplace_back();
-		vertices.back().pos = { 0.0f,0.0f,-1.0f };
+		vertices.back().pos = { 0.0f, 0.0f, -1.0f };
 		const auto index_center_near = static_cast<unsigned short>(vertices.size() - 1);
 
 		// far center
 		vertices.emplace_back();
-		vertices.back().pos = { 0.0f,0.0f,1.0f };
+		vertices.back().pos = { 0.0f, 0.0f, 1.0f };
 		const auto index_center_far = static_cast<unsigned short>(vertices.size() - 1);
 
 		// base vertices

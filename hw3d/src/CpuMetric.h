@@ -2,8 +2,8 @@
 // Filename: cpu_class.h
 ///////////////////////////////////////////////////////////////////////////////
 #pragma once
-
-#include <windows.h>
+#define CPU_METRIC_
+#include "AtumWindows.h"
 
 class cpu_metric
 {

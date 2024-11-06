@@ -9,7 +9,7 @@ public:
 	template<class Vertex>
 	vertex_buffer(graphics& graphics, const std::vector<Vertex>& vertices)
 		: bindable(),
-		  stride(sizeof(Vertex))
+		stride(sizeof(Vertex))
 	{
 		INFOMAN(graphics);
 

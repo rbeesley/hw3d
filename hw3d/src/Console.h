@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdio>
 
+#define CONSOLE_
 #include "AtumWindows.h"
 
 class console {

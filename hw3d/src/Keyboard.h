@@ -4,6 +4,9 @@
 #include <optional>
 #include <queue>
 
+#define KEYBOARD_
+#include "AtumWindows.h"
+
 class keyboard
 {
 public:

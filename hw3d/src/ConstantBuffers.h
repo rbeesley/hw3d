@@ -35,7 +35,7 @@ public:
 		GFX_THROW_INFO(get_device(graphics)->CreateBuffer(&buffer_desc, &subresource_data, &p_constant_buffer_));
 	}
 
-	explicit constant_buffer(graphics& graphics): bindable()
+	explicit constant_buffer(graphics& graphics) : bindable()
 	{
 		INFOMAN(graphics);
 

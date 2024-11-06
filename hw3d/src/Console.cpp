@@ -5,7 +5,7 @@
 console::console_class console::console_class::console_class_;
 
 console::console_class::console_class() noexcept
-	:instance_handle_(GetModuleHandle(nullptr))
+	: instance_handle_(GetModuleHandle(nullptr))
 {
 	PLOGD << "Instantiate Console Class";
 }
@@ -26,7 +26,7 @@ HINSTANCE console::console_class::get_instance() noexcept
 }
 
 console::console() noexcept
-		:
+	:
 	console_window_handle_(nullptr)
 {
 	PLOGD << "Instantiate Console";
@@ -47,7 +47,7 @@ void console::initialize(const LPCWSTR name) noexcept {
 	result |= freopen_s(reinterpret_cast<FILE**>(stderr), "CONOUT$", "w", stderr);
 	// ReSharper restore StringLiteralTypo
 
-	if(result)
+	if (result)
 	{
 		PLOGW << "Error initializing STD File Streams: " << result;
 	}
@@ -90,7 +90,6 @@ console::~console() noexcept
 {
 	PLOGD << "Destroy Console";
 }
-
 
 HWND console::get_handle() const noexcept {
 	return console_window_handle_;

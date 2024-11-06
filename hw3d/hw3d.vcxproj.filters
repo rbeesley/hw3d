@@ -84,19 +84,37 @@
     <ClCompile Include="src\VertexBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="3rdParty\wikibooks.org\fps_class.cpp">
+    <ClCompile Include="src\FpsMetric.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\CpuMetric.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="3rdParty\wikibooks.org\timer_class.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Melon.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Pyramid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GDIPlusManager.h">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\GDIPlusManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Surface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Sheet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Sampler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\SkinnedBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -296,19 +314,31 @@
     <ClInclude Include="src\Prism.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="3rdParty\wikibooks.org\fps_class.h">
+    <ClInclude Include="src\FpsMetric.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\CpuMetric.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="3rdParty\wikibooks.org\timer_class.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Melon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\Pyramid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Surface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sheet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Sampler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\SkinnedBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -327,5 +357,15 @@
     <FxCompile Include="shaders\ColorIndexPS.hlsl" />
     <FxCompile Include="shaders\ColorBlendPS.hlsl" />
     <FxCompile Include="shaders\ColorBlendVS.hlsl" />
+    <FxCompile Include="shaders\TexturePS.hlsl" />
+    <FxCompile Include="shaders\TextureVS.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="images\kappa50.png">
+      <Filter>Resource Files</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="images\cube.png">
+      <Filter>Resource Files</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>
