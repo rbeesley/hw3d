@@ -11,7 +11,7 @@ on:
 permissions:
   contents: read
 
-jobs:      
+jobs:
   build:
     name: Build
     runs-on: windows-latest
@@ -46,8 +46,8 @@ jobs:
           New-Item -ItemType Directory -Path $destinationPath
         }
 
-        # Get all .exe, .pdb, and .cso files from the platform/configuration directories
-        Get-ChildItem -Path $sourcePath -Recurse -File -Include *.exe, *.pdb, *.cso | Where-Object {
+        # Get all .exe, .pdb, .cso, and .png files from the platform/configuration directories
+        Get-ChildItem -Path $sourcePath -Recurse -File -Include *.exe, *.pdb, *.cso, *.png | Where-Object {
           $_.DirectoryName -match '\\(Win32|x64)\\(Release|Debug)$'
         } | ForEach-Object {
           Copy-Item -Path $_.FullName -Destination $destinationPath -Force

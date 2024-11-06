@@ -20,7 +20,7 @@ jobs:
     name: Create release assets
     needs: build
     runs-on: windows-latest
-    
+
     steps:
     - name: Merge build artifacts
       uses: actions/download-artifact@v4
