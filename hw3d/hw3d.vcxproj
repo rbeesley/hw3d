@@ -102,7 +102,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;$(ProjectDir)3rdParty\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -123,7 +123,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;$(ProjectDir)3rdParty\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -146,7 +146,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;$(ProjectDir)3rdParty\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -169,7 +169,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;$(ProjectDir)3rdParty\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -183,6 +183,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="3rdParty\ImGui\backends\imgui_impl_dx11.cpp" />
+    <ClCompile Include="3rdParty\ImGui\backends\imgui_impl_win32.cpp" />
+    <ClCompile Include="3rdParty\ImGui\imgui.cpp" />
+    <ClCompile Include="3rdParty\ImGui\imgui_demo.cpp" />
+    <ClCompile Include="3rdParty\ImGui\imgui_draw.cpp" />
+    <ClCompile Include="3rdParty\ImGui\imgui_tables.cpp" />
+    <ClCompile Include="3rdParty\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="3rdParty\ImGui\misc\cpp\imgui_stdlib.cpp" />
     <ClCompile Include="src\CpuMetric.cpp" />
     <ClCompile Include="src\FpsMetric.cpp" />
     <ClCompile Include="src\Bindable.cpp" />
@@ -219,6 +227,15 @@
     <ClCompile Include="src\VertexBuffer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="3rdParty\ImGui\backends\imgui_impl_dx11.h" />
+    <ClInclude Include="3rdParty\ImGui\backends\imgui_impl_win32.h" />
+    <ClInclude Include="3rdParty\ImGui\imconfig.h" />
+    <ClInclude Include="3rdParty\ImGui\imgui.h" />
+    <ClInclude Include="3rdParty\ImGui\imgui_internal.h" />
+    <ClInclude Include="3rdParty\ImGui\imstb_rectpack.h" />
+    <ClInclude Include="3rdParty\ImGui\imstb_textedit.h" />
+    <ClInclude Include="3rdParty\ImGui\imstb_truetype.h" />
+    <ClInclude Include="3rdParty\ImGui\misc\cpp\imgui_stdlib.h" />
     <ClInclude Include="3rdparty\plog\Appenders\AndroidAppender.h" />
     <ClInclude Include="3rdparty\plog\Appenders\ArduinoAppender.h" />
     <ClInclude Include="3rdparty\plog\Appenders\ColorConsoleAppender.h" />
@@ -367,6 +384,12 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="3rdParty\ImGui\misc\debuggers\imgui.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="3rdParty\ImGui\misc\debuggers\imgui.natstepfilter" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
