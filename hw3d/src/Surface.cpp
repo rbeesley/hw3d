@@ -35,7 +35,7 @@ namespace Gdiplus
 
 surface::surface(const unsigned int width, const unsigned int height) noexcept
 	:
-	p_buffer_(std::make_unique<color[]>(static_cast<size_t>(width) * height)),
+	p_buffer_(std::make_unique<color[]>(static_cast<size_t>(width)* height)),
 	width_(width),
 	height_(height)
 {}

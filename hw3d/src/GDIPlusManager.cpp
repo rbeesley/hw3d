@@ -27,14 +27,14 @@ namespace Gdiplus
 }
 #include <gdiplus.h>
 
-ULONG_PTR gdi_plus_manager::token_ = 0;
-int gdi_plus_manager::reference_count_ = 0;
+ULONG_PTR gdi_plus_manager::token_ = {};
+int gdi_plus_manager::reference_count_ = {};
 
 gdi_plus_manager::gdi_plus_manager()
 {
 	if (reference_count_++ == 0)
 	{
-		Gdiplus::GdiplusStartupInput input;
+		const Gdiplus::GdiplusStartupInput input;
 		GdiplusStartup(&token_, &input, nullptr);
 	}
 }

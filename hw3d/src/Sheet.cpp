@@ -13,7 +13,7 @@ sheet::sheet(graphics& graphics,
 	std::uniform_real_distribution<float>& rotation_of_drawable_distribution,						// ddist
 	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution	// odist
 )
-		:
+	:
 	radius_distance_from_center_(distance_distribution(rng)),
 	theta_(spherical_coordinate_position_distribution(rng)),
 	phi_(spherical_coordinate_position_distribution(rng)),
@@ -53,9 +53,9 @@ sheet::sheet(graphics& graphics,
 			for (size_t i = 0; i < vertices.size() && i < textures.size(); ++i) {
 				vertices[i].texture_position = textures[i];
 			}
-		};
+			};
 
-		auto model = plane::make<vertex>(set_texture);
+		const auto model = plane::make<vertex>(set_texture);
 
 		add_static_bind(std::make_unique<texture>(graphics, surface::from_file(L"kappa50.png")));
 
@@ -71,11 +71,32 @@ sheet::sheet(graphics& graphics,
 
 		add_static_index_buffer(std::make_unique<index_buffer>(graphics, model.indices()));
 
-		const std::vector<D3D11_INPUT_ELEMENT_DESC> input_element_descs =
-		{
-			{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-			{ "TexCoord",0,DXGI_FORMAT_R32G32_FLOAT,0,12,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		constexpr D3D11_INPUT_ELEMENT_DESC position_desc = {
+			.SemanticName = "Position",
+			.SemanticIndex = 0,
+			.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
+			.InputSlot = 0,
+			.AlignedByteOffset = 0,
+			.InputSlotClass = D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+			.InstanceDataStepRate = 0
 		};
+
+		constexpr D3D11_INPUT_ELEMENT_DESC texcoord_desc = {
+			.SemanticName = "TexCoord",
+			.SemanticIndex = 0,
+			.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT,
+			.InputSlot = 0,
+			.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT,
+			.InputSlotClass = D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+			.InstanceDataStepRate = 0
+		};
+
+		const std::vector input_element_descs =
+		{
+			position_desc,
+			texcoord_desc
+		};
+
 		add_static_bind(std::make_unique<input_layout>(graphics, input_element_descs, p_vertex_shader_bytecode));
 
 		add_static_bind(std::make_unique<topology>(graphics, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));

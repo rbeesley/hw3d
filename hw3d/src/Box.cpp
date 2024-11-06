@@ -5,24 +5,24 @@
 #include "Cube.h"
 
 box::box(graphics& graphics,
-         std::mt19937& rng,
-         std::uniform_real_distribution<float>& distance_distribution,									// rdist
-         std::uniform_real_distribution<float>& spherical_coordinate_position_distribution,				// adist
-         std::uniform_real_distribution<float>& rotation_of_drawable_distribution,						// ddist
-         std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution, // odist 
-	     std::uniform_real_distribution<float>& z_axis_distortion_distribution							// bdist
+	std::mt19937& rng,
+	std::uniform_real_distribution<float>& distance_distribution,									// rdist
+	std::uniform_real_distribution<float>& spherical_coordinate_position_distribution,				// adist
+	std::uniform_real_distribution<float>& rotation_of_drawable_distribution,						// ddist
+	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution,	// odist
+	std::uniform_real_distribution<float>& z_axis_distortion_distribution							// bdist
 )
 	: drawable_static_storage(),
-	  radius_distance_from_center_(distance_distribution(rng)),
-	  theta_(spherical_coordinate_position_distribution(rng)),
-	  phi_(spherical_coordinate_position_distribution(rng)),
-	  rho_(spherical_coordinate_position_distribution(rng)),
-	  droll_(rotation_of_drawable_distribution(rng)),
-	  dpitch_(rotation_of_drawable_distribution(rng)),
-	  dyaw_(rotation_of_drawable_distribution(rng)),
-	  dtheta_(spherical_coordinate_movement_of_drawable_distribution(rng)),
-	  dphi_(spherical_coordinate_movement_of_drawable_distribution(rng)),
-	  drho_(spherical_coordinate_movement_of_drawable_distribution(rng))
+	radius_distance_from_center_(distance_distribution(rng)),
+	theta_(spherical_coordinate_position_distribution(rng)),
+	phi_(spherical_coordinate_position_distribution(rng)),
+	rho_(spherical_coordinate_position_distribution(rng)),
+	droll_(rotation_of_drawable_distribution(rng)),
+	dpitch_(rotation_of_drawable_distribution(rng)),
+	dyaw_(rotation_of_drawable_distribution(rng)),
+	dtheta_(spherical_coordinate_movement_of_drawable_distribution(rng)),
+	dphi_(spherical_coordinate_movement_of_drawable_distribution(rng)),
+	drho_(spherical_coordinate_movement_of_drawable_distribution(rng))
 {
 	namespace dx = DirectX;
 

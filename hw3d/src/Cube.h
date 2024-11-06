@@ -14,26 +14,26 @@ public:
 		constexpr float side = 1.0f / 2.0f;
 
 		std::vector<dx::XMFLOAT3> vertices = {
-		//    6-------7
-		//   /|      /|
-		//  2-------3 |
-		//  | |     | |
-		//  | 4-----|-5
-		//  |/      |/
-		//  0-------1
+			//    6-------7
+			//   /|      /|
+			//  2-------3 |
+			//  | |     | |
+			//  | 4-----|-5
+			//  |/      |/
+			//  0-------1
 
-		{-side, -side, -side},	// Bottom-left-front vertex
-		{side, -side, -side},	// Bottom-right-front vertex
-		{-side, side, -side},	// Top-left-front vertex
-		{side, side, -side},	// Top-right-front vertex
-		{-side, -side, side},	// Bottom-left-back vertex
-		{side, -side, side},	// Bottom-right-back vertex
-		{-side, side, side},	// Top-left-back vertex
-		{side, side, side},	// Top-right-back vertex
+			{-side, -side, -side},	// Bottom-left-front vertex
+			{side, -side, -side},	// Bottom-right-front vertex
+			{-side, side, -side},	// Top-left-front vertex
+			{side, side, -side},	// Top-right-front vertex
+			{-side, -side, side},	// Bottom-left-back vertex
+			{side, -side, side},	// Bottom-right-back vertex
+			{-side, side, side},	// Top-left-back vertex
+			{side, side, side},	// Top-right-back vertex
 		};
 
 		std::vector<V> indices(vertices.size());
-		for(size_t i = 0; i < vertices.size(); i++)
+		for (size_t i = 0; i < vertices.size(); i++)
 		{
 			indices[i].pos = vertices[i];
 		}

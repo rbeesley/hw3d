@@ -105,7 +105,7 @@ void keyboard::clear_state() noexcept
 template <typename T>
 void keyboard::trim_buffer(std::queue<T>& buffer) noexcept
 {
-	while(buffer.size() > buffer_size)
+	while (buffer.size() > buffer_size)
 	{
 		buffer.pop();
 	}
@@ -113,7 +113,7 @@ void keyboard::trim_buffer(std::queue<T>& buffer) noexcept
 
 std::optional<char> keyboard::read_char() noexcept
 {
-	if(!char_buffer_.empty())
+	if (!char_buffer_.empty())
 	{
 		const char char_code = char_buffer_.front();
 		char_buffer_.pop();

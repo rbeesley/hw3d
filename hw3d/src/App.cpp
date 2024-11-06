@@ -125,7 +125,7 @@ int app::initialize()
 					graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_,
 					spherical_coordinate_movement_of_drawable_distribution_
 				);
-				default:
+			default:
 				assert(false && "bad drawable type in factory");
 				return {};
 			}
@@ -188,7 +188,7 @@ int app::run()
 	const auto window = p_window_.get();
 
 	PLOGI << "Starting Message Pump and Render Loop";
-	while(true)
+	while (true)
 	{
 		// Process pending messages without blocking
 		if (const std::optional<int> exit_code = window->process_messages(); exit_code.has_value())
@@ -223,7 +223,7 @@ void app::render_frame()
 	static graphics& graphics = window->get_graphics();
 
 	graphics.clear_buffer(0.07f, 0.0f, 0.12f);
-	for(const auto& drawable : drawables_)
+	for (const auto& drawable : drawables_)
 	{
 		drawable->update(keyboard.is_key_pressed(VK_SPACE) ? 0.0f : dt);
 		drawable->draw(graphics);

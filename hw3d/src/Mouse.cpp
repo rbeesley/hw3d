@@ -132,8 +132,8 @@ void mouse::on_left_pressed(const int x, const int y) noexcept
 {
 	x_ = x;
 	y_ = y;
-
 	left_is_pressed_ = true;
+
 	event_buffer_.emplace(l_press, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in LoggingConfig.h
@@ -145,8 +145,8 @@ void mouse::on_left_released(const int x, const int y) noexcept
 {
 	x_ = x;
 	y_ = y;
-
 	left_is_pressed_ = false;
+
 	event_buffer_.emplace(l_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in LoggingConfig.h
@@ -158,8 +158,8 @@ void mouse::on_right_pressed(const int x, const int y) noexcept
 {
 	x_ = x;
 	y_ = y;
-
 	right_is_pressed_ = true;
+
 	event_buffer_.emplace(r_press, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in LoggingConfig.h
@@ -171,8 +171,8 @@ void mouse::on_right_released(const int x, const int y) noexcept
 {
 	x_ = x;
 	y_ = y;
-
 	right_is_pressed_ = false;
+
 	event_buffer_.emplace(r_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in LoggingConfig.h
@@ -184,8 +184,8 @@ void mouse::on_middle_pressed(const int x, const int y) noexcept
 {
 	x_ = x;
 	y_ = y;
-
 	middle_is_pressed_ = true;
+
 	event_buffer_.emplace(m_press, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in LoggingConfig.h
@@ -197,8 +197,8 @@ void mouse::on_middle_released(const int x, const int y) noexcept
 {
 	x_ = x;
 	y_ = y;
-
 	middle_is_pressed_ = false;
+
 	event_buffer_.emplace(m_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in LoggingConfig.h
@@ -210,8 +210,8 @@ void mouse::on_x1_pressed(const int x, const int y) noexcept
 {
 	x_ = x;
 	y_ = y;
-
 	x1_is_pressed_ = true;
+
 	event_buffer_.emplace(x1_press, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in LoggingConfig.h
@@ -223,8 +223,8 @@ void mouse::on_x1_released(const int x, const int y) noexcept
 {
 	x_ = x;
 	y_ = y;
-
 	x1_is_pressed_ = false;
+
 	event_buffer_.emplace(x1_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in LoggingConfig.h
@@ -234,9 +234,9 @@ void mouse::on_x1_released(const int x, const int y) noexcept
 
 void mouse::on_x2_pressed(const int x, const int y) noexcept
 {
-	x2_is_pressed_ = true;
 	x_ = x;
 	y_ = y;
+	x2_is_pressed_ = true;
 
 	event_buffer_.emplace(x2_press, *this);
 	trim_buffer();
@@ -249,8 +249,8 @@ void mouse::on_x2_released(const int x, const int y) noexcept
 {
 	x_ = x;
 	y_ = y;
-
 	x2_is_pressed_ = false;
+
 	event_buffer_.emplace(x2_release, *this);
 	trim_buffer();
 #ifdef LOG_MOUSE_MESSAGES // defined in LoggingConfig.h
@@ -309,12 +309,12 @@ void mouse::on_wheel_left(const int x, const int y) noexcept
 void mouse::on_v_wheel_delta(const int x, const int y, const int delta) noexcept
 {
 	v_wheel_delta_carry_ += delta;
-	while(v_wheel_delta_carry_ >= WHEEL_DELTA)
+	while (v_wheel_delta_carry_ >= WHEEL_DELTA)
 	{
 		v_wheel_delta_carry_ -= WHEEL_DELTA;
 		on_wheel_up(x, y);
 	}
-	while(v_wheel_delta_carry_ <= -WHEEL_DELTA)
+	while (v_wheel_delta_carry_ <= -WHEEL_DELTA)
 	{
 		v_wheel_delta_carry_ += WHEEL_DELTA;
 		on_wheel_down(x, y);

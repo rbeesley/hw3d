@@ -14,7 +14,7 @@ public:
 		std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution	// odist
 	);
 	void update(float dt) noexcept override;
-	DirectX::XMMATRIX get_transform_xm() const noexcept override; 
+	DirectX::XMMATRIX get_transform_xm() const noexcept override;
 private:
 	// positional
 	float radius_distance_from_center_; // r

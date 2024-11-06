@@ -53,3 +53,9 @@ constexpr T to_rad(T deg)
 {
 	return static_cast<T>(deg * PI_D / 180.0);
 }
+
+template<typename T>
+constexpr T to_deg(T rad)
+{
+	return static_cast<T>(rad / PI_D * 180.0);
+}

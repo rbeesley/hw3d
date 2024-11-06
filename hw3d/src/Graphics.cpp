@@ -238,11 +238,11 @@ graphics::hresult_exception::hresult_exception(const int line, const char* file,
 const char* graphics::hresult_exception::what() const noexcept
 {
 	std::ostringstream out;
-	out	<< "[Error Code] 0x" << std::hex << std::uppercase << get_error_code()
+	out << "[Error Code] 0x" << std::hex << std::uppercase << get_error_code()
 		<< std::dec << " (" << static_cast<unsigned long>(get_error_code()) << ")" << '\n'
 		<< "[Error String] " << get_error_string() << '\n'
 		<< "[Description] " << get_error_description() << '\n';
-	if(!info_message_.empty())
+	if (!info_message_.empty())
 	{
 		out << "[Error Info]\n" << get_error_info() << '\n';
 	}

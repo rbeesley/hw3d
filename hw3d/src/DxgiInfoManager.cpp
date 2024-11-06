@@ -60,7 +60,7 @@ std::vector<std::string> dxgi_info_manager::get_messages() const
 {
 	std::vector<std::string> messages;
 	const auto end = p_dxgi_info_queue_->GetNumStoredMessages(DXGI_DEBUG_ALL);
-	for(auto i = next_; i < end; i++)
+	for (auto i = next_; i < end; i++)
 	{
 		HRESULT hresult;
 		SIZE_T message_length = 0;

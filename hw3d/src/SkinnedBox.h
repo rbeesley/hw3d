@@ -13,7 +13,7 @@ public:
 		std::uniform_real_distribution<float>& spherical_coordinate_position_distribution,				// adist
 		std::uniform_real_distribution<float>& rotation_of_drawable_distribution,						// ddist
 		std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution	// odist
-		);
+	);
 
 	skinned_box(const skinned_box&) = delete;
 	skinned_box& operator=(const skinned_box&) = delete;

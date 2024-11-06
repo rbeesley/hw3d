@@ -10,8 +10,8 @@ public:
 	indexed_triangle_list() = default;
 	indexed_triangle_list(std::vector<T> vertices, std::vector<unsigned short> indices)
 		:
-	vertices_(std::move(vertices)),
-	indices_(std::move(indices))
+		vertices_(std::move(vertices)),
+		indices_(std::move(indices))
 	{
 		assert(vertices_.size() > 2);
 		assert(indices_.size() % 3 == 0);
@@ -19,7 +19,7 @@ public:
 
 	void transform(DirectX::FXMMATRIX& matrix)
 	{
-		for(auto& vertex: vertices_)
+		for (auto& vertex : vertices_)
 		{
 			const DirectX::XMVECTOR pos = DirectX::XMLoadFloat3(&vertex.pos);
 			DirectX::XMStoreFloat3(&vertex.pos, DirectX::XMVector3Transform(pos, matrix));

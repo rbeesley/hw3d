@@ -2,13 +2,12 @@
 #include "BindableIncludes.h"
 #include "Cone.h"
 
-
 pyramid::pyramid(graphics& graphics,
 	std::mt19937& rng,
 	std::uniform_real_distribution<float>& distance_distribution,									// rdist
 	std::uniform_real_distribution<float>& spherical_coordinate_position_distribution,				// adist
 	std::uniform_real_distribution<float>& rotation_of_drawable_distribution,						// ddist
-	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution	// odist 
+	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution	// odist
 )
 	:
 	radius_distance_from_center_(distance_distribution(rng)),
@@ -39,32 +38,23 @@ pyramid::pyramid(graphics& graphics,
 			dx::XMFLOAT3 pos;
 			color color;
 		};
-		//auto model = cone::make_tessellated<vertex>(4);
-
-		// set vertex colors for mesh
-		//model.vertices()[0].color = { 255,0,0 };
-		//model.vertices()[1].color = { 255,255,0 };
-		//model.vertices()[2].color = { 0,255,0 };
-		//model.vertices()[3].color = { 0,0,255 };
-		//model.vertices()[4].color = { 63,63,63 };
-		//model.vertices()[5].color = { 191,191,191 };
 
 		// Define vertex colors
-		std::vector<color> colors  = {
-			{255, 63, 63, 255},
-			{127, 237, 16, 255},
-			{0, 191, 191, 255},
-			{127, 16, 237, 255},
-			{0, 0, 0, 255},
-			{255, 255, 255, 255}
+		std::vector<color> colors = {
+			{255, 0, 0, 255},
+			{255, 255, 0, 255},
+			{0, 255, 0, 255},
+			{0, 255, 255, 255},
+			{0, 0, 255, 255},
+			{255, 0, 255, 255},
 		};
 
 		// Lambda to set colors
 		auto set_colors = [colors](std::vector<vertex>& vertices) {
 			for (size_t i = 0; i < vertices.size() && i < colors.size(); ++i) {
-				vertices[i].color = colors [i];
+				vertices[i].color = colors[i];
 			}
-		};
+			};
 
 		// Create the model with vertices, indices, and the lambda
 		auto model = cone::make_tessellated<vertex>(4, set_colors);
@@ -82,11 +72,32 @@ pyramid::pyramid(graphics& graphics,
 
 		add_static_index_buffer(std::make_unique<index_buffer>(graphics, model.indices()));
 
-		const std::vector<D3D11_INPUT_ELEMENT_DESC> input_element_descs =
-		{
-			{ "Position",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0 },
-			{ "Color",0,DXGI_FORMAT_R8G8B8A8_UNORM,0,12,D3D11_INPUT_PER_VERTEX_DATA,0 },
+		constexpr D3D11_INPUT_ELEMENT_DESC position_desc = {
+			.SemanticName = "Position",
+			.SemanticIndex = 0,
+			.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
+			.InputSlot = 0,
+			.AlignedByteOffset = 0,
+			.InputSlotClass = D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+			.InstanceDataStepRate = 0
 		};
+
+		constexpr D3D11_INPUT_ELEMENT_DESC color_desc = {
+			.SemanticName = "Color",
+			.SemanticIndex = 0,
+			.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM,
+			.InputSlot = 0,
+			.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT,
+			.InputSlotClass = D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+			.InstanceDataStepRate = 0
+		};
+
+		const std::vector input_element_descs =
+		{
+			position_desc,
+			color_desc
+		};
+
 		add_static_bind(std::make_unique<input_layout>(graphics, input_element_descs, p_vertex_shader_bytecode));
 
 		add_static_bind(std::make_unique<topology>(graphics, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
@@ -99,7 +110,7 @@ pyramid::pyramid(graphics& graphics,
 	drawable::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
 }
 
-void pyramid::update(float dt) noexcept
+void pyramid::update(const float dt) noexcept
 {
 	roll_ += wrap_angle(droll_ * dt);
 	pitch_ += wrap_angle(dpitch_ * dt);

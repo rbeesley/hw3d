@@ -42,7 +42,7 @@ texture::texture(graphics& graphics, const surface& surface)
 		.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D,
 		.Texture2D = {
 			.MostDetailedMip = 0,
-			.MipLevels = 1, 
+			.MipLevels = 1,
 		},
 	};
 

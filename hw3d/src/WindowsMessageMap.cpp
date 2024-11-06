@@ -120,7 +120,7 @@ windows_message_map::windows_message_map()
 		// Adding
 		{ 0xAE,"WM_CAPTIONCHANGED" },
 		{ 0xAF,"WM_NCCALCSIZE" },
-		
+
 		// Adding
 #if ALLMESSAGES
 		{0xB0,"EM_GETSEL"},

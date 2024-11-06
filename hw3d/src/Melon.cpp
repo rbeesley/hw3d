@@ -22,7 +22,6 @@ melon::melon(graphics& graphics,
 	dtheta_(spherical_coordinate_movement_of_drawable_distribution(rng)),
 	dphi_(spherical_coordinate_movement_of_drawable_distribution(rng)),
 	drho_(spherical_coordinate_movement_of_drawable_distribution(rng))
-
 {
 	namespace dx = DirectX;
 	if (!is_static_initialized())
@@ -59,17 +58,20 @@ melon::melon(graphics& graphics,
 		};
 
 		add_static_bind(std::make_unique<pixel_constant_buffer<pixel_shader_constants>>(graphics, constant_buffer));
+
+		constexpr D3D11_INPUT_ELEMENT_DESC position_desc = {
+			.SemanticName = "Position",
+			.SemanticIndex = 0,
+			.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
+			.InputSlot = 0,
+			.AlignedByteOffset = 0,
+			.InputSlotClass = D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+			.InstanceDataStepRate = 0
+		};
+
 		const std::vector<D3D11_INPUT_ELEMENT_DESC> input_element_descs =
 		{
-			{
-				.SemanticName = "Position",
-				.SemanticIndex = 0,
-				.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
-				.InputSlot = 0,
-				.AlignedByteOffset = 0,
-				.InputSlotClass = D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
-				.InstanceDataStepRate = 0
-			},
+			position_desc
 		};
 
 		add_static_bind(std::make_unique<input_layout>(graphics, input_element_descs, p_vertex_shader_bytecode));

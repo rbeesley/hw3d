@@ -2,7 +2,7 @@
 
 topology::topology(graphics& graphics, D3D11_PRIMITIVE_TOPOLOGY type)
 	:
-	  type_(type)
+	type_(type)
 {
 }
 
