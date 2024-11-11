@@ -2,7 +2,7 @@
 
 ID3D11DeviceContext* bindable::get_context(const graphics& graphics) noexcept
 {
-	return graphics.p_context_.Get();
+	return graphics.p_device_context_.Get();
 }
 
 ID3D11Device* bindable::get_device(const graphics& graphics) noexcept

@@ -21,7 +21,7 @@ public:
 	void shutdown() const;
 
 private:
-	void render_frame();
+	void render_frame(const ImVec4& clear_color);
 
 private:
 	std::unique_ptr<window> p_window_;

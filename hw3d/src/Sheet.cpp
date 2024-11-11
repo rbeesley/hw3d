@@ -53,7 +53,7 @@ sheet::sheet(graphics& graphics,
 			for (size_t i = 0; i < vertices.size() && i < textures.size(); ++i) {
 				vertices[i].texture_position = textures[i];
 			}
-			};
+		};
 
 		const auto model = plane::make<vertex>(set_texture);
 

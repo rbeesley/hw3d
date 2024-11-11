@@ -60,6 +60,12 @@ public:
 
 	};
 public:
+	struct window_dimensions
+	{
+		unsigned int width;
+		unsigned int height;
+	};
+
 	window() noexcept = default;
 	~window();
 
@@ -71,16 +77,19 @@ public:
 	void initialize(int width, int height, LPCWSTR name);
 	[[nodiscard]] static HWND get_handle();
 	void shutdown() const;
-	static std::optional<int> process_messages();
+	static std::optional<unsigned int> process_messages();
 	[[nodiscard]] static mouse& get_mouse();
 	[[nodiscard]] static keyboard& get_keyboard();
 	[[nodiscard]] static graphics& get_graphics();
 	static void set_title(const std::wstring& title);
+	static void set_target_dimensions(unsigned int width, unsigned int height);
+	static window_dimensions get_target_dimensions();
 private:
 	static LRESULT CALLBACK handle_msg_setup(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 	static LRESULT CALLBACK handle_msg_thunk(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
 	static HWND set_active(HWND window_handle);
 	static LRESULT CALLBACK handle_msg(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
+public:
 private:
 	inline static std::unique_ptr<mouse> p_mouse_;
 	inline static std::unique_ptr<keyboard> p_keyboard_;
@@ -89,6 +98,10 @@ private:
 	inline static int y_{};
 	int width_{};
 	int height_{};
+	static bool in_sizemove_;
+	static bool minimized_;
+	static unsigned int target_width_;
+	static unsigned int target_height_;
 	std::unique_ptr<window_class> window_class_;
 	static inline HWND window_handle_;
 };

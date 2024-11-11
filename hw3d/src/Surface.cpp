@@ -25,7 +25,7 @@
 #include <gdiplus.h>
 #include <sstream>
 
-#pragma comment( lib,"gdiplus.lib" )
+#pragma comment(lib, "gdiplus.lib")
 
 namespace Gdiplus
 {

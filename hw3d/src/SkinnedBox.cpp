@@ -102,6 +102,6 @@ DirectX::XMMATRIX skinned_box::get_transform_xm() const noexcept
 		DirectX::XMMatrixTranslation(radius_distance_from_center_, 0.0f, 0.0f) *
 		DirectX::XMMatrixRotationRollPitchYaw(theta_, phi_, rho_) *
 		DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
-	//DirectX::XMMatrixTranslation(0.0f, 0.0f, 2.0f); // Move to the front of the frame when rendering a single object
+	//  DirectX::XMMatrixTranslation(0.0f, 0.0f, 2.0f); // Move to the front of the frame when rendering a single object
 
 }

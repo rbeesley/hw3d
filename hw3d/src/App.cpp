@@ -1,4 +1,3 @@
-
 #include <3rdParty/ImGui/imgui.h>
 #include <DirectXMath.h>
 #include <random>
@@ -13,6 +12,8 @@
 #include "Sheet.h"
 #include "SkinnedBox.h"
 #include "Surface.h"
+#include "backends/imgui_impl_dx11.h"
+#include "backends/imgui_impl_win32.h"
 
 class gdi_plus_manager gdi_plus_manager;
 
@@ -31,20 +32,19 @@ app::app()
 #endif
 }
 
-#if (IS_DEBUG)
-static std::wstring exe_path() {
-	TCHAR buffer[MAX_PATH] = { 0 };
-	GetModuleFileName(nullptr, buffer, MAX_PATH);
-	const std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
-	return std::wstring(buffer).substr(0, pos);
-}
-#endif
-
 int app::initialize()
 {
 #if (IS_DEBUG)
 	const auto console = p_console_.get();
 	console->initialize(TEXT("Debug Console"));
+
+	auto exe_path = []
+	{
+		TCHAR buffer[MAX_PATH] = { 0 };
+		GetModuleFileName(nullptr, buffer, MAX_PATH);
+		const std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
+		return std::wstring(buffer).substr(0, pos);
+	};
 
 	// Check Logging
 	// This is the earliest this can be done if utilizing the console logger.
@@ -149,6 +149,7 @@ int app::initialize()
 	std::generate_n(std::back_inserter(drawables_), number_of_drawables_, drawable_factory(window->get_graphics(), rng_seed));
 #else
 	{
+		PLOGD << "Draw a skinned_box";
 		std::mt19937 rng{ rng_seed };
 		std::uniform_real_distribution<float> distance_distribution{ 0.0f, 0.0f };
 		//std::uniform_real_distribution<float> spherical_coordinate_position_distribution{ 0.0f, PI * 2.0f };
@@ -176,59 +177,151 @@ int app::initialize()
 	return 0;
 }
 
-#if (IS_DEBUG)
-static std::wstring compose_fps_cpu_window_title(const int fps, const double cpu_percentage) {
-	wchar_t buffer[50];
-	std::swprintf(buffer, 50, L"fps: %d / cpu: %00.2f%%", fps, cpu_percentage);
-	return std::wstring(buffer);
-}
-#endif
-
 int app::run()
 {
+	bool show_demo_window = true;
+	bool show_another_window = false;
+	auto clear_color = ImVec4(0.07f, 0.0f, 0.12f, 1.00f);
+	const ImGuiIO& im_gui_io = ImGui::GetIO();
+
 	const auto window = p_window_.get();
 
 	PLOGI << "Starting Message Pump and Render Loop";
-	while (true)
+	constexpr bool done = false;
+	while (!done)
 	{
+		//PLOGI << " *** Run loop ***";
 		// Process pending messages without blocking
-		if (const std::optional<int> exit_code = window->process_messages(); exit_code.has_value())
+		if (const std::optional<unsigned int> exit_code = window->process_messages(); exit_code.has_value())
 		{
-			// If the optional return has a value, it is the exit code
-			return *exit_code;
+			if (exit_code.value() == WM_QUIT)
+			{
+				return 0;
+			}
 		}
 
 #if (IS_DEBUG)
+		auto static compose_fps_cpu_window_title = [](const int fps, const double cpu_percentage) {
+			wchar_t buffer[50];
+			std::swprintf(buffer, 50, L"fps: %d / cpu: %00.2f%%", fps, cpu_percentage);
+			return std::wstring(buffer);
+		};
+
 		fps_.frame();
 		cpu_.frame();
 		p_window_->set_title(compose_fps_cpu_window_title(fps_.get_fps(), cpu_.get_cpu_percentage()));
 #endif
-		render_frame();
+
+		PLOGV << "window->get_graphics().begin_frame()";
+		if(auto [width, height] = window->get_target_dimensions(); !window->get_graphics().begin_frame(width, height))
+		{
+			if (width > 0 || height > 0)
+			{
+				window->set_target_dimensions(0, 0);
+			}
+			continue;
+		}
+
+		// Start the Dear ImGui frame
+		PLOGD << "Start the Dear ImGui frame";
+		PLOGV << "ImGui_ImplDX11_NewFrame()";
+		ImGui_ImplDX11_NewFrame();
+		PLOGV << "ImGui_ImplWin32_NewFrame()";
+		ImGui_ImplWin32_NewFrame();
+		PLOGV << "ImGui::NewFrame()";
+		ImGui::NewFrame();
+
+		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+		if (show_demo_window)
+			PLOGD << "Show the big demo window";
+			ImGui::ShowDemoWindow(&show_demo_window);
+
+		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
+		{
+			PLOGD << "Show a simple Dear ImGui window";
+			static float f = 0.0f;
+			static int counter = 0;
+
+			ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+			ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+			ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
+			ImGui::Checkbox("Another Window", &show_another_window);
+
+			ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+			ImGui::ColorEdit3("clear color", reinterpret_cast<float*>(&clear_color)); // Edit 3 floats representing a color
+
+			if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+				counter++;
+			ImGui::SameLine();
+			ImGui::Text("counter = %d", counter);
+
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / im_gui_io.Framerate, im_gui_io.Framerate);
+			ImGui::End();
+		}
+
+		// 3. Show another simple window.
+		if (show_another_window)
+		{
+			PLOGD << "Show another simple Dear ImGui window";
+			ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+			ImGui::Text("Hello from another window!");
+			if (ImGui::Button("Close Me"))
+				show_another_window = false;
+			ImGui::End();
+		}
+
+		PLOGV << "ImGui::Render();";
+		ImGui::Render();
+		PLOGV << "render_frame(clear_color);";
+		render_frame(clear_color);
 	}
 }
 
 void app::shutdown() const
 {
 	PLOGI << "Shutdown App";
+
 #if (IS_DEBUG)
 	p_console_->shutdown();
 #endif
 	p_window_->shutdown();
 }
 
-void app::render_frame()
+void app::render_frame(const ImVec4& clear_color)
 {
 	const auto dt = timer_.mark();
 	const auto window = p_window_.get();
 	static keyboard& keyboard = window->get_keyboard();
 	static graphics& graphics = window->get_graphics();
 
-	graphics.clear_buffer(0.07f, 0.0f, 0.12f);
+	PLOGD << "Fetch Dear ImGui IO";
+	const ImGuiIO& im_gui_io = ImGui::GetIO(); (void)im_gui_io;
+
+	PLOGD << "Clear the buffer";
+	graphics.clear_buffer(clear_color);
+
+	PLOGD << "Draw all drawables";
 	for (const auto& drawable : drawables_)
 	{
 		drawable->update(keyboard.is_key_pressed(VK_SPACE) ? 0.0f : dt);
 		drawable->draw(graphics);
 	}
 
+	PLOGV << "ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData())";
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+#ifdef IMGUI_DOCKING
+	// Update and Render additional Platform Windows
+	if (im_gui_io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		PLOGV << "ImGui::UpdatePlatformWindows()";
+		ImGui::UpdatePlatformWindows();
+		PLOGV << "ImGui::RenderPlatformWindowsDefault()";
+		ImGui::RenderPlatformWindowsDefault();
+	}
+#endif
+
+	PLOGV << "graphics.end_frame();";
 	graphics.end_frame();
 }

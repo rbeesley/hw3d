@@ -36,7 +36,10 @@ console::console() noexcept
 void console::initialize(const LPCWSTR name) noexcept {
 	PLOGI << "Initialize Console";
 
-	AllocConsole();
+	if (AttachConsole(GetCurrentProcessId()) == false)
+	{
+		AllocConsole();
+	}
 	console_window_handle_ = GetConsoleWindow();
 
 	PLOGV << "Initialize STD File Streams";

@@ -20,11 +20,13 @@
 ******************************************************************************************/
 #include "GDIPlusManager.h"
 #include <algorithm>
+
 namespace Gdiplus
 {
 	using std::min;
 	using std::max;
 }
+
 #include <gdiplus.h>
 
 ULONG_PTR gdi_plus_manager::token_ = {};

@@ -9,7 +9,7 @@
 #endif
 
 // Windows.h macro defines
-// disable everything
+// Inhibit the definition of all items inherited from Windows.h.
 #define WIN32_LEAN_AND_MEAN
 #define NOGDICAPMASKS // - CC_*, LC_*, PC_*, CP_*, TC_*, RC_
 #define NOVIRTUALKEYCODES // - VK_ *
@@ -176,6 +176,9 @@
 #endif
 #if defined(NOSYSMETRICS)
 #undef NOSYSMETRICS
+#endif
+#if defined(NOSYSCOMMANDS)
+#undef NOSYSCOMMANDS
 #endif
 #if defined(NOSHOWWINDOW)
 #undef NOSHOWWINDOW

@@ -6,6 +6,8 @@
 #include <DirectXMath.h>
 #include <locale>
 
+struct ImVec4;
+
 class graphics
 {
 	friend class bindable;
@@ -56,21 +58,26 @@ public:
 	graphics(const graphics&&) = delete;
 	graphics& operator=(const graphics&&) = delete;
 
+	void create_render_target();
+	bool begin_frame(unsigned int target_width, unsigned int target_height);
 	void end_frame();
-	void clear_buffer(float red, float green, float blue) const;
+	void clear_buffer(const ImVec4& clear_color) const;
+	void clear_buffer(float red, float green, float blue, float alpha = 1.0) const;
 	void draw_indexed(UINT count) noexcept(!IS_DEBUG);
 	void set_projection(DirectX::FXMMATRIX& projection) noexcept;
 	DirectX::XMMATRIX get_projection() const noexcept;
+	static void shutdown();
 private:
 	HWND parent_;
 	float width_, height_;
+	bool swap_chain_occluded_{};
 #if (IS_DEBUG)
 	dxgi_info_manager info_manager_;
 #endif
 	DirectX::XMMATRIX projection_;
 	Microsoft::WRL::ComPtr<ID3D11Device> p_device_;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> p_swap_chain_;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> p_context_;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> p_target_view_;
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> p_device_context_;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> p_render_target_view_;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> p_depth_stencil_view_;
 };

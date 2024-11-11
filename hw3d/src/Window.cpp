@@ -2,14 +2,16 @@
 
 #include <system_error>
 
+#include "imgui.h"
 #include "Logging.h"
 #include "Resources/resource.h"
 #include "WindowsThrowMacros.h"
+#include "backends/imgui_impl_win32.h"
 
 #if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in LoggingConfig.h
 #include "WindowsMessageMap.h"
 
-const static windows_message_map windows_message_map;
+const static class windows_message_map windows_message_map;
 #endif
 
 window::window_class::window_class()
@@ -42,13 +44,13 @@ void window::window_class::initialize() const noexcept
 
 void window::window_class::shutdown() const noexcept
 {
-	PLOGV << "Shutdown Window Class";
+	PLOGD << "Shutdown Window Class";
 	UnregisterClass(window_class_name, get_instance());
 }
 
 window::window_class::~window_class()
 {
-	PLOGD << "Destroy Window Class";
+	PLOGV << "Destroy Window Class";
 }
 
 LPCWSTR window::window_class::get_name() noexcept
@@ -105,7 +107,51 @@ void window::initialize(const int width, const int height, const LPCWSTR name)
 	}
 
 	// Newly created windows start off as hidden
+	PLOGI << "Show the Window";
 	ShowWindow(window_handle_, SW_SHOWDEFAULT);
+	UpdateWindow(window_handle_);
+
+	// Configure Dear ImGui
+	PLOGI << "Configure Dear ImGui";
+
+	// Setup Dear ImGui context
+	PLOGV << "IMGUI_CHECKVERSION();";
+	IMGUI_CHECKVERSION();
+	PLOGV << "ImGui::CreateContext();";
+	ImGui::CreateContext();
+	PLOGD << "Set Dear ImGui flags";
+	ImGuiIO& im_gui_io = ImGui::GetIO();
+	im_gui_io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	im_gui_io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+#ifdef IMGUI_DOCKING
+	im_gui_io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+	im_gui_io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+	//io.ConfigViewportsNoAutoMerge = true;
+	//io.ConfigViewportsNoTaskBarIcon = true;
+	//io.ConfigViewportsNoDefaultParent = true;
+	//io.ConfigDockingAlwaysTabBar = true;
+	//io.ConfigDockingTransparentPayload = true;
+	//io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;     // FIXME-DPI: Experimental. THIS CURRENTLY DOESN'T WORK AS EXPECTED. DON'T USE IN USER APP!
+	//io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports; // FIXME-DPI: Experimental.
+#endif
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsLight();
+
+#ifdef IMGUI_DOCKING
+	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+	ImGuiStyle& style = ImGui::GetStyle();
+	if (im_gui_io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		style.WindowRounding = 0.0f;
+		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+	}
+#endif
+
+	PLOGI << "Setup Dear ImGui Platform backend";
+	PLOGV << "ImGui_ImplWin32_Init()";
+	ImGui_ImplWin32_Init(window_handle_);
 
 	// Get the mouse and keyboard
 	PLOGD << "Create references to the mouse and keyboard";
@@ -114,12 +160,18 @@ void window::initialize(const int width, const int height, const LPCWSTR name)
 
 	// Create the graphics object
 	PLOGD << "Create the DirectX graphics object";
+	PLOGV << "p_graphics_ = std::make_unique<graphics>(window_handle_, width_, height_);";
 	p_graphics_ = std::make_unique<graphics>(window_handle_, width_, height_);
 
 	// Check for an error
 	if (nullptr == p_graphics_)
 	{
 		throw ATUM_WND_LAST_EXCEPT();
+	}
+
+	if(target_width_ == width_ && target_height_ == height_)
+	{
+		set_target_dimensions(0, 0);
 	}
 }
 
@@ -131,12 +183,18 @@ HWND window::get_handle()
 void window::shutdown() const
 {
 	PLOGI << "Shutdown Window";
+	PLOGV << "p_graphics_->shutdown();";
+	p_graphics_->shutdown();
+	PLOGV << "ImGui_ImplWin32_Shutdown();";
+	ImGui_ImplWin32_Shutdown();
 	window_class_->shutdown();
 }
 
 window::~window()
 {
 	PLOGD << "Destroy Window";
+	PLOGV << "ImGui::DestroyContext()";
+	ImGui::DestroyContext();
 	DestroyWindow(window_handle_);
 }
 
@@ -148,14 +206,33 @@ void window::set_title(const std::wstring& title)
 	}
 }
 
-std::optional<int> window::process_messages()
+// Definition of static member variables
+unsigned int window::target_width_ = 0;
+unsigned int window::target_height_ = 0;
+bool window::in_sizemove_ = false;
+bool window::minimized_ = false;
+
+void window::set_target_dimensions(const unsigned int width, const unsigned int height)
+{
+	PLOGV << "set_target_dimensions(width: " << width << ", height: " << height << ");";
+	target_width_ = width;
+	target_height_ = height;
+}
+
+window::window_dimensions window::get_target_dimensions()
+{
+	PLOGV << "get_target_dimensions() : width: " << target_width_ << ", height: " << target_height_ << "";
+	return {target_width_, target_height_};
+}
+
+std::optional<unsigned int> window::process_messages()
 {
 	MSG msg;
 	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
 	{
 		if (msg.message == WM_QUIT)
 		{
-			return static_cast<int>(msg.wParam);
+			return msg.message;
 		}
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
@@ -237,6 +314,12 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 		PLOGV << windows_message_map(msg, l_param, w_param).c_str();
 	}
 #endif
+	//PLOGV << "ImGui_ImplWin32_WndProcHandler";
+	extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	if(ImGui_ImplWin32_WndProcHandler(window_handle, msg, w_param, l_param))
+	{
+		return true;
+	}
 
 	switch (msg)
 	{
@@ -305,16 +388,76 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 
 		break;
 	}
+	case WM_SIZE:
+		if (w_param == SIZE_MINIMIZED)
+		{
+			// The window was minimized (you should probably suspend the application)
+			if (!minimized_)
+			{
+				minimized_ = true;
+			}
+		}
+		else if (minimized_)
+		{
+			// The window was minimized and is now restored (resume from suspend)
+			minimized_ = false;
+		}
+		else if (!in_sizemove_)
+		{
+			// Handle the swapchain resize for maximize or unmaximize
+			set_target_dimensions(LOWORD(l_param), HIWORD(l_param));
+		}
+		break;
+	case WM_ENTERSIZEMOVE:
+		// We want to avoid trying to resizing the swapchain as the user does the 'rubber band' resize
+		in_sizemove_ = true;
+		break;
+	case WM_EXITSIZEMOVE:
+		// Here is the other place where you handle the swapchain resize after the user stops using the 'rubber-band'
+		in_sizemove_ = false;
+		break;
+	case WM_GETMINMAXINFO:
+		{
+			// We want to prevent the window from being set too tiny
+			const auto info = reinterpret_cast<MINMAXINFO*>(l_param);
+			info->ptMinTrackSize.x = 320;
+			info->ptMinTrackSize.y = 200;
+		}
+		break;
+	case WM_SYSCOMMAND:
+		if ((w_param & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
+			return 0;
+		break;
+	case WM_DESTROY:
+		::PostQuitMessage(0);
+		return 0;
+#ifdef IMGUI_DOCKING
+	case WM_DPICHANGED:
+		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DpiEnableScaleViewports)
+		{
+			const int dpi = HIWORD(w_param);
+			PLOGI << "WM_DPICHANGED to " << dpi << "(" << static_cast<float>(dpi) / 96.0f * 100.0f << ")";
+			const RECT* suggested_rect = reinterpret_cast<RECT*>(l_param);
+			::SetWindowPos(window_handle_, nullptr, suggested_rect->left, suggested_rect->top, suggested_rect->right - suggested_rect->left, suggested_rect->bottom - suggested_rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
+		}
+		break;
+#endif
 
 	/* Keyboard */
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
+	{
+		if (const auto& io = ImGui::GetIO(); io.WantCaptureKeyboard)
+		{
+			return 0;
+		}
 		// Filter keyboard autorepeat
 		if (!(l_param & 0x40000000 /* previous key state */) || p_keyboard_->is_autorepeat_enabled())
 		{
 			p_keyboard_->on_key_pressed(static_cast<unsigned char>(w_param));
 		}
 		break;
+	}
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
 		p_keyboard_->on_key_released(static_cast<unsigned char>(w_param));
@@ -453,12 +596,8 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 		}
 		break;
 	}
-
-	/* Default */
-	default:
-		return DefWindowProc(window_handle, msg, w_param, l_param);
 	}
-	return 0;
+	return DefWindowProc(window_handle, msg, w_param, l_param);
 }
 
 window::hresult_exception::hresult_exception(int line, const char* file, HRESULT hresult) noexcept
