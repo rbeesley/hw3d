@@ -15,8 +15,6 @@
 #include "backends/imgui_impl_dx11.h"
 #include "backends/imgui_impl_win32.h"
 
-class gdi_plus_manager gdi_plus_manager;
-
 // 1280x720
 // 800x600
 constexpr int width = 1280;
@@ -78,6 +76,8 @@ int app::initialize()
 		PLOGF << "Failed to create Window";
 		return -2;
 	}
+
+	p_gdi_manager_ = gdi_plus_manager::initialize();
 
 	const auto rng_seed = std::random_device{}();
 	PLOGI << "mt19937 rng seed: " << rng_seed;
@@ -282,10 +282,11 @@ void app::shutdown() const
 {
 	PLOGI << "Shutdown App";
 
+	p_gdi_manager_->shutdown();
+	p_window_->shutdown();
 #if (IS_DEBUG)
 	p_console_->shutdown();
 #endif
-	p_window_->shutdown();
 }
 
 void app::render_frame(const ImVec4& clear_color)

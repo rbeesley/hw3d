@@ -5,6 +5,7 @@
 #include "Timer.h"
 #include "CpuMetric.h"
 #include "FpsMetric.h"
+#include "GDIPlusManager.h"
 
 class app
 {
@@ -31,6 +32,7 @@ private:
 	cpu_metric cpu_{};
 #endif
 	timer timer_;
+	std::unique_ptr<gdi_plus_manager> p_gdi_manager_;
 	std::vector<std::unique_ptr<class drawable>> drawables_;
 	static constexpr size_t number_of_drawables_ = 180;
 };
