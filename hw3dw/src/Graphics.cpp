@@ -11,6 +11,8 @@
 #include <functional>
 #include <sstream>
 
+#define UNCAPPED_FRAMERATE TRUE
+
 namespace wrl = Microsoft::WRL;
 namespace dx = DirectX;
 
@@ -220,6 +222,7 @@ bool graphics::begin_frame(const unsigned int target_width, const unsigned int t
 
 			p_device_context_->OMSetRenderTargets(1, p_render_target_view_.GetAddressOf(), nullptr);
 
+			// ReSharper disable once CppInitializedValueIsAlwaysRewritten
 			D3D11_VIEWPORT vp{};
 			vp.Width = static_cast<float>(target_width);
 			vp.Height = static_cast<float>(target_height);
@@ -239,8 +242,13 @@ void graphics::end_frame()
 #if (IS_DEBUG)
 	info_manager_.set();
 #endif
+#if (UNCAPPED_FRAMERATE)
+	PLOGV << "p_swap_chain_->Present(0u, 0u)";
+	if (FAILED(hresult = p_swap_chain_->Present(0u, 0u)))
+#else
 	PLOGV << "p_swap_chain_->Present(1u, 0u)";
 	if (FAILED(hresult = p_swap_chain_->Present(1u, 0u)))
+#endif
 	{
 		if (hresult == DXGI_ERROR_DEVICE_REMOVED)
 		{

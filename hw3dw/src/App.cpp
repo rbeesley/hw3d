@@ -15,6 +15,8 @@
 #include "backends/imgui_impl_dx11.h"
 #include "backends/imgui_impl_win32.h"
 
+extern bool g_allow_console_logging;
+
 // 1280x720
 // 800x600
 constexpr int width = 1280;
@@ -33,40 +35,42 @@ app::app()
 int app::initialize()
 {
 #if (IS_DEBUG)
-	const auto console = p_console_.get();
-	console->initialize(TEXT("Debug Console"));
+	if (g_allow_console_logging) {
+		const auto console = p_console_.get();
+		console->initialize(TEXT("Debug Console"));
 
-	auto exe_path = []
-	{
-		TCHAR buffer[MAX_PATH] = { 0 };
-		GetModuleFileName(nullptr, buffer, MAX_PATH);
-		const std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
-		return std::wstring(buffer).substr(0, pos);
-	};
+		auto exe_path = []
+			{
+				TCHAR buffer[MAX_PATH] = { 0 };
+				GetModuleFileName(nullptr, buffer, MAX_PATH);
+				const std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
+				return std::wstring(buffer).substr(0, pos);
+			};
 
-	// Check Logging
-	// This is the earliest this can be done if utilizing the console logger.
-	PLOGN << "CWD: " << exe_path();
-	PLOG_NONE << "";
-	PLOG_NONE << "This is a NONE message";
-	PLOG_FATAL << "This is a FATAL message";
-	PLOG_ERROR << "This is an ERROR message";
-	PLOG_WARNING << "This is a WARNING message";
-	PLOG_INFO << "This is an INFO message";
-	PLOG_DEBUG << "This is a DEBUG message";
-	PLOG_VERBOSE << "This is a VERBOSE message";
-	PLOG_NONE << "";
+		// Check Logging
+		// This is the earliest this can be done if utilizing the console logger.
+		PLOGN << "CWD: " << exe_path();
+		PLOG_NONE << "";
+		PLOG_NONE << "This is a NONE message";
+		PLOG_FATAL << "This is a FATAL message";
+		PLOG_ERROR << "This is an ERROR message";
+		PLOG_WARNING << "This is a WARNING message";
+		PLOG_INFO << "This is an INFO message";
+		PLOG_DEBUG << "This is a DEBUG message";
+		PLOG_VERBOSE << "This is a VERBOSE message";
+		PLOG_NONE << "";
 
-	// If the console failed to load, we want to make sure this is the last log message so that it is easier to spot.
-	if (!console->get_handle())
-	{
-		PLOGE << "Failed to create Debug Console";
-		return -3;
+		// If the console failed to load, we want to make sure this is the last log message so that it is easier to spot.
+		if (!console->get_handle())
+		{
+			PLOGE << "Failed to create Debug Console";
+			return -3;
+		}
+
+		// Initialize the FPS Counter and CPU Counter
+		fps_.initialize();
+		cpu_.initialize();
 	}
-
-	// Initialize the FPS Counter and CPU Counter
-	fps_.initialize();
-	cpu_.initialize();
 #endif
 
 	const auto window = p_window_.get();

@@ -2,6 +2,7 @@
 
 #include <system_error>
 
+#include "Console.h"
 #include "imgui.h"
 #include "Logging.h"
 #include "Resources/resource.h"
@@ -13,6 +14,12 @@
 
 const static class windows_message_map windows_message_map;
 #endif
+
+// Definition of static member variables
+unsigned int window::target_width_ = 0;
+unsigned int window::target_height_ = 0;
+bool window::in_sizemove_ = false;
+bool window::minimized_ = false;
 
 window::window_class::window_class()
 	: instance_handle_(GetModuleHandle(nullptr))
@@ -205,12 +212,6 @@ void window::set_title(const std::wstring& title)
 		throw ATUM_WND_LAST_EXCEPT();
 	}
 }
-
-// Definition of static member variables
-unsigned int window::target_width_ = 0;
-unsigned int window::target_height_ = 0;
-bool window::in_sizemove_ = false;
-bool window::minimized_ = false;
 
 void window::set_target_dimensions(const unsigned int width, const unsigned int height)
 {

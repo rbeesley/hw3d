@@ -1,8 +1,11 @@
 #pragma once
 #include <cstdio>
+#include <string>
 
 #define CONSOLE_
 #include "AtumWindows.h"
+
+#define CONSOLE_SHUTDOWN_EVENT FALSE
 
 class console {
 public:
@@ -33,12 +36,26 @@ public:
 
 	void initialize(LPCWSTR name) noexcept;
 	HWND get_handle() const noexcept;
+	static void save_state();
+	static void restore_state();
 	static void shutdown();
 private:
+	struct console_state {
+		std::wstring title;
+		DWORD mode;
+		UINT close_button;
+	};
+
 	HWND console_window_handle_;
 	FILE* p_cin_ = nullptr;
 	FILE* p_cout_ = nullptr;
 	FILE* p_cerr_ = nullptr;
-	static WNDPROC console_window_proc_;
+#if CONSOLE_SHUTDOWN_EVENT
+	HANDLE shutdown_event_;
+	void block_input() noexcept;
+#endif
 	static BOOL CALLBACK ctrl_handler(DWORD ctrl_type) noexcept;
+	static console_state console_state_;
+	static void save_console_state(console_state& state);
+	static void restore_console_state(const console_state& state);
 };

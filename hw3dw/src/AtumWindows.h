@@ -57,6 +57,9 @@
 
 // When needed for certain classes, reenable only what is necessary.
 #if defined(CONSOLE_)
+#if defined(NOWINMESSAGES)
+#undef NOWINMESSAGES
+#endif
 #if defined(NOMENUS)
 #undef NOMENUS
 #endif
