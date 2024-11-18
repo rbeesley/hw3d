@@ -78,9 +78,9 @@ public:
 	[[nodiscard]] static HWND get_handle();
 	void shutdown() const;
 	static std::optional<unsigned int> process_messages();
-	[[nodiscard]] static mouse& get_mouse();
-	[[nodiscard]] static keyboard& get_keyboard();
-	[[nodiscard]] static graphics& get_graphics();
+	static mouse* get_mouse();
+	static keyboard* get_keyboard();
+	static graphics* get_graphics();
 	static void set_title(const std::wstring& title);
 	static void set_target_dimensions(unsigned int width, unsigned int height);
 	static window_dimensions get_target_dimensions();

@@ -242,31 +242,31 @@ std::optional<unsigned int> window::process_messages()
 	return {};
 }
 
-mouse& window::get_mouse()
+mouse* window::get_mouse()
 {
 	if (!p_mouse_)
 	{
 		throw ATUM_WND_NO_GFX_EXCEPT();
 	}
-	return *p_mouse_;
+	return p_mouse_.get();
 }
 
-keyboard& window::get_keyboard()
+keyboard* window::get_keyboard()
 {
 	if (!p_keyboard_)
 	{
 		throw ATUM_WND_NO_GFX_EXCEPT();
 	}
-	return *p_keyboard_;
+	return p_keyboard_.get();
 }
 
-graphics& window::get_graphics()
+graphics* window::get_graphics()
 {
 	if (!p_graphics_)
 	{
 		throw ATUM_WND_NO_GFX_EXCEPT();
 	}
-	return *p_graphics_;
+	return p_graphics_.get();
 }
 
 LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
@@ -304,6 +304,7 @@ HWND window::set_active(const HWND window_handle)
 	return nullptr;
 }
 
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param);
 LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES
@@ -316,7 +317,6 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	}
 #endif
 	//PLOGV << "ImGui_ImplWin32_WndProcHandler";
-	extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 	if(ImGui_ImplWin32_WndProcHandler(window_handle, msg, w_param, l_param))
 	{
 		return true;
@@ -418,13 +418,13 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 		in_sizemove_ = false;
 		break;
 	case WM_GETMINMAXINFO:
-		{
-			// We want to prevent the window from being set too tiny
-			const auto info = reinterpret_cast<MINMAXINFO*>(l_param);
-			info->ptMinTrackSize.x = 320;
-			info->ptMinTrackSize.y = 200;
-		}
-		break;
+	{
+		// We want to prevent the window from being set too tiny
+		const auto info = reinterpret_cast<MINMAXINFO*>(l_param);
+		info->ptMinTrackSize.x = 320;
+		info->ptMinTrackSize.y = 200;
+	}
+	break;
 	case WM_SYSCOMMAND:
 		if ((w_param & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
 			return 0;
@@ -444,7 +444,7 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 		break;
 #endif
 
-	/* Keyboard */
+		/* Keyboard */
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
 	{
@@ -597,6 +597,7 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 		}
 		break;
 	}
+	default: break;
 	}
 	return DefWindowProc(window_handle, msg, w_param, l_param);
 }

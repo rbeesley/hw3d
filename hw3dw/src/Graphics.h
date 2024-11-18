@@ -53,7 +53,7 @@ public:
 
 	graphics() = delete;
 	~graphics() = default;
-	graphics(const graphics&) = delete;
+	//graphics(const graphics&) = delete;
 	graphics& operator=(const graphics&) = delete;
 	graphics(const graphics&&) = delete;
 	graphics& operator=(const graphics&&) = delete;

@@ -270,6 +270,7 @@
     <ClInclude Include="3rdparty\plog\Severity.h" />
     <ClInclude Include="3rdparty\plog\Util.h" />
     <ClInclude Include="3rdparty\plog\WinApi.h" />
+    <ClInclude Include="src\AppThrowMacros.h" />
     <ClInclude Include="src\CpuMetric.h" />
     <ClInclude Include="src\FpsMetric.h" />
     <ClInclude Include="src\AtumMath.h" />

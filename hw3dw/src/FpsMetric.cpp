@@ -6,25 +6,25 @@
 
 void fps_metric::initialize()
 {
-	this->fps_ = 0;
-	this->count_ = 0;
-	this->start_time_ = timeGetTime();
+	fps_ = 0;
+	count_ = 0;
+	start_time_ = timeGetTime();
 }
 
 void fps_metric::frame()
 {
-	this->count_++;
+	count_++;
 
-	if (timeGetTime() >= (this->start_time_ + 1000))
+	if (timeGetTime() >= (start_time_ + 1000))
 	{
-		this->fps_ = this->count_;
-		this->count_ = 0;
+		fps_ = count_;
+		count_ = 0;
 
-		this->start_time_ = timeGetTime();
+		start_time_ = start_time_ + 1000;
 	}
 }
 
 int fps_metric::get_fps() const
 {
-	return this->fps_;
+	return fps_;
 }

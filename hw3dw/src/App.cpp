@@ -3,7 +3,10 @@
 #include <random>
 
 #include "App.h"
+
+#include "AppThrowMacros.h"
 #include "AtumMath.h"
+#include "AtumException.h"
 #include "Box.h"
 #include "GDIPlusManager.h"
 #include "Logging.h"
@@ -23,21 +26,26 @@ constexpr int width = 1280;
 constexpr int height = 720;
 constexpr float aspect_ratio = static_cast<float>(height) / static_cast<float>(width);
 
+app::app_exception::app_exception(int line, const char* file, const std::string& msg) noexcept
+	:
+	exception(line, file)
+{
+	what_buffer_.assign(msg);
+}
+
+const char* app::app_exception::get_type() const noexcept
+{
+	return "Atum Application Exception";
+}
+
 app::app()
 {
 	PLOGI << "Initializing App";
 	p_window_ = std::make_unique<window>();
 #if (IS_DEBUG)
 	p_console_ = std::make_unique<console>();
-#endif
-}
-
-int app::initialize()
-{
-#if (IS_DEBUG)
 	if (g_allow_console_logging) {
-		const auto console = p_console_.get();
-		console->initialize(TEXT("Debug Console"));
+		p_console_->initialize(TEXT("Debug Console"));
 
 		auto exe_path = []
 			{
@@ -61,10 +69,9 @@ int app::initialize()
 		PLOG_NONE << "";
 
 		// If the console failed to load, we want to make sure this is the last log message so that it is easier to spot.
-		if (!console->get_handle())
+		if (!p_console_->get_handle())
 		{
-			PLOGE << "Failed to create Debug Console";
-			return -3;
+			throw APP_EXCEPT("Failed to create Debug Console");
 		}
 
 		// Initialize the FPS Counter and CPU Counter
@@ -73,16 +80,21 @@ int app::initialize()
 	}
 #endif
 
-	const auto window = p_window_.get();
-	window->initialize(width, height, TEXT("Atum D3D Window"));
-	if (!window->get_handle())
+	p_window_->initialize(width, height, TEXT("Atum D3D Window"));
+	if (!p_window_->get_handle())
 	{
-		PLOGF << "Failed to create Window";
-		return -2;
+		throw APP_EXCEPT("Failed to create Window");
 	}
 
-	p_gdi_manager_ = gdi_plus_manager::initialize();
+	p_mouse_ = p_window_->get_mouse();
+	p_keyboard_ = p_window_->get_keyboard();
+	p_graphics_ = p_window_->get_graphics();
 
+	p_gdi_manager_ = gdi_plus_manager::initialize();
+}
+
+int app::initialize()
+{
 	const auto rng_seed = std::random_device{}();
 	PLOGI << "mt19937 rng seed: " << rng_seed;
 
@@ -92,8 +104,8 @@ int app::initialize()
 	public:
 		drawable_factory(graphics& graphics, const unsigned int rng_seed)
 			:
-			graphics_{ graphics },
-			rng_{ rng_seed }
+			p_graphics_(graphics),
+			rng_(rng_seed)
 		{}
 
 		int count = 0;
@@ -104,30 +116,30 @@ int app::initialize()
 			case 0:
 				LOGV << "Drawable <pyramid>     #" << ++count;
 				return std::make_unique<pyramid>(
-					graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_,
+					p_graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_,
 					spherical_coordinate_movement_of_drawable_distribution_
 				);
 			case 1:
 				LOGV << "Drawable <box>         #" << ++count;
 				return std::make_unique<box>(
-					graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_,
+					p_graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_,
 					spherical_coordinate_movement_of_drawable_distribution_, z_axis_distortion_distribution_
 				);
 			case 2:
 				LOGV << "Drawable <melon>       #" << ++count;
 				return std::make_unique<melon>(
-					graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_,
+					p_graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_,
 					spherical_coordinate_movement_of_drawable_distribution_, latitude_distribution_, longitude_distribution_
 				);
 			case 3:
 				LOGV << "Drawable <sheet>       #" << ++count;
 				return std::make_unique<sheet>(
-					graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_, spherical_coordinate_movement_of_drawable_distribution_
+					p_graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_, spherical_coordinate_movement_of_drawable_distribution_
 				);
 			case 4:
 				LOGV << "Drawable <skinned_box> #" << ++count;
 				return std::make_unique<skinned_box>(
-					graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_,
+					p_graphics_, rng_, distance_distribution_, spherical_coordinate_position_distribution_, rotation_of_drawable_distribution_,
 					spherical_coordinate_movement_of_drawable_distribution_
 				);
 			default:
@@ -135,7 +147,7 @@ int app::initialize()
 				return {};
 			}
 		}	private:
-			graphics& graphics_;
+			graphics& p_graphics_;
 			std::mt19937 rng_;
 			std::uniform_real_distribution<float> spherical_coordinate_position_distribution_{ 0.0f, PI * 2.0f };				// adist
 			std::uniform_real_distribution<float> rotation_of_drawable_distribution_{ 0.0f, PI * 0.5f };						// ddist
@@ -150,7 +162,7 @@ int app::initialize()
 	drawables_.reserve(number_of_drawables_);
 
 	PLOGD << "Populating pool of drawables";
-	std::generate_n(std::back_inserter(drawables_), number_of_drawables_, drawable_factory(window->get_graphics(), rng_seed));
+	std::generate_n(std::back_inserter(drawables_), number_of_drawables_, drawable_factory(*p_graphics_, rng_seed));
 #else
 	{
 		PLOGD << "Draw a skinned_box";
@@ -171,7 +183,7 @@ int app::initialize()
 #endif
 
 	PLOGD << "Set graphics projection";
-	window->get_graphics().set_projection(
+	p_graphics_->set_projection(
 		DirectX::XMMatrixPerspectiveLH(
 			1.0f,
 			aspect_ratio,
@@ -188,42 +200,45 @@ int app::run()
 	auto clear_color = ImVec4(0.07f, 0.0f, 0.12f, 1.00f);
 	const ImGuiIO& im_gui_io = ImGui::GetIO();
 
-	const auto window = p_window_.get();
-
 	PLOGI << "Starting Message Pump and Render Loop";
 	constexpr bool done = false;
 	while (!done)
 	{
 		//PLOGI << " *** Run loop ***";
-		// Process pending messages without blocking
-		if (const std::optional<unsigned int> exit_code = window->process_messages(); exit_code.has_value())
-		{
-			if (exit_code.value() == WM_QUIT)
-			{
-				return 0;
-			}
-		}
 
-#if (IS_DEBUG)
+		#if (IS_DEBUG)
 		auto static compose_fps_cpu_window_title = [](const int fps, const double cpu_percentage) {
 			wchar_t buffer[50];
 			std::swprintf(buffer, 50, L"fps: %d / cpu: %00.2f%%", fps, cpu_percentage);
 			return std::wstring(buffer);
-		};
+			};
 
 		fps_.frame();
 		cpu_.frame();
 		p_window_->set_title(compose_fps_cpu_window_title(fps_.get_fps(), cpu_.get_cpu_percentage()));
 #endif
 
-		PLOGV << "window->get_graphics().begin_frame()";
-		if(auto [width, height] = window->get_target_dimensions(); !window->get_graphics().begin_frame(width, height))
+		// Process pending messages
 		{
-			if (width > 0 || height > 0)
+			if (const std::optional exit_code(p_window_->process_messages()); exit_code.has_value())
 			{
-				window->set_target_dimensions(0, 0);
+				if (exit_code.value() == WM_QUIT)
+				{
+					return 0;
+				}
 			}
-			continue;
+		}
+
+		PLOGV << "window->get_graphics().begin_frame()";
+		{
+			if (auto [width, height] = p_window_->get_target_dimensions(); !p_graphics_->begin_frame(width, height))
+			{
+				if (width > 0 || height > 0)
+				{
+					p_window_->set_target_dimensions(0, 0);
+				}
+				continue;
+			}
 		}
 
 		// Start the Dear ImGui frame
@@ -279,6 +294,9 @@ int app::run()
 		ImGui::Render();
 		PLOGV << "render_frame(clear_color);";
 		render_frame(clear_color);
+
+		PLOGV << "graphics.end_frame();";
+		p_graphics_->end_frame();
 	}
 }
 
@@ -296,21 +314,18 @@ void app::shutdown() const
 void app::render_frame(const ImVec4& clear_color)
 {
 	const auto dt = timer_.mark();
-	const auto window = p_window_.get();
-	static keyboard& keyboard = window->get_keyboard();
-	static graphics& graphics = window->get_graphics();
 
 	PLOGD << "Fetch Dear ImGui IO";
 	const ImGuiIO& im_gui_io = ImGui::GetIO(); (void)im_gui_io;
 
 	PLOGD << "Clear the buffer";
-	graphics.clear_buffer(clear_color);
+	p_graphics_->clear_buffer(clear_color);
 
 	PLOGD << "Draw all drawables";
 	for (const auto& drawable : drawables_)
 	{
-		drawable->update(keyboard.is_key_pressed(VK_SPACE) ? 0.0f : dt);
-		drawable->draw(graphics);
+		drawable->update(p_keyboard_->is_key_pressed(VK_SPACE) ? 0.0f : dt);
+		drawable->draw(*p_graphics_);
 	}
 
 	PLOGV << "ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData())";
@@ -326,7 +341,4 @@ void app::render_frame(const ImVec4& clear_color)
 		ImGui::RenderPlatformWindowsDefault();
 	}
 #endif
-
-	PLOGV << "graphics.end_frame();";
-	graphics.end_frame();
 }
