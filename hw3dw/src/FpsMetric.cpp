@@ -1,30 +1,27 @@
-///////////////////////////////////////////////////////////////////////////////
-// Filename: FpsMetric.cpp
-///////////////////////////////////////////////////////////////////////////////
 #include "FpsMetric.h"
 #include <mmsystem.h>
 
-void fps_metric::initialize()
+void FpsMetric::initialize()
 {
 	fps_ = 0;
 	count_ = 0;
-	start_time_ = timeGetTime();
+	startTime_ = timeGetTime();
 }
 
-void fps_metric::frame()
+void FpsMetric::frame()
 {
 	count_++;
 
-	if (timeGetTime() >= (start_time_ + 1000))
+	if (timeGetTime() >= (startTime_ + 1000))
 	{
 		fps_ = count_;
 		count_ = 0;
 
-		start_time_ = start_time_ + 1000;
+		startTime_ = startTime_ + 1000;
 	}
 }
 
-int fps_metric::get_fps() const
+int FpsMetric::getFps() const
 {
 	return fps_;
 }

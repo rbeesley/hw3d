@@ -4,59 +4,59 @@
 #include <DirectXMath.h>
 #include "AtumMath.h"
 
-class cone
+class Cone
 {
 public:
 	template<class V>
-	static indexed_triangle_list<V> make()
+	static IndexedTriangleList<V> make()
 	{
-		return make_tessellated<V>(24);
+		return makeTessellated<V>(24);
 	}
 
 	template<class V>
-	static indexed_triangle_list<V> make_tessellated(const int longitudinal_divisions, std::function<void(std::vector<V>&)> set_attributes = nullptr) {
+	static IndexedTriangleList<V> makeTessellated(const int longitudinalDivisions, std::function<void(std::vector<V>&)> setAttributes = nullptr) {
 		namespace dx = DirectX;
-		assert(longitudinal_divisions >= 3);
+		assert(longitudinalDivisions >= 3);
 		const auto base = dx::XMVectorSet(1.0f, 0.0f, -1.0f, 0.0f);
-		const float longitude_angle = 2.0f * PI / static_cast<float>(longitudinal_divisions);
+		const float longitudeAngle = 2.0f * PI / static_cast<float>(longitudinalDivisions);
 
 		// base vertices
 		std::vector<V> vertices;
-		for (int index_longitude = 0; index_longitude < longitudinal_divisions; index_longitude++) {
+		for (int indexLongitude = 0; indexLongitude < longitudinalDivisions; indexLongitude++) {
 			vertices.emplace_back();
-			auto vertex = dx::XMVector3Transform(base, dx::XMMatrixRotationZ(longitude_angle * static_cast<float>(index_longitude)));
+			auto vertex = dx::XMVector3Transform(base, dx::XMMatrixRotationZ(longitudeAngle * static_cast<float>(indexLongitude)));
 			dx::XMStoreFloat3(&vertices.back().pos, vertex);
 		}
 
 		// the center
 		vertices.emplace_back();
 		vertices.back().pos = { 0.0f, 0.0f, -1.0f };
-		const auto index_center = static_cast<unsigned short>(vertices.size() - 1);
+		const auto indexCenter = static_cast<unsigned short>(vertices.size() - 1);
 
 		// the tip
 		vertices.emplace_back();
 		vertices.back().pos = { 0.0f, 0.0f, 1.0f };
-		const auto index_tip = static_cast<unsigned short>(vertices.size() - 1);
+		const auto indexTip = static_cast<unsigned short>(vertices.size() - 1);
 
 		// base indices
 		std::vector<unsigned short> indices;
-		for (unsigned short index_longitude = 0; index_longitude < longitudinal_divisions; index_longitude++) {
-			indices.push_back(index_center);
-			indices.push_back((index_longitude + 1) % longitudinal_divisions);
-			indices.push_back(index_longitude);
+		for (unsigned short indexLongitude = 0; indexLongitude < longitudinalDivisions; indexLongitude++) {
+			indices.push_back(indexCenter);
+			indices.push_back((indexLongitude + 1) % longitudinalDivisions);
+			indices.push_back(indexLongitude);
 		}
 
 		// cone indices
-		for (unsigned short index_longitude = 0; index_longitude < longitudinal_divisions; index_longitude++) {
-			indices.push_back(index_longitude);
-			indices.push_back((index_longitude + 1) % longitudinal_divisions);
-			indices.push_back(index_tip);
+		for (unsigned short indexLongitude = 0; indexLongitude < longitudinalDivisions; indexLongitude++) {
+			indices.push_back(indexLongitude);
+			indices.push_back((indexLongitude + 1) % longitudinalDivisions);
+			indices.push_back(indexTip);
 		}
 
-		if (set_attributes) {
-			set_attributes(vertices);
+		if (setAttributes) {
+			setAttributes(vertices);
 		}
 
-		return indexed_triangle_list<V>{std::move(vertices), std::move(indices)};
+		return IndexedTriangleList<V>{std::move(vertices), std::move(indices)};
 	}
 };

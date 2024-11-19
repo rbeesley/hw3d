@@ -6,72 +6,72 @@
 #define MOUSE_
 #include "AtumWindows.h"
 
-class mouse
+class Mouse
 {
 public:
-	mouse() = default;
-	~mouse() = default;
-	mouse(const mouse&) = delete;
-	mouse& operator=(const mouse&) = delete;
-	mouse(const mouse&&) = delete;
-	mouse& operator=(const mouse&&) = delete;
+	Mouse() = default;
+	~Mouse() = default;
+	Mouse(const Mouse&) = delete;
+	Mouse& operator=(const Mouse&) = delete;
+	Mouse(const Mouse&&) = delete;
+	Mouse& operator=(const Mouse&&) = delete;
 
 public:
-	class event
+	class Event
 	{
 	public:
-		enum class event_type : std::uint8_t
+		enum class EventType : std::uint8_t
 		{
-			l_press,
-			l_release,
-			l_double,
-			r_press,
-			r_release,
-			r_double,
-			m_press,
-			m_release,
-			m_double,
-			x1_press,
-			x1_release,
-			x2_press,
-			x2_release,
-			wheel_up,
-			wheel_down,
-			wheel_right,
-			wheel_left,
-			move,
-			enter,
-			leave
+			L_PRESS,
+			L_RELEASE,
+			L_DOUBLE,
+			R_PRESS,
+			R_RELEASE,
+			R_DOUBLE,
+			M_PRESS,
+			M_RELEASE,
+			M_DOUBLE,
+			X1_PRESS,
+			X1_RELEASE,
+			X2_PRESS,
+			X2_RELEASE,
+			WHEEL_UP,
+			WHEEL_DOWN,
+			WHEEL_RIGHT,
+			WHEEL_LEFT,
+			MOVE,
+			ENTER,
+			LEAVE
 		};
-		using enum event_type;
+		using enum EventType;
 
 	private:
-		event_type event_type_;
+		EventType eventType_;
 		int x_;
 		int y_;
-		bool left_is_pressed_;
-		bool right_is_pressed_;
-		bool middle_is_pressed_;
-		bool x1_is_pressed_;
-		bool x2_is_pressed_;
+		bool leftIsPressed_;
+		bool rightIsPressed_;
+		bool middleIsPressed_;
+		bool x1IsPressed_;
+		bool x2IsPressed_;
 
 	public:
-		event() = delete;
-		event(const event_type event_type, const mouse& parent) noexcept
+		Event() = delete;
+		Event(const EventType eventType, const Mouse& parent) noexcept
 			:
-			event_type_(event_type),
+			eventType_(eventType),
 			x_(parent.x_),
 			y_(parent.y_),
-			left_is_pressed_(parent.left_is_pressed_),
-			right_is_pressed_(parent.right_is_pressed_),
-			middle_is_pressed_(parent.middle_is_pressed_),
-			x1_is_pressed_(parent.x1_is_pressed_),
-			x2_is_pressed_(parent.x2_is_pressed_)
+			leftIsPressed_(parent.leftIsPressed_),
+			rightIsPressed_(parent.rightIsPressed_),
+			middleIsPressed_(parent.middleIsPressed_),
+			x1IsPressed_(parent.x1IsPressed_),
+			x2IsPressed_(parent.x2IsPressed_)
 		{}
 
-		[[nodiscard]] event_type get_type() const noexcept
+		[[nodiscard]] EventType get_type() const noexcept
 		{
-			return event_type_;
+			return eventType_;
 		}
 
 		[[nodiscard]] std::pair<int, int> get_pos() const noexcept
@@ -91,79 +91,79 @@ public:
 
 		[[nodiscard]] bool is_left_pressed() const noexcept
 		{
-			return left_is_pressed_;
+			return leftIsPressed_;
 		}
 
 		[[nodiscard]] bool is_middle_pressed() const noexcept
 		{
-			return middle_is_pressed_;
+			return middleIsPressed_;
 		}
 
 		[[nodiscard]] bool is_right_pressed() const noexcept
 		{
-			return right_is_pressed_;
+			return rightIsPressed_;
 		}
 
 		[[nodiscard]] bool is_x1_pressed() const noexcept
 		{
-			return x1_is_pressed_;
+			return x1IsPressed_;
 		}
 
 		[[nodiscard]] bool is_x2_pressed() const noexcept
 		{
-			return x2_is_pressed_;
+			return x2IsPressed_;
 		}
 	};
 
 private:
-	void trim_buffer() noexcept;
-	std::optional<event> read() noexcept;
-	[[nodiscard]] bool is_empty() const noexcept;
+	void trimBuffer() noexcept;
+	std::optional<Event> read() noexcept;
+	[[nodiscard]] bool isEmpty() const noexcept;
 	void clear() noexcept;
 
 public:
-	struct position { int x, y; };
-	[[nodiscard]] std::pair<int, int> get_pos() const noexcept;
-	[[nodiscard]] position pos() const noexcept;
-	[[nodiscard]] int get_pos_x() const noexcept;
-	[[nodiscard]] int get_pos_y() const noexcept;
-	[[nodiscard]] bool is_in_window() const noexcept;
-	[[nodiscard]] bool is_left_pressed() const noexcept;
-	[[nodiscard]] bool is_right_pressed() const noexcept;
-	[[nodiscard]] bool is_middle_pressed() const noexcept;
-	[[nodiscard]] bool is_x1_pressed() const noexcept;
-	[[nodiscard]] bool is_x2_pressed() const noexcept;
-	void on_mouse_move(int x, int y) noexcept;
-	void on_mouse_leave() noexcept;
-	void on_mouse_enter(int x, int y) noexcept;
-	void on_left_pressed(int x, int y) noexcept;
-	void on_left_released(int x, int y) noexcept;
-	void on_right_pressed(int x, int y) noexcept;
-	void on_right_released(int x, int y) noexcept;
-	void on_middle_pressed(int x, int y) noexcept;
-	void on_middle_released(int x, int y) noexcept;
-	void on_x1_pressed(int x, int y) noexcept;
-	void on_x1_released(int x, int y) noexcept;
-	void on_x2_pressed(int x, int y) noexcept;
-	void on_x2_released(int x, int y) noexcept;
-	void on_wheel_up(int x, int y) noexcept;
-	void on_wheel_down(int x, int y) noexcept;
-	void on_wheel_right(int x, int y) noexcept;
-	void on_wheel_left(int x, int y) noexcept;
-	void on_v_wheel_delta(int x, int y, int delta) noexcept;
-	void on_h_wheel_delta(int x, int y, int delta) noexcept;
+	struct Position { int x, y; };
+	[[nodiscard]] std::pair<int, int> getPos() const noexcept;
+	[[nodiscard]] Position pos() const noexcept;
+	[[nodiscard]] int getPosX() const noexcept;
+	[[nodiscard]] int getPosY() const noexcept;
+	[[nodiscard]] bool isInWindow() const noexcept;
+	[[nodiscard]] bool isLeftPressed() const noexcept;
+	[[nodiscard]] bool isRightPressed() const noexcept;
+	[[nodiscard]] bool isMiddlePressed() const noexcept;
+	[[nodiscard]] bool isX1Pressed() const noexcept;
+	[[nodiscard]] bool isX2Pressed() const noexcept;
+	void onMouseMove(int x, int y) noexcept;
+	void onMouseLeave() noexcept;
+	void onMouseEnter(int x, int y) noexcept;
+	void onLeftPressed(int x, int y) noexcept;
+	void onLeftReleased(int x, int y) noexcept;
+	void onRightPressed(int x, int y) noexcept;
+	void onRightReleased(int x, int y) noexcept;
+	void onMiddlePressed(int x, int y) noexcept;
+	void onMiddleReleased(int x, int y) noexcept;
+	void onX1Pressed(int x, int y) noexcept;
+	void onX1Released(int x, int y) noexcept;
+	void onX2Pressed(int x, int y) noexcept;
+	void onX2Released(int x, int y) noexcept;
+	void onWheelUp(int x, int y) noexcept;
+	void onWheelDown(int x, int y) noexcept;
+	void onWheelRight(int x, int y) noexcept;
+	void onWheelLeft(int x, int y) noexcept;
+	void onVWheelDelta(int x, int y, int delta) noexcept;
+	void onHWheelDelta(int x, int y, int delta) noexcept;
 
 private:
-	static constexpr unsigned int buffer_size = 16u;
+	static constexpr unsigned int bufferSize_ = 16u;
 	int x_ = 0;
 	int y_ = 0;
-	bool in_window_ = false;
-	bool left_is_pressed_ = false;
-	bool right_is_pressed_ = false;
-	bool middle_is_pressed_ = false;
-	bool x1_is_pressed_ = false;
-	bool x2_is_pressed_ = false;
-	int v_wheel_delta_carry_ = 0;
-	int h_wheel_delta_carry_ = 0;
-	std::queue<event> event_buffer_;
+	bool inWindow_ = false;
+	bool leftIsPressed_ = false;
+	bool rightIsPressed_ = false;
+	bool middleIsPressed_ = false;
+	bool x1IsPressed_ = false;
+	bool x2IsPressed_ = false;
+	int vWheelDeltaCarry_ = 0;
+	int hWheelDeltaCarry_ = 0;
+	std::queue<Event> eventBuffer_;
 };

@@ -4,53 +4,48 @@
 
 #include "Logging.h"
 
-console::console_class console::console_class::console_class_;
-console::console_state console::console_state_{};
+Console::console_class Console::console_class::s_console_class_;
+Console::ConsoleState Console::s_consoleState_{};
 
-console::console_class::console_class() noexcept
+Console::console_class::console_class() noexcept
 	: instance_handle_(GetModuleHandle(nullptr))
 {
 	PLOGD << "Instantiate Console Class";
 }
 
-console::console_class::~console_class() noexcept
+Console::console_class::~console_class() noexcept
 {
 	PLOGD << "Destroy Console Class";
 }
 
-LPCWSTR console::console_class::get_name() noexcept
+LPCWSTR Console::console_class::get_name() noexcept
 {
-	return console_class_name;
+	return s_console_class_name_;
 }
 
-HINSTANCE console::console_class::get_instance() noexcept
+HINSTANCE Console::console_class::get_instance() noexcept
 {
-	return console_class_.instance_handle_;
+	return s_console_class_.instance_handle_;
 }
 
-console::console() noexcept
-	:
-	console_window_handle_(nullptr)
+Console::Console(const LPCWSTR name) noexcept
+	: consoleWindowHandle_(nullptr)
 #if CONSOLE_SHUTDOWN_EVENT
-	, shutdown_event_(nullptr)
+	, shutdownEvent_(nullptr)
 #endif
 {
 	PLOGD << "Instantiate Console";
-}
-
-void console::initialize(const LPCWSTR name) noexcept {
-	PLOGI << "Initialize Console";
 
 	PLOGV << "Attach or Create Console";
 	if (AttachConsole(ATTACH_PARENT_PROCESS) == false)
 	{
 		AllocConsole();
 	}
-	console_window_handle_ = GetConsoleWindow();
+	consoleWindowHandle_ = GetConsoleWindow();
 
 	// Save initial console state
 	PLOGV << "Save initial console state";
-	save_state();
+	saveState();
 
 	PLOGV << "Initialize STD File Streams";
 	errno_t result = 0;
@@ -71,12 +66,12 @@ void console::initialize(const LPCWSTR name) noexcept {
 
 	// Disable System Close Button and Menu Item
 	PLOGV << "Disable Console Window System Close Button and Menu Item";
-	const auto menu = GetSystemMenu(console_window_handle_, FALSE);
+	const auto menu = GetSystemMenu(consoleWindowHandle_, FALSE);
 	EnableMenuItem(menu, SC_CLOSE, MF_GRAYED);
 
 	PLOGV << "Enable Console Window Handlers";
 	// Enable Ctrl Handler
-	SetConsoleCtrlHandler(ctrl_handler, TRUE);
+	SetConsoleCtrlHandler(ctrlHandler, TRUE);
 
 	// Enable mouse input
 	PLOGV << "Enable Console mouse input";
@@ -93,40 +88,40 @@ void console::initialize(const LPCWSTR name) noexcept {
 	ShowWindow(GetConsoleWindow(), SW_SHOW);
 
 	// Set up Console Logger
-	logging::initialize_console_logger(LOG_LEVEL_CONSOLE);
+	Logging::initializeConsoleLogger(LOG_LEVEL_CONSOLE);
 
 #if CONSOLE_SHUTDOWN_EVENT
 	// Create a manual-reset event to block the shell
-	shutdown_event_ = CreateEvent(nullptr, TRUE, FALSE, nullptr);
-	if (shutdown_event_ == nullptr)
+	shutdownEvent_ = CreateEvent(nullptr, TRUE, FALSE, nullptr);
+	if (shutdownEvent_ == nullptr)
 	{
 		PLOGE << "Failed to create shutdown event.";
 		return;
 	}
 
-	// Block until shutdown_event_ is set
+	// Block until shutdownEvent_ is set
 	std::thread([this]()
-	{
-		block_input();
-	}).detach();
+		{
+			blockInput();
+		}).detach();
 #endif
 }
 
-HWND console::get_handle() const noexcept {
-	return console_window_handle_;
+HWND Console::getHandle() const noexcept {
+	return consoleWindowHandle_;
 }
 
-void console::save_state()
+void Console::saveState()
 {
-	save_console_state(console_state_);
+	saveConsoleState(s_consoleState_);
 }
 
-void console::restore_state()
+void Console::restoreState()
 {
-	restore_console_state(console_state_);
+	restoreConsoleState(s_consoleState_);
 }
 
-void console::save_console_state(console_state& state)
+void Console::saveConsoleState(ConsoleState& state)
 {
 	PLOGV << "Save Console State -";
 
@@ -140,17 +135,17 @@ void console::save_console_state(console_state& state)
 
 	// Save system menu and close button state
 	const auto flags = GetMenuState(GetSystemMenu(GetConsoleWindow(), FALSE), SC_CLOSE, MF_BYCOMMAND);
-	state.close_button = flags & (MF_DISABLED | MF_GRAYED);
+	state.closeButton = flags & (MF_DISABLED | MF_GRAYED);
 
 	PLOGV << "         Title: " << state.title;
 	PLOGV << "          Mode: " << state.mode;
-	PLOGV << "  Close Button: " << state.close_button;
+	PLOGV << "  Close Button: " << state.closeButton;
 }
 
-void console::restore_console_state(const console_state& state)
+void Console::restoreConsoleState(const ConsoleState& state)
 {
 	{
-		console_state current_state;
+		ConsoleState current_state;
 		PLOGV << "Current Console State -";
 
 		// Save console title
@@ -163,11 +158,11 @@ void console::restore_console_state(const console_state& state)
 
 		// Save system menu and close button state
 		const auto flags = GetMenuState(GetSystemMenu(GetConsoleWindow(), FALSE), SC_CLOSE, MF_BYCOMMAND);
-		current_state.close_button = flags & (MF_DISABLED | MF_GRAYED);
+		current_state.closeButton = flags & (MF_DISABLED | MF_GRAYED);
 
 		PLOGV << "         Title: " << current_state.title;
 		PLOGV << "          Mode: " << current_state.mode;
-		PLOGV << "  Close Button: " << current_state.close_button;
+		PLOGV << "  Close Button: " << current_state.closeButton;
 	}
 
 	// Restore console title
@@ -179,11 +174,11 @@ void console::restore_console_state(const console_state& state)
 
 	// Restore system menu and close button state
 	if (const auto system_menu = GetSystemMenu(GetConsoleWindow(), FALSE); system_menu != nullptr) {
-		EnableMenuItem(system_menu, SC_CLOSE, state.close_button);
+		EnableMenuItem(system_menu, SC_CLOSE, state.closeButton);
 	}
 
 	{
-		console_state restored_state;
+		ConsoleState restored_state;
 		PLOGV << "Restored Console State -";
 
 		// Save console title
@@ -196,27 +191,27 @@ void console::restore_console_state(const console_state& state)
 
 		// Save system menu and close button state
 		const auto flags = GetMenuState(GetSystemMenu(GetConsoleWindow(), FALSE), SC_CLOSE, MF_BYCOMMAND);
-		restored_state.close_button = flags & (MF_DISABLED | MF_GRAYED);
+		restored_state.closeButton = flags & (MF_DISABLED | MF_GRAYED);
 
 		PLOGV << "         Title: " << restored_state.title;
 		PLOGV << "          Mode: " << restored_state.mode;
-		PLOGV << "  Close Button: " << restored_state.close_button;
+		PLOGV << "  Close Button: " << restored_state.closeButton;
 	}
 }
 
 #if CONSOLE_SHUTDOWN_EVENT
-void console::block_input() noexcept
+void Console::blockInput() noexcept
 {
 	const HANDLE input = GetStdHandle(STD_INPUT_HANDLE);
 	HANDLE handles[2] = {
-		input, shutdown_event_
+		input, shutdownEvent_
 	};
 
 	while (true) {
 		DWORD result = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
 		if (result == WAIT_OBJECT_0 + 1) {
 			break;
-			// shutdown_event_ is signaled
+			// shutdownEvent_ is signaled
 		} if (result == WAIT_OBJECT_0) {
 			// Process input event, keep blocking the shell
 			INPUT_RECORD input_record;
@@ -228,47 +223,47 @@ void console::block_input() noexcept
 			}
 		}
 	}
-	CloseHandle(shutdown_event_);
-	shutdown_event_ = nullptr;
+	CloseHandle(shutdownEvent_);
+	shutdownEvent_ = nullptr;
 }
 #endif
 
-void console::shutdown()
+void Console::shutdown() const
 {
 	PLOGI << "Shutdown Console";
-	const HANDLE input = GetStdHandle(STD_INPUT_HANDLE);
+	//const HANDLE input = GetStdHandle(STD_INPUT_HANDLE);
 
 	PLOGI << "Restore Console State";
-	restore_state();
+	restoreState();
 
-	logging::shutdown_console_logger();
+	Logging::shutdownConsoleLogger();
 
 	FreeConsole();
 
 #if CONSOLE_SHUTDOWN_EVENT
 	// Signal the shutdown event
-	if (shutdown_event_)
+	if (shutdownEvent_)
 	{
-		SetEvent(shutdown_event_);
+		SetEvent(shutdownEvent_);
 	}
 #endif
 }
 
-console::~console() noexcept
+Console::~Console() noexcept
 {
 	PLOGD << "Destroy Console";
 #if CONSOLE_SHUTDOWN_EVENT
-	if (shutdown_event_)
+	if (shutdownEvent_)
 	{
-		CloseHandle(shutdown_event_);
-		shutdown_event_ = nullptr;
+		CloseHandle(shutdownEvent_);
+		shutdownEvent_ = nullptr;
 	}
 #endif
 }
 
-BOOL console::ctrl_handler(const DWORD ctrl_type) noexcept
+BOOL Console::ctrlHandler(const DWORD ctrl_type) noexcept
 {
-	reinterpret_cast<console*>(GetWindowLongPtr(GetConsoleWindow(), GWLP_USERDATA));  // NOLINT(clang-diagnostic-unused-value, performance-no-int-to-ptr)
+	reinterpret_cast<Console*>(GetWindowLongPtr(GetConsoleWindow(), GWLP_USERDATA));  // NOLINT(clang-diagnostic-unused-value, performance-no-int-to-ptr)
 	switch (ctrl_type)
 	{
 	case CTRL_C_EVENT:

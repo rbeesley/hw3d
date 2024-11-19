@@ -5,20 +5,20 @@
 #include <vector>
 #include <wrl.h>
 
-class dxgi_info_manager
+class DxgiInfoManager
 {
 public:
-	dxgi_info_manager();
-	~dxgi_info_manager() = default;
+	DxgiInfoManager();
+	~DxgiInfoManager() = default;
 
-	dxgi_info_manager(const dxgi_info_manager&) = delete;
-	dxgi_info_manager& operator=(const dxgi_info_manager&) = delete;
-	dxgi_info_manager(const dxgi_info_manager&&) = delete;
-	dxgi_info_manager& operator=(const dxgi_info_manager&&) = delete;
+	DxgiInfoManager(const DxgiInfoManager&) = delete;
+	DxgiInfoManager& operator=(const DxgiInfoManager&) = delete;
+	DxgiInfoManager(const DxgiInfoManager&&) = delete;
+	DxgiInfoManager& operator=(const DxgiInfoManager&&) = delete;
 
 	void set() noexcept;
-	[[nodiscard]] std::vector<std::string> get_messages() const;
+	[[nodiscard]] std::vector<std::string> getMessages() const;
 private:
 	unsigned long long next_ = 0u;
-	Microsoft::WRL::ComPtr<IDXGIInfoQueue> p_dxgi_info_queue_;
+	Microsoft::WRL::ComPtr<IDXGIInfoQueue> dxgiInfoQueue_;
 };

@@ -1,22 +1,22 @@
 #pragma once
 #include "Bindable.h"
 
-class vertex_shader : public bindable
+class VertexShader : public Bindable
 {
 public:
-	vertex_shader(graphics& graphics, const std::wstring& path);
+	VertexShader(Graphics& graphics, const std::wstring& path);
 
-	~vertex_shader() override = default;
-	vertex_shader(const vertex_shader&) = delete;
-	vertex_shader& operator=(const vertex_shader&) = delete;
-	vertex_shader(const vertex_shader&&) = delete;
-	vertex_shader& operator=(const vertex_shader&&) = delete;
+	~VertexShader() override = default;
+	VertexShader(const VertexShader&) = delete;
+	VertexShader& operator=(const VertexShader&) = delete;
+	VertexShader(const VertexShader&&) = delete;
+	VertexShader& operator=(const VertexShader&&) = delete;
 
-	void bind(graphics& graphics) noexcept override;
-	ID3DBlob* get_byte_code() const noexcept;
+	void bind(Graphics& graphics) noexcept override;
+	ID3DBlob* getByteCode() const noexcept;
 protected:
-	vertex_shader() = default;
+	VertexShader() = default;
 
-	Microsoft::WRL::ComPtr<ID3DBlob> p_bytecode_blob_;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> p_vertex_shader_;
+	Microsoft::WRL::ComPtr<ID3DBlob> bytecodeBlob_;
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader_;
 };

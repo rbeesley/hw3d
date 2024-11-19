@@ -1,21 +1,21 @@
 #include "Bindable.h"
 
-ID3D11DeviceContext* bindable::get_context(const graphics& graphics) noexcept
+ID3D11DeviceContext* Bindable::getContext(const Graphics& graphics) noexcept
 {
-	return graphics.p_device_context_.Get();
+	return graphics.deviceContext_.Get();
 }
 
-ID3D11Device* bindable::get_device(const graphics& graphics) noexcept
+ID3D11Device* Bindable::getDevice(const Graphics& graphics) noexcept
 {
-	return graphics.p_device_.Get();
+	return graphics.device_.Get();
 }
 
-dxgi_info_manager& bindable::get_info_manager(graphics& graphics) noexcept(IS_DEBUG)
+DxgiInfoManager& Bindable::getInfoManager(Graphics& graphics) noexcept(IS_DEBUG)
 {
 #if (IS_DEBUG)
-	return graphics.info_manager_;
+	return graphics.infoManager_;
 #else
-	throw std::logic_error("Access denied: dxgi_info_manager is not accessible in release builds.");
+	throw std::logic_error("Access denied: DxgiInfoManager is not accessible in release builds.");
 #endif
 }
 

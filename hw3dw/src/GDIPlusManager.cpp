@@ -9,27 +9,27 @@ namespace Gdiplus
     using std::max;
 }
 
-ULONG_PTR gdi_plus_manager::token_ = {};
+ULONG_PTR GdiPlusManager::token_ = {};
 
-gdi_plus_manager::gdi_plus_manager()
+GdiPlusManager::GdiPlusManager()
 {
     PLOGI << "Instantiate GDI Plus Manager";
 }
 
-gdi_plus_manager::~gdi_plus_manager()
+GdiPlusManager::~GdiPlusManager()
 {
     PLOGI << "Destroy GDI Plus Manager";
 }
 
-std::unique_ptr<gdi_plus_manager> gdi_plus_manager::initialize()
+std::unique_ptr<GdiPlusManager> GdiPlusManager::initialize()
 {
     PLOGI << "Initialize GDI Plus Manager";
     const Gdiplus::GdiplusStartupInput input;
     GdiplusStartup(&token_, &input, nullptr);
-    return std::make_unique<gdi_plus_manager>();
+    return std::make_unique<GdiPlusManager>();
 }
 
-void gdi_plus_manager::shutdown()
+void GdiPlusManager::shutdown()
 {
     PLOGI << "Shutdown GDI Plus Manager";
     Gdiplus::GdiplusShutdown(token_);

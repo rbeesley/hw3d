@@ -2,20 +2,20 @@
 
 #include "Bindable.h"
 
-class index_buffer : public bindable
+class IndexBuffer : public Bindable
 {
 public:
-	index_buffer() = default;
-	index_buffer(const graphics& graphics, const std::vector<unsigned short>& indices);
-	~index_buffer() override = default;
-	index_buffer(const index_buffer&) = delete;
-	index_buffer& operator=(const index_buffer&) = delete;
-	index_buffer(const index_buffer&&) = delete;
-	index_buffer& operator=(const index_buffer&&) = delete;
+	IndexBuffer() = default;
+	IndexBuffer(const Graphics& graphics, const std::vector<unsigned short>& indices);
+	~IndexBuffer() override = default;
+	IndexBuffer(const IndexBuffer&) = delete;
+	IndexBuffer& operator=(const IndexBuffer&) = delete;
+	IndexBuffer(const IndexBuffer&&) = delete;
+	IndexBuffer& operator=(const IndexBuffer&&) = delete;
 
-	void bind(graphics& graphics) noexcept override;
-	UINT get_count() const noexcept;
+	void bind(Graphics& graphics) noexcept override;
+	UINT getCount() const noexcept;
 protected:
 	UINT count_;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> p_index_buffer_;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> indexBuffer_;
 };

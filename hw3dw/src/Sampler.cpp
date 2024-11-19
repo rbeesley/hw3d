@@ -1,20 +1,20 @@
 #include "Sampler.h"
 #include "GraphicsThrowMacros.h"
 
-sampler::sampler(graphics& graphics)
+Sampler::Sampler(Graphics& graphics)
 {
 	INFOMAN(graphics);
 
-	D3D11_SAMPLER_DESC sampler_desc = {};
-	sampler_desc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sampler_desc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampler_desc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampler_desc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	D3D11_SAMPLER_DESC samplerDesc = {};
+	samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
 
-	GFX_THROW_INFO(get_device(graphics)->CreateSamplerState(&sampler_desc, &p_sampler_));
+	GFX_THROW_INFO(getDevice(graphics)->CreateSamplerState(&samplerDesc, &sampler_));
 }
 
-void sampler::bind(graphics& graphics) noexcept
+void Sampler::bind(Graphics& graphics) noexcept
 {
-	get_context(graphics)->PSSetSamplers(0, 1, p_sampler_.GetAddressOf());
+	getContext(graphics)->PSSetSamplers(0, 1, sampler_.GetAddressOf());
 }

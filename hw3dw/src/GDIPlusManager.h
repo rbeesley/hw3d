@@ -3,12 +3,12 @@
 #include "AtumWindows.h"
 #include <memory>
 
-class gdi_plus_manager
+class GdiPlusManager
 {
 public:
-    gdi_plus_manager();
-    ~gdi_plus_manager();
-    static std::unique_ptr<gdi_plus_manager> initialize();
+    GdiPlusManager();
+    ~GdiPlusManager();
+    static std::unique_ptr<GdiPlusManager> initialize();
     static void shutdown();
 
 private:

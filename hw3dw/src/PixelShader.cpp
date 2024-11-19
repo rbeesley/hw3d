@@ -4,16 +4,16 @@
 
 #include "GraphicsThrowMacros.h"
 
-pixel_shader::pixel_shader(graphics& graphics, const std::wstring& path)
+PixelShader::PixelShader(Graphics& graphics, const std::wstring& path)
 {
 	INFOMAN(graphics);
 
-	Microsoft::WRL::ComPtr<ID3DBlob> p_blob;
-	GFX_THROW_INFO(D3DReadFileToBlob(path.c_str(), &p_blob));
-	GFX_THROW_INFO(get_device(graphics)->CreatePixelShader(p_blob->GetBufferPointer(), p_blob->GetBufferSize(), nullptr, &p_pixel_shader_));
+	Microsoft::WRL::ComPtr<ID3DBlob> blob;
+	GFX_THROW_INFO(D3DReadFileToBlob(path.c_str(), &blob));
+	GFX_THROW_INFO(getDevice(graphics)->CreatePixelShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &pixelShader_));
 }
 
-void pixel_shader::bind(graphics& graphics) noexcept
+void PixelShader::bind(Graphics& graphics) noexcept
 {
-	get_context(graphics)->PSSetShader(p_pixel_shader_.Get(), nullptr, 0u);
+	getContext(graphics)->PSSetShader(pixelShader_.Get(), nullptr, 0u);
 }

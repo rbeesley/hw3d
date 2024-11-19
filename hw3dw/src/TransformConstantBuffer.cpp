@@ -1,23 +1,23 @@
 #include "TransformConstantBuffer.h"
 
-transform_constant_buffer::transform_constant_buffer(graphics& graphics, const drawable& parent)
+TransformConstantBuffer::TransformConstantBuffer(Graphics& graphics, const Drawable& parent)
 	:
 	parent_(parent)
 {
-	if (!p_vertex_constant_buffer_)
+	if (!vertexConstantBuffer_)
 	{
-		p_vertex_constant_buffer_ = std::make_unique<vertex_constant_buffer<DirectX::XMMATRIX>>(graphics);
+		vertexConstantBuffer_ = std::make_unique<VertexConstantBuffer<DirectX::XMMATRIX>>(graphics);
 	}
 }
 
-void transform_constant_buffer::bind(graphics& graphics) noexcept
+void TransformConstantBuffer::bind(Graphics& graphics) noexcept
 {
-	p_vertex_constant_buffer_->update(graphics,
+	vertexConstantBuffer_->update(graphics,
 		DirectX::XMMatrixTranspose(
-			parent_.get_transform_xm() * graphics.get_projection()
+			parent_.getTransformXm() * graphics.getProjection()
 		)
 	);
-	p_vertex_constant_buffer_->bind(graphics);
+	vertexConstantBuffer_->bind(graphics);
 }
 
-std::unique_ptr<vertex_constant_buffer<DirectX::XMMATRIX>> transform_constant_buffer::p_vertex_constant_buffer_;
+std::unique_ptr<VertexConstantBuffer<DirectX::XMMATRIX>> TransformConstantBuffer::vertexConstantBuffer_;

@@ -8,76 +8,75 @@
 
 struct ImVec4;
 
-class graphics
+class Graphics
 {
-	friend class bindable;
+	friend class Bindable;
 public:
-	class graphics_exception : public atum_exception
+	class GraphicsException : public AtumException
 	{
-		using atum_exception::atum_exception;
+		using AtumException::AtumException;
 	protected:
-		static std::string to_narrow(const wchar_t* s, char fallback = '?', const std::locale& loc = std::locale()) noexcept;
+		static std::string toNarrow(const wchar_t* s, char fallback = '?', const std::locale& loc = std::locale()) noexcept;
 	};
-	class hresult_exception : public graphics_exception
+	class HresultException : public GraphicsException
 	{
 	public:
-		hresult_exception(int line, const char* file, HRESULT hresult, const std::vector<std::string>& info_messages = {}) noexcept;
+		HresultException(int line, const char* file, HRESULT hresult, const std::vector<std::string>& infoMessages = {}) noexcept;
 		const char* what() const noexcept override;
-		const char* get_type() const noexcept override;
-		HRESULT get_error_code() const noexcept;
-		std::string get_error_string() const noexcept;
-		std::string get_error_description() const noexcept;
-		std::string get_error_info() const noexcept;
+		const char* getType() const noexcept override;
+		HRESULT getErrorCode() const noexcept;
+		std::string getErrorString() const noexcept;
+		std::string getErrorDescription() const noexcept;
+		std::string getErrorInfo() const noexcept;
 	private:
 		HRESULT hresult_;
-		std::string info_message_;
+		std::string infoMessage_;
 	};
-	class info_exception final : public graphics_exception
+	class InfoException final : public GraphicsException
 	{
 	public:
-		info_exception(int line, const char* file, const std::vector<std::string>& info_messages = {}) noexcept;
+		InfoException(int line, const char* file, const std::vector<std::string>& infoMessages = {}) noexcept;
 		const char* what() const noexcept override;
-		const char* get_type() const noexcept override;
-		std::string get_error_info() const noexcept;
+		const char* getType() const noexcept override;
+		std::string getErrorInfo() const noexcept;
 	private:
-		std::string info_message_;
+		std::string infoMessage_;
 	};
-	class device_removed_exception final : public hresult_exception
+	class DeviceRemovedException final : public HresultException
 	{
-		using hresult_exception::hresult_exception;
+		using HresultException::HresultException;
 	public:
-		const char* get_type() const noexcept override;
+		const char* getType() const noexcept override;
 	};
 public:
-	explicit graphics(HWND parent, int width, int height);
+	explicit Graphics(HWND parent, int width, int height);
 
-	graphics() = delete;
-	~graphics() = default;
-	//graphics(const graphics&) = delete;
-	graphics& operator=(const graphics&) = delete;
-	graphics(const graphics&&) = delete;
-	graphics& operator=(const graphics&&) = delete;
+	Graphics() = delete;
+	~Graphics() = default;
+	Graphics& operator=(const Graphics&) = delete;
+	Graphics(const Graphics&&) = delete;
+	Graphics& operator=(const Graphics&&) = delete;
 
-	void create_render_target();
-	bool begin_frame(unsigned int target_width, unsigned int target_height);
-	void end_frame();
-	void clear_buffer(const ImVec4& clear_color) const;
-	void clear_buffer(float red, float green, float blue, float alpha = 1.0) const;
+	void createRenderTarget();
+	bool beginFrame(unsigned int targetWidth, unsigned int targetHeight);
+	void endFrame();
+	void clearBuffer(const ImVec4& clearColor) const;
+	void clearBuffer(float red, float green, float blue, float alpha = 1.0) const;
 	void draw_indexed(UINT count) noexcept(!IS_DEBUG);
-	void set_projection(DirectX::FXMMATRIX& projection) noexcept;
-	DirectX::XMMATRIX get_projection() const noexcept;
+	void setProjection(DirectX::FXMMATRIX& projection) noexcept;
+	DirectX::XMMATRIX getProjection() const noexcept;
 	static void shutdown();
 private:
 	HWND parent_;
 	float width_, height_;
-	bool swap_chain_occluded_{};
+	bool swapChainOccluded_{};
 #if (IS_DEBUG)
-	dxgi_info_manager info_manager_;
+	DxgiInfoManager infoManager_;
 #endif
 	DirectX::XMMATRIX projection_;
-	Microsoft::WRL::ComPtr<ID3D11Device> p_device_;
-	Microsoft::WRL::ComPtr<IDXGISwapChain> p_swap_chain_;
-	Microsoft::WRL::ComPtr<ID3D11DeviceContext> p_device_context_;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> p_render_target_view_;
-	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> p_depth_stencil_view_;
+	Microsoft::WRL::ComPtr<ID3D11Device> device_;
+	Microsoft::WRL::ComPtr<IDXGISwapChain> swapChain_;
+	Microsoft::WRL::ComPtr<ID3D11DeviceContext> deviceContext_;
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> renderTargetView_;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilView> depthStencilView_;
 };

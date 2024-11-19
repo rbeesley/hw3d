@@ -3,17 +3,17 @@
 #include "Bindable.h"
 #include "GraphicsThrowMacros.h"
 
-class vertex_buffer : public bindable
+class VertexBuffer : public Bindable
 {
 public:
 	template<class Vertex>
-	vertex_buffer(graphics& graphics, const std::vector<Vertex>& vertices)
-		: bindable(),
-		stride(sizeof(Vertex))
+	VertexBuffer(Graphics& graphics, const std::vector<Vertex>& vertices)
+		: Bindable(),
+		stride_(sizeof(Vertex))
 	{
 		INFOMAN(graphics);
 
-		const D3D11_BUFFER_DESC buffer_desc = {
+		const D3D11_BUFFER_DESC bufferDesc = {
 			.ByteWidth = static_cast<UINT>(sizeof(Vertex) * vertices.size()),
 			.Usage = D3D11_USAGE::D3D11_USAGE_DEFAULT,
 			.BindFlags = D3D11_BIND_FLAG::D3D11_BIND_VERTEX_BUFFER,
@@ -22,24 +22,24 @@ public:
 			.StructureByteStride = sizeof(Vertex),
 		};
 
-		const D3D11_SUBRESOURCE_DATA subresource_data = {
+		const D3D11_SUBRESOURCE_DATA subresourceData = {
 			.pSysMem = vertices.data(),
 			.SysMemPitch = 0u,
 			.SysMemSlicePitch = 0u
 		};
 
-		GFX_THROW_INFO(get_device(graphics)->CreateBuffer(&buffer_desc, &subresource_data, &p_vertex_buffer));
+		GFX_THROW_INFO(getDevice(graphics)->CreateBuffer(&bufferDesc, &subresourceData, &vertexBuffer_));
 	}
 
-	vertex_buffer() = delete;
-	~vertex_buffer() override = default;
-	vertex_buffer(const vertex_buffer&) = delete;
-	vertex_buffer& operator=(const vertex_buffer&) = delete;
-	vertex_buffer(const vertex_buffer&&) = delete;
-	vertex_buffer& operator=(const vertex_buffer&&) = delete;
+	VertexBuffer() = delete;
+	~VertexBuffer() override = default;
+	VertexBuffer(const VertexBuffer&) = delete;
+	VertexBuffer& operator=(const VertexBuffer&) = delete;
+	VertexBuffer(const VertexBuffer&&) = delete;
+	VertexBuffer& operator=(const VertexBuffer&&) = delete;
 
-	void bind(graphics& graphics) noexcept override;
+	void bind(Graphics& graphics) noexcept override;
 protected:
-	UINT stride;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> p_vertex_buffer;
+	UINT stride_;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer_;
 };

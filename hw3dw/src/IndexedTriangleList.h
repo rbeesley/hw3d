@@ -4,11 +4,11 @@
 #include <vector>
 
 template<class T>
-class indexed_triangle_list
+class IndexedTriangleList
 {
 public:
-	indexed_triangle_list() = default;
-	indexed_triangle_list(std::vector<T> vertices, std::vector<unsigned short> indices)
+	IndexedTriangleList() = default;
+	IndexedTriangleList(std::vector<T> vertices, std::vector<unsigned short> indices)
 		:
 		vertices_(std::move(vertices)),
 		indices_(std::move(indices))

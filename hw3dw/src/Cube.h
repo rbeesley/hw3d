@@ -3,11 +3,11 @@
 #include "IndexedTriangleList.h"
 #include "DirectXMath.h"
 
-class cube
+class Cube
 {
 public:
 	template<class V>
-	static indexed_triangle_list<V> make()
+	static IndexedTriangleList<V> make()
 	{
 		namespace dx = DirectX;
 
@@ -38,7 +38,7 @@ public:
 			indices[i].pos = vertices[i];
 		}
 
-		return indexed_triangle_list<V>{
+		return IndexedTriangleList<V>{
 			std::move(indices), {
 				//         2------6
 				//         | 4  //|
@@ -65,7 +65,7 @@ public:
 	}
 
 	template<class V>
-	static indexed_triangle_list<V> make_skinned()
+	static IndexedTriangleList<V> makeSkinned()
 	{
 		constexpr float side = 1.0f / 2.0f;
 

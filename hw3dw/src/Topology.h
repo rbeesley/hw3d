@@ -1,19 +1,19 @@
 #pragma once
 #include "Bindable.h"
 
-class topology : public bindable
+class Topology : public Bindable
 {
 public:
-	topology(graphics& graphics, D3D11_PRIMITIVE_TOPOLOGY type);
+	Topology(Graphics& graphics, D3D11_PRIMITIVE_TOPOLOGY type);
 
-	topology() = delete;
-	~topology() override = default;
-	topology(const topology&) = delete;
-	topology& operator=(const topology&) = delete;
-	topology(const topology&&) = delete;
-	topology& operator=(const topology&&) = delete;
+	Topology() = delete;
+	~Topology() override = default;
+	Topology(const Topology&) = delete;
+	Topology& operator=(const Topology&) = delete;
+	Topology(const Topology&&) = delete;
+	Topology& operator=(const Topology&&) = delete;
 
-	void bind(graphics& graphics) noexcept override;
+	void bind(Graphics& graphics) noexcept override;
 protected:
 	D3D11_PRIMITIVE_TOPOLOGY type_;
 };

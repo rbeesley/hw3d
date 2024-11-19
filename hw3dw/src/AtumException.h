@@ -2,19 +2,19 @@
 #include <exception>
 #include <string>
 
-class atum_exception : public std::exception {
+class AtumException : public std::exception {
 public:
-	atum_exception(int line, const char* file) noexcept;
-	atum_exception() = delete;
+	AtumException(int line, const char* file) noexcept;
+	AtumException() = delete;
 
 	const char* what() const noexcept override;
-	virtual const char* get_type() const noexcept;
-	int get_line() const noexcept;
-	const std::string& get_file() const noexcept;
-	std::string get_origin_string() const noexcept;
+	virtual const char* getType() const noexcept;
+	int getLine() const noexcept;
+	const std::string& getFile() const noexcept;
+	std::string getOriginString() const noexcept;
 private:
 	int line_;
 	std::string file_;
 protected:
-	mutable std::string what_buffer_;
+	mutable std::string whatBuffer_;
 };

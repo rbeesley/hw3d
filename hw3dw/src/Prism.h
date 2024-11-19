@@ -4,45 +4,45 @@
 #include <DirectXMath.h>
 #include "AtumMath.h"
 
-class prism
+class Prism
 {
 public:
 	template<class V>
-	static indexed_triangle_list<V> make()
+	static IndexedTriangleList<V> make()
 	{
-		return make_tessellated<V>(24);
+		return makeTessellated<V>(24);
 	}
 
 	template<class V>
-	static indexed_triangle_list<V> make_tessellated(const int longitudinal_divisions)
+	static IndexedTriangleList<V> makeTessellated(const int longitudinalDivisions)
 	{
 		namespace dx = DirectX;
-		assert(longitudinal_divisions >= 3);
+		assert(longitudinalDivisions >= 3);
 
 		const auto base = dx::XMVectorSet(1.0f, 0.0f, -1.0f, 0.0f);
 		const auto offset = dx::XMVectorSet(0.0f, 0.0f, 2.0f, 0.0f);
-		const float longitude_angle = 2.0f * PI / static_cast<float>(longitudinal_divisions);
+		const float longitudeAngle = 2.0f * PI / static_cast<float>(longitudinalDivisions);
 
 		// near center
 		std::vector<V> vertices;
 		vertices.emplace_back();
 		vertices.back().pos = { 0.0f, 0.0f, -1.0f };
-		const auto index_center_near = static_cast<unsigned short>(vertices.size() - 1);
+		const auto indexCenterNear = static_cast<unsigned short>(vertices.size() - 1);
 
 		// far center
 		vertices.emplace_back();
 		vertices.back().pos = { 0.0f, 0.0f, 1.0f };
-		const auto index_center_far = static_cast<unsigned short>(vertices.size() - 1);
+		const auto indexCenterFar = static_cast<unsigned short>(vertices.size() - 1);
 
 		// base vertices
-		for (int index_longitude = 0; index_longitude < longitudinal_divisions; index_longitude++)
+		for (int indexLongitude = 0; indexLongitude < longitudinalDivisions; indexLongitude++)
 		{
 			// near base
 			{
 				vertices.emplace_back();
 				auto vertex = dx::XMVector3Transform(
 					base,
-					dx::XMMatrixRotationZ(longitude_angle * static_cast<float>(index_longitude))
+					dx::XMMatrixRotationZ(longitudeAngle * static_cast<float>(indexLongitude))
 				);
 				dx::XMStoreFloat3(&vertices.back().pos, vertex);
 			}
@@ -52,7 +52,7 @@ public:
 				vertices.emplace_back();
 				auto vertex = dx::XMVector3Transform(
 					base,
-					dx::XMMatrixRotationZ(longitude_angle * static_cast<float>(index_longitude))
+					dx::XMMatrixRotationZ(longitudeAngle * static_cast<float>(indexLongitude))
 				);
 				vertex = dx::XMVectorAdd(vertex, offset);
 				dx::XMStoreFloat3(&vertices.back().pos, vertex);
@@ -61,10 +61,10 @@ public:
 
 		// side indices
 		std::vector<unsigned short> indices;
-		for (unsigned short index_longitude = 0; index_longitude < longitudinal_divisions; index_longitude++)
+		for (unsigned short indexLongitude = 0; indexLongitude < longitudinalDivisions; indexLongitude++)
 		{
-			const auto index = index_longitude * 2;
-			const auto mod = longitudinal_divisions * 2;
+			const auto index = indexLongitude * 2;
+			const auto mod = longitudinalDivisions * 2;
 			indices.push_back(index + 2);
 			indices.push_back((index + 2) % mod + 2);
 			indices.push_back(index + 1 + 2);
@@ -74,14 +74,14 @@ public:
 		}
 
 		// base indices
-		for (unsigned short index_longitude = 0; index_longitude < longitudinal_divisions; index_longitude++)
+		for (unsigned short indexLongitude = 0; indexLongitude < longitudinalDivisions; indexLongitude++)
 		{
-			const auto index = index_longitude * 2;
-			const auto mod = longitudinal_divisions * 2;
+			const auto index = indexLongitude * 2;
+			const auto mod = longitudinalDivisions * 2;
 			indices.push_back(index + 2);
-			indices.push_back(index_center_near);
+			indices.push_back(indexCenterNear);
 			indices.push_back((index + 2) % mod + 2);
-			indices.push_back(index_center_far);
+			indices.push_back(indexCenterFar);
 			indices.push_back(index + 1 + 2);
 			indices.push_back((index + 3) % mod + 2);
 		}

@@ -26,7 +26,7 @@
 #include <assert.h>
 #include <memory>
 
-class surface
+class Surface
 {
 public:
 	class color
@@ -103,38 +103,37 @@ public:
 		}
 	};
 public:
-	class exception : public atum_exception
+	class Exception : public AtumException
 	{
 	public:
-		exception(int line, const char* file, std::string note) noexcept;
+		Exception(int line, const char* file, std::string note) noexcept;
 		const char* what() const noexcept override;
-		const char* get_type() const noexcept override;
-		const std::string& get_note() const noexcept;
+		const char* getType() const noexcept override;
+		const std::string& getNote() const noexcept;
 	private:
 		std::string note_;
 	};
 public:
-	surface(unsigned int width, unsigned int height) noexcept;
-	surface(surface&& source) noexcept;
-	surface(surface&) = delete;
-	surface& operator=(surface&& donor) noexcept;
-	surface& operator=(const surface&) = delete;
-	~surface();
-	void clear(const color& fill_value) const noexcept;
-	void put_pixel(unsigned int x, unsigned int y, const color& c) noexcept(!IS_DEBUG);
-	color get_pixel(unsigned int x, unsigned int y) const noexcept(!IS_DEBUG);
-	unsigned int get_width() const noexcept;
-	unsigned int get_height() const noexcept;
-	color* get_buffer_ptr() noexcept;
-	const color* get_buffer_ptr() const noexcept;
-	const color* get_buffer_ptr_const() const noexcept;
-	static surface from_file(const std::wstring& name);
+	Surface(unsigned int width, unsigned int height) noexcept;
+	Surface(Surface&& source) noexcept;
+	Surface(Surface&) = delete;
+	Surface& operator=(Surface&& donor) noexcept;
+	Surface& operator=(const Surface&) = delete;
+	~Surface();
+	void clear(const color& fillValue) const noexcept;
+	void putPixel(unsigned int x, unsigned int y, const color& c) noexcept(!IS_DEBUG);
+	color getPixel(unsigned int x, unsigned int y) const noexcept(!IS_DEBUG);
+	unsigned int getWidth() const noexcept;
+	unsigned int getHeight() const noexcept;
+	color* getBufferPtr() noexcept;
+	const color* getBufferPtr() const noexcept;
+	static Surface fromFile(const std::wstring& name);
 	void save(const std::string& filename) const;
-	void copy(const surface& src) noexcept(!IS_DEBUG);
+	void copy(const Surface& src) noexcept(!IS_DEBUG);
 private:
-	surface(unsigned int width, unsigned int height, std::unique_ptr<color[]> p_buffer_param) noexcept;
+	Surface(unsigned int width, unsigned int height, std::unique_ptr<color[]> bufferParam) noexcept;
 private:
-	std::unique_ptr<color[]> p_buffer_;
+	std::unique_ptr<color[]> buffer_;
 	unsigned int width_;
 	unsigned int height_;
 };

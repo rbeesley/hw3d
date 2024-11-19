@@ -3,22 +3,22 @@
 #include "GraphicsThrowMacros.h"
 
 template<typename T>
-class constant_buffer : public bindable
+class ConstantBuffer : public Bindable
 {
 public:
-	constant_buffer() = default;
-	~constant_buffer() override = default;
-	constant_buffer(const constant_buffer&) = delete;
-	constant_buffer& operator=(const constant_buffer&) = delete;
-	constant_buffer(const constant_buffer&&) = delete;
-	constant_buffer& operator=(const constant_buffer&&) = delete;
+	ConstantBuffer() = default;
+	~ConstantBuffer() override = default;
+	ConstantBuffer(const ConstantBuffer&) = delete;
+	ConstantBuffer& operator=(const ConstantBuffer&) = delete;
+	ConstantBuffer(const ConstantBuffer&&) = delete;
+	ConstantBuffer& operator=(const ConstantBuffer&&) = delete;
 
-	constant_buffer(graphics& graphics, const T& constant_buffer_struct)
+	ConstantBuffer(Graphics& graphics, const T& constantBufferStruct)
 	{
 		INFOMAN(graphics);
 
-		const D3D11_BUFFER_DESC buffer_desc = {
-			.ByteWidth = sizeof(constant_buffer_struct),
+		const D3D11_BUFFER_DESC bufferDesc = {
+			.ByteWidth = sizeof(constantBufferStruct),
 			.Usage = D3D11_USAGE_DYNAMIC,
 			.BindFlags = D3D11_BIND_CONSTANT_BUFFER,
 			.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE,
@@ -26,16 +26,16 @@ public:
 			.StructureByteStride = 0u
 		};
 
-		const D3D11_SUBRESOURCE_DATA subresource_data = {
-			.pSysMem = &constant_buffer_struct,
+		const D3D11_SUBRESOURCE_DATA subresourceData = {
+			.pSysMem = &constantBufferStruct,
 			.SysMemPitch = 0u,
 			.SysMemSlicePitch = 0u
 		};
 
-		GFX_THROW_INFO(get_device(graphics)->CreateBuffer(&buffer_desc, &subresource_data, &p_constant_buffer_));
+		GFX_THROW_INFO(getDevice(graphics)->CreateBuffer(&bufferDesc, &subresourceData, &m_constantBuffer));
 	}
 
-	explicit constant_buffer(graphics& graphics) : bindable()
+	explicit ConstantBuffer(Graphics& graphics) : Bindable()
 	{
 		INFOMAN(graphics);
 
@@ -48,44 +48,44 @@ public:
 			.StructureByteStride = 0u
 		};
 
-		GFX_THROW_INFO(get_device(graphics)->CreateBuffer(&buffer_desc, nullptr, &p_constant_buffer_));
+		GFX_THROW_INFO(getDevice(graphics)->CreateBuffer(&buffer_desc, nullptr, &m_constantBuffer));
 	}
 
-	void update(graphics& graphics, const T& constant_buffer_struct)
+	void update(Graphics& graphics, const T& constant_buffer_struct)
 	{
 		INFOMAN(graphics);
 
 		D3D11_MAPPED_SUBRESOURCE mapped_subresource;
-		GFX_THROW_INFO(get_context(graphics)->Map(
-			p_constant_buffer_.Get(), 0u,
+		GFX_THROW_INFO(getContext(graphics)->Map(
+			m_constantBuffer.Get(), 0u,
 			D3D11_MAP_WRITE_DISCARD, 0u,
 			&mapped_subresource));
 		memcpy(mapped_subresource.pData, &constant_buffer_struct, sizeof(constant_buffer_struct));
-		get_context(graphics)->Unmap(p_constant_buffer_.Get(), 0u);
+		getContext(graphics)->Unmap(m_constantBuffer.Get(), 0u);
 	}
 
 protected:
-	Microsoft::WRL::ComPtr<ID3D11Buffer> p_constant_buffer_;
+	Microsoft::WRL::ComPtr<ID3D11Buffer> m_constantBuffer;
 };
 
 template<typename T>
-class vertex_constant_buffer : public constant_buffer<T>
+class VertexConstantBuffer : public ConstantBuffer<T>
 {
 public:
-	using constant_buffer<T>::constant_buffer;
-	void bind(graphics& graphics) noexcept override
+	using ConstantBuffer<T>::ConstantBuffer;
+	void bind(Graphics& graphics) noexcept override
 	{
-		bindable::get_context(graphics)->VSSetConstantBuffers(0u, 1u, constant_buffer<T>::p_constant_buffer_.GetAddressOf());
+		Bindable::getContext(graphics)->VSSetConstantBuffers(0u, 1u, ConstantBuffer<T>::m_constantBuffer.GetAddressOf());
 	}
 };
 
 template<typename T>
-class pixel_constant_buffer : public constant_buffer<T>
+class PixelConstantBuffer : public ConstantBuffer<T>
 {
 public:
-	using constant_buffer<T>::constant_buffer;
-	void bind(graphics& graphics) noexcept override
+	using ConstantBuffer<T>::ConstantBuffer;
+	void bind(Graphics& graphics) noexcept override
 	{
-		bindable::get_context(graphics)->PSSetConstantBuffers(0u, 1u, constant_buffer<T>::p_constant_buffer_.GetAddressOf());
+		Bindable::getContext(graphics)->PSSetConstantBuffers(0u, 1u, ConstantBuffer<T>::m_constantBuffer.GetAddressOf());
 	}
 };

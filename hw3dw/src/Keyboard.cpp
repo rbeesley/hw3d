@@ -8,116 +8,116 @@
 #include <format>
 #include "VirtualKeyMap.h"
 
-const static class virtual_key_map virtual_key_map;
+const static class VirtualKeyMap virtualKeyMap;
 #endif
 
-bool keyboard::is_key_pressed(const unsigned char keycode) const noexcept
+bool Keyboard::isKeyPressed(const unsigned char keyCode) const noexcept
 {
-	return key_state_[keycode];
+	return keyState_[keyCode];
 }
 
-std::optional<keyboard::event> keyboard::read_key() noexcept
+std::optional<Keyboard::Event> Keyboard::readKey() noexcept
 {
-	if (!event_buffer_.empty())
+	if (!eventBuffer_.empty())
 	{
-		const event e = event_buffer_.front();
-		event_buffer_.pop();
+		const Event e = eventBuffer_.front();
+		eventBuffer_.pop();
 		return e;
 	}
 	return {};
 }
 
-bool keyboard::is_key_empty() const noexcept
+bool Keyboard::isKeyEmpty() const noexcept
 {
-	return event_buffer_.empty();
+	return eventBuffer_.empty();
 }
 
-void keyboard::clear_event_buffer() noexcept
+void Keyboard::clearEventBuffer() noexcept
 {
-	event_buffer_ = std::queue<event>();
+	eventBuffer_ = std::queue<Event>();
 }
 
-bool keyboard::is_char_empty() const noexcept
+bool Keyboard::isCharEmpty() const noexcept
 {
-	return char_buffer_.empty();
+	return charBuffer_.empty();
 }
 
-void keyboard::clear_char_buffer() noexcept
+void Keyboard::clearCharBuffer() noexcept
 {
-	char_buffer_ = std::queue<char>();
+	charBuffer_ = std::queue<char>();
 }
 
-void keyboard::clear() noexcept
+void Keyboard::clear() noexcept
 {
-	clear_event_buffer();
-	clear_char_buffer();
+	clearEventBuffer();
+	clearCharBuffer();
 }
 
-void keyboard::enable_autorepeat() noexcept
+void Keyboard::enableAutorepeat() noexcept
 {
-	autorepeat_enabled_ = true;
+	autorepeatEnabled_ = true;
 }
 
-void keyboard::disable_autorepeat() noexcept
+void Keyboard::disableAutorepeat() noexcept
 {
-	autorepeat_enabled_ = false;
+	autorepeatEnabled_ = false;
 }
 
-bool keyboard::is_autorepeat_enabled() const noexcept
+bool Keyboard::isAutorepeatEnabled() const noexcept
 {
-	return autorepeat_enabled_;
+	return autorepeatEnabled_;
 }
 
-void keyboard::on_key_pressed(unsigned char key_code) noexcept
+void Keyboard::onKeyPressed(unsigned char keyCode) noexcept
 {
-	key_state_[key_code] = true;
-	event_buffer_.emplace(event::event_type::press, key_code);
-	trim_buffer(event_buffer_);
+	keyState_[keyCode] = true;
+	eventBuffer_.emplace(Event::EventType::PRESS, keyCode);
+	trimBuffer(eventBuffer_);
 #ifdef LOG_KEYBOARD_MESSAGES // defined in LoggingConfig.h
-	PLOGV << "keydown: " << virtual_key_map(key_code);
+	PLOGV << "keydown: " << virtualKeyMap(keyCode);
 #endif
 }
 
-void keyboard::on_key_released(unsigned char key_code) noexcept
+void Keyboard::onKeyReleased(unsigned char keyCode) noexcept
 {
-	key_state_[key_code] = false;
-	event_buffer_.emplace(event::event_type::release, key_code);
-	trim_buffer(event_buffer_);
+	keyState_[keyCode] = false;
+	eventBuffer_.emplace(Event::EventType::RELEASE, keyCode);
+	trimBuffer(eventBuffer_);
 #ifdef LOG_KEYBOARD_MESSAGES // defined in LoggingConfig.h
-	PLOGV << "keyup: " << virtual_key_map(key_code);
+	PLOGV << "keyup: " << virtualKeyMap(keyCode);
 #endif
 }
 
-void keyboard::on_char(unsigned char character) noexcept
+void Keyboard::onChar(unsigned char character) noexcept
 {
-	char_buffer_.emplace(character);
-	trim_buffer(char_buffer_);
+	charBuffer_.emplace(character);
+	trimBuffer(charBuffer_);
 #ifdef LOG_KEYBOARD_CHARS // defined in LoggingConfig.h
 	PLOGV << "char: " << character;
 #endif
 }
 
-void keyboard::clear_state() noexcept
+void Keyboard::clearState() noexcept
 {
-	key_state_.reset();
+	keyState_.reset();
 }
 
 template <typename T>
-void keyboard::trim_buffer(std::queue<T>& buffer) noexcept
+void Keyboard::trimBuffer(std::queue<T>& buffer) noexcept
 {
-	while (buffer.size() > buffer_size)
+	while (buffer.size() > BUFFER_SIZE)
 	{
 		buffer.pop();
 	}
 }
 
-std::optional<char> keyboard::read_char() noexcept
+std::optional<char> Keyboard::readChar() noexcept
 {
-	if (!char_buffer_.empty())
+	if (!charBuffer_.empty())
 	{
-		const char char_code = char_buffer_.front();
-		char_buffer_.pop();
-		return char_code;
+		const char charCode = charBuffer_.front();
+		charBuffer_.pop();
+		return charCode;
 	}
 	else
 	{

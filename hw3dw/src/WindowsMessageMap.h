@@ -5,11 +5,11 @@
 #define WINDOWS_MESSAGE_MAP_
 #include "AtumWindows.h"
 
-class windows_message_map
+class WindowsMessageMap
 {
 public:
-	windows_message_map();
-	std::string operator()(DWORD msg, LPARAM l_param, WPARAM w_param) const;
+	WindowsMessageMap();
+	std::string operator()(DWORD msg, LPARAM lParam, WPARAM wParam) const;
 private:
 	const std::unordered_map<DWORD, std::string> map_;
 };

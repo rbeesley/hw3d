@@ -5,18 +5,18 @@
 #define VIRTUAL_KEY_MAP_
 #include "AtumWindows.h"
 
-class virtual_key_map
+class VirtualKeyMap
 {
 public:
-	virtual_key_map();
+	VirtualKeyMap();
 
-	~virtual_key_map() = default;
-	virtual_key_map(const virtual_key_map&) = delete;
-	virtual_key_map& operator=(const virtual_key_map&) = delete;
-	virtual_key_map(const virtual_key_map&&) = delete;
-	virtual_key_map& operator=(const virtual_key_map&&) = delete;
+	~VirtualKeyMap() = default;
+	VirtualKeyMap(const VirtualKeyMap&) = delete;
+	VirtualKeyMap& operator=(const VirtualKeyMap&) = delete;
+	VirtualKeyMap(const VirtualKeyMap&&) = delete;
+	VirtualKeyMap& operator=(const VirtualKeyMap&&) = delete;
 
-	std::string operator()(unsigned char virtual_key_code) const;
+	std::string operator()(unsigned char virtualKeyCode) const;
 private:
 	const std::unordered_map<DWORD, std::string> map_;
 };

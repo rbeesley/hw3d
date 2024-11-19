@@ -7,47 +7,45 @@
 #include "FpsMetric.h"
 #include "GDIPlusManager.h"
 
-class app
+class App
 {
 public:
-	class exception : public atum_exception {
-		using atum_exception::atum_exception;
+	class Exception : public AtumException {
+		using AtumException::AtumException;
 	};
 public:
-	class app_exception : public exception
+	class AppException : public Exception
 	{
 	public:
-		app_exception(int line, const char* file, const std::string& msg) noexcept;
-		const char* get_type() const noexcept override;
+		AppException(int line, const char* file, const std::string& msg) noexcept;
+		const char* getType() const noexcept override;
 	};
 
 public:
-	app();
-	~app() = default;
-	app(const app&) = delete;
-	app& operator=(const app&) = delete;
-	app(const app&&) = delete;
-	app& operator=(const app&&) = delete;
+	App();
+	~App();
+	App(const App&) = delete;
+	App& operator=(const App&) = delete;
+	App(const App&&) = delete;
+	App& operator=(const App&&) = delete;
 
 	[[nodiscard]] int initialize();
 	int run();
-	void shutdown() const;
 
 private:
-	void render_frame(const ImVec4& clear_color);
+	void renderFrame(const ImVec4& clearColor);
 
 private:
-	std::unique_ptr<window> p_window_;
+	std::unique_ptr<Window> window_;
 #if (IS_DEBUG)
-	std::unique_ptr<console> p_console_;
-	mouse* p_mouse_;
-	keyboard* p_keyboard_;
-	graphics* p_graphics_;
-	fps_metric fps_{};
-	cpu_metric cpu_{};
+	std::unique_ptr<Console> console_;
+	FpsMetric fps_{};
+	CpuMetric cpu_{};
 #endif
-	timer timer_;
-	std::unique_ptr<gdi_plus_manager> p_gdi_manager_;
-	std::vector<std::unique_ptr<class drawable>> drawables_;
-	size_t number_of_drawables_ = 180;
+	std::shared_ptr<Graphics> graphics_;
+	std::shared_ptr<Mouse> mouse_;
+	std::shared_ptr<Keyboard> keyboard_;
+	Timer timer_;
+	std::unique_ptr<GdiPlusManager> gdiManager_;
+	std::vector<std::unique_ptr<Drawable>> drawables_;
 };

@@ -8,7 +8,7 @@
 #define ALLMESSAGES FALSE
 #define ALLMOUSEMESSAGES ALLMESSAGES | TRUE
 
-windows_message_map::windows_message_map()
+WindowsMessageMap::WindowsMessageMap()
 	:
 	map_({
 		{ 0x1,"WM_CREATE" },
@@ -1118,24 +1118,24 @@ windows_message_map::windows_message_map()
 		})
 {}
 
-std::string windows_message_map::operator()(const DWORD msg, const LPARAM l_param, const WPARAM w_param) const
+std::string WindowsMessageMap::operator()(const DWORD msg, const LPARAM lParam, const WPARAM wParam) const
 {
-	constexpr int first_col_width = 28;
+	constexpr int firstColWidth = 28;
 	const auto it = map_.find(msg);
 
 	std::ostringstream out;
 	if (it != map_.end())
 	{
-		out << std::setw(first_col_width) << std::left << it->second;
+		out << std::setw(firstColWidth) << std::left << it->second;
 	}
 	else
 	{
-		out << std::setw(static_cast<std::streamsize>(first_col_width) - 8) << std::left << " Unknown message: 0x"
+		out << std::setw(static_cast<std::streamsize>(firstColWidth) - 8) << std::left << " Unknown message: 0x"
 			<< std::setw(8) << std::right << std::setfill('0') << std::hex << msg;
 	}
 
-	out << "  LP: 0x" << std::setw(16) << std::setfill('0') << std::hex << l_param
-		<< "  WP: 0x" << std::setw(16) << std::setfill('0') << std::hex << w_param;
+	out << "  LP: 0x" << std::setw(16) << std::setfill('0') << std::hex << lParam
+		<< "  WP: 0x" << std::setw(16) << std::setfill('0') << std::hex << wParam;
 
 	return out.str();
 }

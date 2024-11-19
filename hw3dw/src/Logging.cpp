@@ -4,57 +4,57 @@
 #include <3rdParty/plog/Appenders/ColorConsoleAppender.h>
 #include <3rdParty/plog/Appenders/DebugOutputAppender.h>
 
-plog::DynamicAppender logging::dynamic_appender_;
+plog::DynamicAppender Logging::dynamicAppender_;
 
-void logging::initialize(const plog::Severity max_severity) {
-	root_logger_ = &plog::init<PLOG_DEFAULT_INSTANCE_ID>(max_severity, &dynamic_appender_);
+void Logging::initialize(const plog::Severity maxSeverity) {
+	rootLogger_ = &plog::init<PLOG_DEFAULT_INSTANCE_ID>(maxSeverity, &dynamicAppender_);
 }
 
-void logging::initialize_console_logger(const plog::Severity max_severity) {
+void Logging::initializeConsoleLogger(const plog::Severity maxSeverity) {
 	PLOGI << "Initializing Console Logger";
 	static plog::ColorConsoleAppender<plog::FuncMessageFormatter> console_appender;
-	plog::Logger<console>& console_logger = plog::init<console>(max_severity, &console_appender);
-	console_logger_ = &console_logger;
-	dynamic_appender_.addAppender(&console_logger);
+	plog::Logger<CONSOLE>& console_logger = plog::init<CONSOLE>(maxSeverity, &console_appender);
+	consoleLogger_ = &console_logger;
+	dynamicAppender_.addAppender(&console_logger);
 	PLOGV << "Console Logger Initialized";
 }
 
-void logging::initialize_debug_output_logger(const plog::Severity max_severity) {
+void Logging::initializeDebugOutputLogger(const plog::Severity maxSeverity) {
 	PLOGI << "Initializing DebugOutput Logger";
 	static plog::DebugOutputAppender<plog::TxtFormatter> debug_output_appender;
-	plog::Logger<debug_output>& debug_output_logger = plog::init<debug_output>(max_severity, &debug_output_appender);
-	debug_output_logger_ = &debug_output_logger;
-	dynamic_appender_.addAppender(&debug_output_logger);
+	plog::Logger<DEBUG_OUTPUT>& debug_output_logger = plog::init<DEBUG_OUTPUT>(maxSeverity, &debug_output_appender);
+	debugOutputLogger_ = &debug_output_logger;
+	dynamicAppender_.addAppender(&debug_output_logger);
 	PLOGV << "DebugOutput Logger Initialized";
 }
 
-void logging::set_logger_severity(const plog::Severity max_severity)
+void Logging::setLoggerSeverity(const plog::Severity maxSeverity)
 {
-	root_logger_->setMaxSeverity(max_severity);
+	rootLogger_->setMaxSeverity(maxSeverity);
 }
 
-void logging::set_console_logger_severity(const plog::Severity max_severity)
+void Logging::setConsoleLoggerSeverity(const plog::Severity maxSeverity)
 {
-	console_logger_->setMaxSeverity(max_severity);
+	consoleLogger_->setMaxSeverity(maxSeverity);
 }
 
-void logging::set_debug_output_logger_severity(const plog::Severity max_severity)
+void Logging::setDebugOutputLoggerSeverity(const plog::Severity maxSeverity)
 {
-	debug_output_logger_->setMaxSeverity(max_severity);
+	debugOutputLogger_->setMaxSeverity(maxSeverity);
 }
 
-void logging::shutdown_console_logger() {
-	if (console_logger_) {
-		dynamic_appender_.removeAppender(console_logger_);
-		console_logger_ = nullptr;
+void Logging::shutdownConsoleLogger() {
+	if (consoleLogger_) {
+		dynamicAppender_.removeAppender(consoleLogger_);
+		consoleLogger_ = nullptr;
 	}
 	PLOGI << "Shutdown Console Logger";
 }
 
-void logging::shutdown_debug_output_logger() {
-	if (debug_output_logger_) {
-		dynamic_appender_.removeAppender(debug_output_logger_);
-		debug_output_logger_ = nullptr;
+void Logging::shutdownDebugOutputLogger() {
+	if (debugOutputLogger_) {
+		dynamicAppender_.removeAppender(debugOutputLogger_);
+		debugOutputLogger_ = nullptr;
 	}
 	PLOGI << "Shutdown DebugOutput Logger";
 }

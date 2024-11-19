@@ -5,10 +5,10 @@
 #include "DrawableStaticStorage.h"
 #include "Graphics.h"
 
-class box : public drawable_static_storage<box>
+class Box : public DrawableStaticStorage<Box>
 {
 public:
-	box(graphics& graphics, std::mt19937& rng,
+	Box(Graphics& graphics, std::mt19937& rng,
 		std::uniform_real_distribution<float>& distance_distribution,									// rdist
 		std::uniform_real_distribution<float>& spherical_coordinate_position_distribution,				// adist
 		std::uniform_real_distribution<float>& rotation_of_drawable_distribution,						// ddist
@@ -16,16 +16,16 @@ public:
 		std::uniform_real_distribution<float>& z_axis_distortion_distribution							// bdist
 	);
 
-	box(const box&) = delete;
-	box& operator=(const box&) = delete;
-	box(const box&&) = delete;
-	box& operator=(const box&&) = delete;
+	Box(const Box&) = delete;
+	Box& operator=(const Box&) = delete;
+	Box(const Box&&) = delete;
+	Box& operator=(const Box&&) = delete;
 
 	void update(float dt) noexcept override;
-	DirectX::XMMATRIX get_transform_xm() const noexcept override;
+	DirectX::XMMATRIX getTransformXm() const noexcept override;
 private:
 	// Positional
-	float radius_distance_from_center_;
+	float radiusDistanceFromCenter_;
 	float roll_ = 0.0f;
 	float pitch_ = 0.0f;
 	float yaw_ = 0.0f;

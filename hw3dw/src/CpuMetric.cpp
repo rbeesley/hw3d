@@ -6,51 +6,51 @@
 // Mostly based on code found in this stackoverflow post: https://stackoverflow.com/a/64166
 // CPU percentage matches Task Manager and Process Explorer measurements, but is significantly more than System Informer
 
-void cpu_metric::initialize() {
-	SYSTEM_INFO sys_info;
+void CpuMetric::initialize() {
+	SYSTEM_INFO systemInfo;
 	FILETIME fcreate, fexit, fsys, fuser;
 
-	GetSystemInfo(&sys_info);
-	number_of_processors_ = static_cast<int>(sys_info.dwNumberOfProcessors);
+	GetSystemInfo(&systemInfo);
+	numberOfProcessors_ = static_cast<int>(systemInfo.dwNumberOfProcessors);
 
 	GetSystemTimeAsFileTime(&fexit);
-	memcpy(&last_cpu_, &fexit, sizeof(FILETIME));
+	memcpy(&lastCpu_, &fexit, sizeof(FILETIME));
 
-	self_ = GetCurrentProcess();
-	GetProcessTimes(self_, &fcreate, &fexit, &fsys, &fuser);
-	memcpy(&last_sys_cpu_, &fsys, sizeof(FILETIME));
-	memcpy(&last_user_cpu_, &fuser, sizeof(FILETIME));
-	start_time_ = timeGetTime();
+	currentProcess_ = GetCurrentProcess();
+	GetProcessTimes(currentProcess_, &fcreate, &fexit, &fsys, &fuser);
+	memcpy(&lastSysCpu_, &fsys, sizeof(FILETIME));
+	memcpy(&lastUserCpu_, &fuser, sizeof(FILETIME));
+	startTime_ = timeGetTime();
 }
 
-void cpu_metric::frame()
+void CpuMetric::frame()
 {
 	FILETIME fcreate, fexit, fsys, fuser;
 	ULARGE_INTEGER now, sys, user;
 
 	// Update once a second
-	if (timeGetTime() >= (start_time_ + 1000))
+	if (timeGetTime() >= (startTime_ + 1000))
 	{
 		GetSystemTimeAsFileTime(&fexit);
 		memcpy(&now, &fexit, sizeof(FILETIME));
 
-		GetProcessTimes(self_, &fcreate, &fexit, &fsys, &fuser);
+		GetProcessTimes(currentProcess_, &fcreate, &fexit, &fsys, &fuser);
 		memcpy(&sys, &fsys, sizeof(FILETIME));
 		memcpy(&user, &fuser, sizeof(FILETIME));
 		double percent = static_cast<double>(
-			(sys.QuadPart - last_sys_cpu_.QuadPart) +
-			(user.QuadPart - last_user_cpu_.QuadPart));
-		percent /= static_cast<double>(now.QuadPart - last_cpu_.QuadPart);
-		percent /= number_of_processors_;
-		cpu_usage_ = percent * 100;
-		last_cpu_ = now;
-		last_user_cpu_ = user;
-		last_sys_cpu_ = sys;
-		start_time_ = start_time_ + 1000;
+			(sys.QuadPart - lastSysCpu_.QuadPart) +
+			(user.QuadPart - lastUserCpu_.QuadPart));
+		percent /= static_cast<double>(now.QuadPart - lastCpu_.QuadPart);
+		percent /= numberOfProcessors_;
+		cpuUsage_ = percent * 100;
+		lastCpu_ = now;
+		lastUserCpu_ = user;
+		lastSysCpu_ = sys;
+		startTime_ = startTime_ + 1000;
 	}
 }
 
-double cpu_metric::get_cpu_percentage() const
+double CpuMetric::getCpuPercentage() const
 {
-	return cpu_usage_;
+	return cpuUsage_;
 }

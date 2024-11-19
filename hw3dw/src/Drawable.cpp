@@ -5,39 +5,39 @@
 #include "IndexBuffer.h"
 #include "Logging.h"
 
-void drawable::draw(graphics& graphics) const noexcept(!IS_DEBUG)
+void Drawable::draw(Graphics& graphics) const noexcept(!IS_DEBUG)
 {
-	for (auto& bindable : p_binds_)
+	for (auto& bindable : binds_)
 	{
 		bindable->bind(graphics);
 	}
-	for (auto& bindable : get_static_binds())
+	for (auto& bindable : getStaticBinds())
 	{
 		bindable->bind(graphics);
 	}
-	graphics.draw_indexed(p_index_buffer_->get_count());
+	graphics.draw_indexed(indexBuffer_->getCount());
 }
 
-static std::string clean_type_name(const std::string& type_name) {
+static std::string cleanTypeName(const std::string& typeName) {
 	// Regular expression to match the core type and strip out unnecessary parts
 	const std::regex re(R"((.+?)(?=<struct))");
-	if (std::smatch match; std::regex_search(type_name, match, re)) {
+	if (std::smatch match; std::regex_search(typeName, match, re)) {
 		return match.str();
 	}
-	return type_name;
+	return typeName;
 }
 
-void drawable::add_bind(std::unique_ptr<bindable> p_bind) noexcept(!IS_DEBUG)
+void Drawable::addBind(std::unique_ptr<Bindable> bind) noexcept(!IS_DEBUG)
 {
-	PLOGV << "binding " << clean_type_name(typeid(*p_bind).name());
-	assert("*Must* use add_index_buffer or add_static_index_buffer to bind index buffer" && typeid(*p_bind) != typeid(index_buffer));
-	p_binds_.push_back(std::move(p_bind));
+	PLOGV << "binding " << cleanTypeName(typeid(*bind).name());
+	assert("*Must* use addIndexBuffer or add_static_index_buffer to bind index buffer" && typeid(*bind) != typeid(IndexBuffer));
+	binds_.push_back(std::move(bind));
 }
 
-void drawable::add_index_buffer(std::unique_ptr<index_buffer> p_index_buffer) noexcept
+void Drawable::addIndexBuffer(std::unique_ptr<IndexBuffer> indexBuffer) noexcept
 {
 	PLOGV << "index buffer";
-	assert("Attempting to add index buffer a second time" && p_index_buffer_ == nullptr);
-	p_index_buffer_ = p_index_buffer.get();
-	p_binds_.push_back(std::move(p_index_buffer));
+	assert("Attempting to add index buffer a second time" && indexBuffer_ == nullptr);
+	indexBuffer_ = indexBuffer.get();
+	binds_.push_back(std::move(indexBuffer));
 }

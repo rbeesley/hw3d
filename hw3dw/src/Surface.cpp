@@ -33,114 +33,109 @@ namespace Gdiplus
 	using std::max;
 }
 
-surface::surface(const unsigned int width, const unsigned int height) noexcept
+Surface::Surface(const unsigned int width, const unsigned int height) noexcept
 	:
-	p_buffer_(std::make_unique<color[]>(static_cast<size_t>(width)* height)),
+	buffer_(std::make_unique<color[]>(static_cast<size_t>(width)* height)),
 	width_(width),
 	height_(height)
 {}
 
-surface& surface::operator=(surface&& donor) noexcept
+Surface& Surface::operator=(Surface&& donor) noexcept
 {
 	width_ = donor.width_;
 	height_ = donor.height_;
-	p_buffer_ = std::move(donor.p_buffer_);
-	donor.p_buffer_ = nullptr;
+	buffer_ = std::move(donor.buffer_);
+	donor.buffer_ = nullptr;
 	return *this;
 }
 
-surface::surface(surface&& source) noexcept
+Surface::Surface(Surface&& source) noexcept
 	:
-	p_buffer_(std::move(source.p_buffer_)),
+	buffer_(std::move(source.buffer_)),
 	width_(source.width_),
 	height_(source.height_)
 {}
 
-surface::~surface()
+Surface::~Surface()
 = default;
 
-void surface::clear(const color& fill_value) const noexcept {
+void Surface::clear(const color& fillValue) const noexcept {
 	for (unsigned int y = 0; y < height_; ++y) {
 		for (unsigned int x = 0; x < width_; ++x) {
-			p_buffer_[static_cast<size_t>(y) * width_ + x] = fill_value;
+			buffer_[static_cast<size_t>(y) * width_ + x] = fillValue;
 		}
 	}
 }
 
-void surface::put_pixel(const unsigned int x, const unsigned int y, const color& c) noexcept(!IS_DEBUG)
+void Surface::putPixel(const unsigned int x, const unsigned int y, const color& c) noexcept(!IS_DEBUG)
 {
 	assert(x < width_);
 	assert(y < height_);
-	p_buffer_[static_cast<size_t>(y) * width_ + x] = c;
+	buffer_[static_cast<size_t>(y) * width_ + x] = c;
 }
 
-surface::color surface::get_pixel(const unsigned int x, const unsigned int y) const noexcept(!IS_DEBUG)
+Surface::color Surface::getPixel(const unsigned int x, const unsigned int y) const noexcept(!IS_DEBUG)
 {
 	assert(x < width_);
 	assert(y < height_);
-	return p_buffer_[static_cast<size_t>(y) * width_ + x];
+	return buffer_[static_cast<size_t>(y) * width_ + x];
 }
 
-unsigned int surface::get_width() const noexcept
+unsigned int Surface::getWidth() const noexcept
 {
 	return width_;
 }
 
-unsigned int surface::get_height() const noexcept
+unsigned int Surface::getHeight() const noexcept
 {
 	return height_;
 }
 
-surface::color* surface::get_buffer_ptr() noexcept
+Surface::color* Surface::getBufferPtr() noexcept
 {
-	return p_buffer_.get();
+	return buffer_.get();
 }
 
-const surface::color* surface::get_buffer_ptr() const noexcept
+const Surface::color* Surface::getBufferPtr() const noexcept
 {
-	return p_buffer_.get();
+	return buffer_.get();
 }
 
-const surface::color* surface::get_buffer_ptr_const() const noexcept
-{
-	return p_buffer_.get();
-}
-
-surface surface::from_file(const std::wstring& name) {
+Surface Surface::fromFile(const std::wstring& name) {
 	unsigned int width;
 	unsigned int height;
-	std::unique_ptr<color[]> p_buffer = nullptr;
+	std::unique_ptr<color[]> buffer = nullptr;
 
 	{
 		const auto bitmap = std::make_unique<Gdiplus::Bitmap>(name.c_str());
 		if (bitmap->GetLastStatus() != Gdiplus::Status::Ok) {
-			const std::wstring exception_message = L"Loading image [" + name + L"]: failed to load.";
-			const int size_needed = WideCharToMultiByte(CP_UTF8, 0, exception_message.data(), static_cast<int>(exception_message.size()), nullptr, 0, nullptr, nullptr);
-			std::string str_to_throw(size_needed, 0);
-			WideCharToMultiByte(CP_UTF8, 0, exception_message.data(), static_cast<int>(exception_message.size()), str_to_throw.data(), size_needed, nullptr, nullptr);
+			const std::wstring exceptionMessage = L"Loading image [" + name + L"]: failed to load.";
+			const int sizeNeeded = WideCharToMultiByte(CP_UTF8, 0, exceptionMessage.data(), static_cast<int>(exceptionMessage.size()), nullptr, 0, nullptr, nullptr);
+			std::string strToThrow(sizeNeeded, 0);
+			WideCharToMultiByte(CP_UTF8, 0, exceptionMessage.data(), static_cast<int>(exceptionMessage.size()), strToThrow.data(), sizeNeeded, nullptr, nullptr);
 
-			throw exception(__LINE__, __FILE__, str_to_throw);
+			throw Exception(__LINE__, __FILE__, strToThrow);
 		}
 
 		height = bitmap->GetHeight();
 		width = bitmap->GetWidth();
-		p_buffer = std::make_unique<color[]>(static_cast<size_t>(width) * height);
+		buffer = std::make_unique<color[]>(static_cast<size_t>(width) * height);
 
 		for (unsigned int y = 0; y < height; y++) {
 			for (unsigned int x = 0; x < width; x++) {
 				Gdiplus::Color c;
 				bitmap->GetPixel(static_cast<int>(x), static_cast<int>(y), &c);
-				p_buffer[static_cast<size_t>(y) * width + x] = c.GetValue();
+				buffer[static_cast<size_t>(y) * width + x] = c.GetValue();
 			}
 		}
 	}
 
-	return { width, height, std::move(p_buffer) };
+	return { width, height, std::move(buffer) };
 }
 
-void surface::save(const std::string& filename) const
+void Surface::save(const std::string& filename) const
 {
-	auto get_encoder_clsid = [&filename](const WCHAR* format, CLSID* p_clsid) -> void
+	auto getEncoderClsid = [&filename](const WCHAR* format, CLSID* clsid) -> void
 		{
 			UINT num = 0;
 			UINT size = 0;
@@ -149,85 +144,85 @@ void surface::save(const std::string& filename) const
 			{
 				std::stringstream ss;
 				ss << "Saving surface to [" << filename << "]: failed to get encoder; size == 0.";
-				throw exception(__LINE__, __FILE__, ss.str());
+				throw Exception(__LINE__, __FILE__, ss.str());
 			}
 
-			std::unique_ptr<Gdiplus::ImageCodecInfo[]> p_image_codec_info(new Gdiplus::ImageCodecInfo[size]);
-			if (p_image_codec_info == nullptr)
+			std::unique_ptr<Gdiplus::ImageCodecInfo[]> imageCodecInfo(new Gdiplus::ImageCodecInfo[size]);
+			if (imageCodecInfo == nullptr)
 			{
 				std::stringstream ss;
 				ss << "Saving surface to [" << filename << "]: failed to get encoder; failed to allocate memory.";
-				throw exception(__LINE__, __FILE__, ss.str());
+				throw Exception(__LINE__, __FILE__, ss.str());
 			}
 
-			GetImageEncoders(num, size, p_image_codec_info.get());
+			GetImageEncoders(num, size, imageCodecInfo.get());
 			for (UINT j = 0; j < num; ++j)
 			{
-				if (wcscmp(p_image_codec_info[j].MimeType, format) == 0)
+				if (wcscmp(imageCodecInfo[j].MimeType, format) == 0)
 				{
-					*p_clsid = p_image_codec_info[j].Clsid;
+					*clsid = imageCodecInfo[j].Clsid;
 					return;
 				}
 			}
 			std::stringstream ss;
 			ss << "Saving surface to [" << filename << "]: failed to get encoder; failed to find matching encoder.";
-			throw exception(__LINE__, __FILE__, ss.str());
+			throw Exception(__LINE__, __FILE__, ss.str());
 		};
 
-	CLSID bmp_id;
-	get_encoder_clsid(L"image/bmp", &bmp_id);
+	CLSID bmpId;
+	getEncoderClsid(L"image/bmp", &bmpId);
 
-	wchar_t wide_name[512];
-	static_cast<void>(mbstowcs_s(nullptr, wide_name, filename.c_str(), _TRUNCATE));
+	wchar_t wideName[512];
+	static_cast<void>(mbstowcs_s(nullptr, wideName, filename.c_str(), _TRUNCATE));
 
-	if (Gdiplus::Bitmap bitmap(static_cast<int>(width_), static_cast<int>(height_), static_cast<int>(width_) * sizeof(color), PixelFormat32bppARGB, reinterpret_cast<BYTE*>(p_buffer_.get()));
-		bitmap.Save(wide_name, &bmp_id, nullptr) != Gdiplus::Status::Ok)
+	if (Gdiplus::Bitmap bitmap(static_cast<int>(width_), static_cast<int>(height_), static_cast<int>(width_) * sizeof(color), PixelFormat32bppARGB, reinterpret_cast<BYTE*>(buffer_.get()));
+		bitmap.Save(wideName, &bmpId, nullptr) != Gdiplus::Status::Ok)
 	{
 		std::stringstream ss;
 		ss << "Saving surface to [" << filename << "]: failed to save.";
-		throw exception(__LINE__, __FILE__, ss.str());
+		throw Exception(__LINE__, __FILE__, ss.str());
 	}
 }
 
-void surface::copy(const surface& src) noexcept(!IS_DEBUG) {
+void Surface::copy(const Surface& src) noexcept(!IS_DEBUG) {
 	assert(width_ == src.width_);
 	assert(height_ == src.height_);
 	for (unsigned int y = 0; y < height_; ++y) {
 		for (unsigned int x = 0; x < width_; ++x) {
-			p_buffer_[static_cast<size_t>(y) * width_ + x] = src.p_buffer_[static_cast<size_t>(y) * width_ + x];
+			buffer_[static_cast<size_t>(y) * width_ + x] = src.buffer_[static_cast<size_t>(y) * width_ + x];
 		}
 	}
 }
 
-surface::surface(const unsigned int width, const unsigned int height, std::unique_ptr<color[]> p_buffer_param) noexcept
+Surface::Surface(const unsigned int width, const unsigned int height, std::unique_ptr<color[]> bufferParam) noexcept
 	:
-	p_buffer_(std::move(p_buffer_param)),
+	buffer_(std::move(bufferParam)),
 	width_(width),
 	height_(height)
 {}
 
 // surface exception stuff
-surface::exception::exception(const int line, const char* file, std::string note) noexcept
+Surface::Exception::Exception(const int line, const char* file, std::string note) noexcept
 	:
-	atum_exception(line, file),
+	AtumException(line, file),
 	note_(std::move(note))
 {}
 
-const char* surface::exception::what() const noexcept
+const char* Surface::Exception::what() const noexcept
 {
 	std::ostringstream oss;
-	oss << atum_exception::what() << "/n"
-		<< "[Note] " << get_note();
-	what_buffer_ = oss.str();
-	return what_buffer_.c_str();
+	oss << AtumException::what() << "/n"
+		<< "[Note] " << getNote();
+	whatBuffer_ = oss.str();
+	return whatBuffer_.c_str();
 }
 
-const char* surface::exception::get_type() const noexcept
+const char* Surface::Exception::getType() const noexcept
 {
 	return "Atum Graphics Exception";
 }
 
-const std::string& surface::exception::get_note() const noexcept
+const std::string& Surface::Exception::getNote() const noexcept
 {
 	return note_;
 }

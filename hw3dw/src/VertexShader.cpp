@@ -5,21 +5,21 @@
 
 #include "GraphicsThrowMacros.h"
 
-vertex_shader::vertex_shader(graphics& graphics, const std::wstring& path)
+VertexShader::VertexShader(Graphics& graphics, const std::wstring& path)
 {
 	INFOMAN(graphics);
 
-	PLOGD << "D3DReadFileToBlob(\"" << path.c_str() << "\", [p_bytecode_blob_]));";
-	GFX_THROW_INFO(D3DReadFileToBlob(path.c_str(), &p_bytecode_blob_));
-	GFX_THROW_INFO(get_device(graphics)->CreateVertexShader(p_bytecode_blob_->GetBufferPointer(), p_bytecode_blob_->GetBufferSize(), nullptr, &p_vertex_shader_));
+	PLOGD << "D3DReadFileToBlob(\"" << path.c_str() << "\", [bytecodeBlob_]));";
+	GFX_THROW_INFO(D3DReadFileToBlob(path.c_str(), &bytecodeBlob_));
+	GFX_THROW_INFO(getDevice(graphics)->CreateVertexShader(bytecodeBlob_->GetBufferPointer(), bytecodeBlob_->GetBufferSize(), nullptr, &vertexShader_));
 }
 
-void vertex_shader::bind(graphics& graphics) noexcept
+void VertexShader::bind(Graphics& graphics) noexcept
 {
-	get_context(graphics)->VSSetShader(p_vertex_shader_.Get(), nullptr, 0u);
+	getContext(graphics)->VSSetShader(vertexShader_.Get(), nullptr, 0u);
 }
 
-ID3DBlob* vertex_shader::get_byte_code() const noexcept
+ID3DBlob* VertexShader::getByteCode() const noexcept
 {
-	return p_bytecode_blob_.Get();
+	return bytecodeBlob_.Get();
 }

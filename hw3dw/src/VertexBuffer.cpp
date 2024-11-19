@@ -1,7 +1,7 @@
 #include "VertexBuffer.h"
 
-void vertex_buffer::bind(graphics& graphics) noexcept
+void VertexBuffer::bind(Graphics& graphics) noexcept
 {
 	constexpr UINT offset = 0u;
-	get_context(graphics)->IASetVertexBuffers(0u, 1u, p_vertex_buffer.GetAddressOf(), &stride, &offset);
+	getContext(graphics)->IASetVertexBuffers(0u, 1u, vertexBuffer_.GetAddressOf(), &stride_, &offset);
 }

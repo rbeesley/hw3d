@@ -1,28 +1,25 @@
-///////////////////////////////////////////////////////////////////////////////
-// Filename: cpu_class.h
-///////////////////////////////////////////////////////////////////////////////
 #pragma once
 #define CPU_METRIC_
 #include "AtumWindows.h"
 
-class cpu_metric
+class CpuMetric
 {
 public:
-	cpu_metric() = default;
-	~cpu_metric() = default;
-	cpu_metric(const cpu_metric&) = delete;
-	cpu_metric& operator=(const cpu_metric&) = delete;
-	cpu_metric(const cpu_metric&&) = delete;
-	cpu_metric& operator=(const cpu_metric&&) = delete;
+	CpuMetric() = default;
+	~CpuMetric() = default;
+	CpuMetric(const CpuMetric&) = delete;
+	CpuMetric& operator=(const CpuMetric&) = delete;
+	CpuMetric(const CpuMetric&&) = delete;
+	CpuMetric& operator=(const CpuMetric&&) = delete;
 
 	void initialize();
 	void frame();
-	[[nodiscard]] double get_cpu_percentage() const;
+	[[nodiscard]] double getCpuPercentage() const;
 
 private:
-	unsigned long start_time_;
-	ULARGE_INTEGER last_cpu_, last_sys_cpu_, last_user_cpu_;
-	int number_of_processors_;
-	HANDLE self_;
-	double cpu_usage_;
+	unsigned long startTime_;
+	ULARGE_INTEGER lastCpu_, lastSysCpu_, lastUserCpu_;
+	int numberOfProcessors_;
+	HANDLE currentProcess_;
+	double cpuUsage_;
 };

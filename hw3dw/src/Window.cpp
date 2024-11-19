@@ -12,112 +12,106 @@
 #if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in LoggingConfig.h
 #include "WindowsMessageMap.h"
 
-const static class windows_message_map windows_message_map;
+const static class WindowsMessageMap windowsMessageMap;
 #endif
 
 // Definition of static member variables
-unsigned int window::target_width_ = 0;
-unsigned int window::target_height_ = 0;
-bool window::in_sizemove_ = false;
-bool window::minimized_ = false;
+unsigned int Window::targetWidth_ = 0;
+unsigned int Window::targetHheight_ = 0;
+bool Window::inSizeMove_ = false;
+bool Window::minimized_ = false;
 
-window::window_class::window_class()
-	: instance_handle_(GetModuleHandle(nullptr))
+Window::WindowClass::WindowClass()
+	: instanceHandle_(GetModuleHandle(nullptr))
 {
 	PLOGV << "Instantiate Window Class";
-}
-
-void window::window_class::initialize() const noexcept
-{
-	PLOGD << "Initialize Window Class";
 
 	WNDCLASSEX wcex = {
 		.style = CS_OWNDC,
-		.lpfnWndProc = handle_msg_setup,
+		.lpfnWndProc = handleMsgSetup,
 		.cbClsExtra = 0,
 		.cbWndExtra = 0,
-		.hInstance = get_instance(),
-		.hIcon = static_cast<HICON>(LoadImage(instance_handle_, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, ::GetSystemMetrics(SM_CXICON), ::GetSystemMetrics(SM_CYICON), 0)),
+		.hInstance = getInstance(),
+		.hIcon = static_cast<HICON>(LoadImage(instanceHandle_, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, ::GetSystemMetrics(SM_CXICON), ::GetSystemMetrics(SM_CYICON), 0)),
 		.hCursor = nullptr,
 		.hbrBackground = nullptr,
 		.lpszMenuName = nullptr,
-		.lpszClassName = get_name(),
-		.hIconSm = static_cast<HICON>(LoadImage(instance_handle_, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0))
+		.lpszClassName = getName(),
+		.hIconSm = static_cast<HICON>(LoadImage(instanceHandle_, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0))
 	};
 	wcex.cbSize = sizeof(wcex);
 
 	RegisterClassEx(&wcex);
 }
 
-void window::window_class::shutdown() const noexcept
+void Window::WindowClass::shutdown() const noexcept
 {
 	PLOGD << "Shutdown Window Class";
-	UnregisterClass(window_class_name, get_instance());
+	UnregisterClass(windowClassName, getInstance());
 }
 
-window::window_class::~window_class()
+Window::WindowClass::~WindowClass()
 {
 	PLOGV << "Destroy Window Class";
 }
 
-LPCWSTR window::window_class::get_name() noexcept
+LPCWSTR Window::WindowClass::getName() noexcept
 {
-	return window_class_name;
+	return windowClassName;
 }
 
-HINSTANCE window::window_class::get_instance() const noexcept
+HINSTANCE Window::WindowClass::getInstance() const noexcept
 {
-	return instance_handle_;
+	return instanceHandle_;
 }
 
-void window::initialize(const int width, const int height, const LPCWSTR name)
+// Define the static members
+std::shared_ptr<Mouse> Window::mouse_ = nullptr;
+std::shared_ptr<Keyboard> Window::keyboard_ = nullptr;
+
+void Window::createWindow(const LPCWSTR name)
 {
-	PLOGI << "Initialize Window";
-
-	width_ = width;
-	height_ = height;
-
-	window_class_ = std::make_unique<window_class>();
-	window_class_->initialize();
-
 	// ReSharper disable once CppInitializedValueIsAlwaysRewritten
-	RECT window_rect{};
-	window_rect.left = 100;
-	window_rect.top = 100;
-	window_rect.right = width_ + window_rect.left;
-	window_rect.bottom = height_ + window_rect.top;
+	RECT windowRect{};
+	windowRect.left = 100;
+	windowRect.top = 100;
+	windowRect.right = width_ + windowRect.left;
+	windowRect.bottom = height_ + windowRect.top;
 
-	if (!AdjustWindowRect(&window_rect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE))
+	if (!AdjustWindowRect(&windowRect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE))
 	{
 		throw ATUM_WND_LAST_EXCEPT();
 	}
 
-	window_handle_ = CreateWindowEx(
+	windowHandle_ = CreateWindowEx(
 		0,
-		window_class::get_name(),
+		WindowClass::getName(),
 		name,
 		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
-		window_rect.right - window_rect.left,
-		window_rect.bottom - window_rect.top,
+		windowRect.right - windowRect.left,
+		windowRect.bottom - windowRect.top,
 		nullptr,
 		nullptr,
-		window_class_->get_instance(),
+		windowClass_->getInstance(),
 		this
 	);
 
 	// Check for an error
-	if (nullptr == window_handle_)
+	if (nullptr == windowHandle_)
 	{
 		throw ATUM_WND_LAST_EXCEPT();
 	}
 
 	// Newly created windows start off as hidden
 	PLOGI << "Show the Window";
-	ShowWindow(window_handle_, SW_SHOWDEFAULT);
-	UpdateWindow(window_handle_);
+	ShowWindow(windowHandle_, SW_SHOWDEFAULT);
+	UpdateWindow(windowHandle_);
+}
 
+void Window::configureImGui()
+{
 	// Configure Dear ImGui
 	PLOGI << "Configure Dear ImGui";
 
@@ -158,75 +152,90 @@ void window::initialize(const int width, const int height, const LPCWSTR name)
 
 	PLOGI << "Setup Dear ImGui Platform backend";
 	PLOGV << "ImGui_ImplWin32_Init()";
-	ImGui_ImplWin32_Init(window_handle_);
+	ImGui_ImplWin32_Init(windowHandle_);
+}
 
-	// Get the mouse and keyboard
-	PLOGD << "Create references to the mouse and keyboard";
-	p_mouse_ = std::make_unique<mouse>();
-	p_keyboard_ = std::make_unique<keyboard>();
+void Window::initializeStaticMembers()
+{
+	mouse_ = std::make_shared<Mouse>();
+	keyboard_ = std::make_shared<Keyboard>();
+}
+
+void Window::shutdownStaticMembers()
+{
+	mouse_.reset();
+	keyboard_.reset();
+}
+
+Window::Window(const int width, const int height, const LPCWSTR name)
+	: width_(width)
+	, height_(height)
+	, windowClass_(std::make_unique<WindowClass>()) {
+	PLOGI << "Initialize Window";
+
+	initializeStaticMembers();
+
+	createWindow(name);
+
+	configureImGui();
 
 	// Create the graphics object
 	PLOGD << "Create the DirectX graphics object";
-	PLOGV << "p_graphics_ = std::make_unique<graphics>(window_handle_, width_, height_);";
-	p_graphics_ = std::make_unique<graphics>(window_handle_, width_, height_);
+	PLOGV << "p_graphics_ = std::make_unique<Graphics>(windowHandle_, width_, height_);";
+	graphics_ = std::make_unique<Graphics>(windowHandle_, width_, height_);
 
 	// Check for an error
-	if (nullptr == p_graphics_)
+	if (nullptr == graphics_)
 	{
 		throw ATUM_WND_LAST_EXCEPT();
 	}
 
-	if(target_width_ == width_ && target_height_ == height_)
+	if(targetWidth_ == width_ && targetHheight_ == height_)
 	{
-		set_target_dimensions(0, 0);
+		setTargetDimensions(0, 0);
 	}
 }
 
-HWND window::get_handle()
+HWND Window::getHandle()
 {
-	return window_handle_;
+	return windowHandle_;
 }
 
-void window::shutdown() const
-{
-	PLOGI << "Shutdown Window";
-	PLOGV << "p_graphics_->shutdown();";
-	p_graphics_->shutdown();
-	PLOGV << "ImGui_ImplWin32_Shutdown();";
-	ImGui_ImplWin32_Shutdown();
-	window_class_->shutdown();
-}
-
-window::~window()
+Window::~Window()
 {
 	PLOGD << "Destroy Window";
-	PLOGV << "ImGui::DestroyContext()";
+	PLOGV << "p_graphics_->shutdown();";
+	graphics_->shutdown();
+	PLOGV << "ImGui_ImplWin32_Shutdown();";
+	ImGui_ImplWin32_Shutdown();
+	windowClass_->shutdown();	PLOGV << "ImGui::DestroyContext()";
 	ImGui::DestroyContext();
-	DestroyWindow(window_handle_);
+	DestroyWindow(windowHandle_);
+	shutdownStaticMembers();
 }
 
-void window::set_title(const std::wstring& title)
+void Window::setTitle(const std::wstring& title)
 {
-	if (!SetWindowText(window_handle_, title.c_str()))
+	if (!SetWindowText(windowHandle_, title.c_str()))
 	{
 		throw ATUM_WND_LAST_EXCEPT();
 	}
 }
 
-void window::set_target_dimensions(const unsigned int width, const unsigned int height)
+void Window::setTargetDimensions(const unsigned int width, const unsigned int height)
 {
-	PLOGV << "set_target_dimensions(width: " << width << ", height: " << height << ");";
-	target_width_ = width;
-	target_height_ = height;
+	PLOGV << "setTargetDimensions(width: " << width << ", height: " << height << ");";
+	targetWidth_ = width;
+	targetHheight_ = height;
 }
 
-window::window_dimensions window::get_target_dimensions()
+Window::WindowDimensions Window::getTargetDimensions()
 {
-	PLOGV << "get_target_dimensions() : width: " << target_width_ << ", height: " << target_height_ << "";
-	return {target_width_, target_height_};
+	PLOGV << "getTargetDimensions() : width: " << targetWidth_ << ", height: " << targetHheight_ << "";
+	return {targetWidth_, targetHheight_};
 }
 
-std::optional<unsigned int> window::process_messages()
+std::optional<unsigned int> Window::processMessages()
 {
 	MSG msg;
 	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -242,62 +251,62 @@ std::optional<unsigned int> window::process_messages()
 	return {};
 }
 
-mouse* window::get_mouse()
+std::shared_ptr<Mouse> Window::get_mouse()
 {
-	if (!p_mouse_)
+	if (!mouse_)
 	{
 		throw ATUM_WND_NO_GFX_EXCEPT();
 	}
-	return p_mouse_.get();
+	return mouse_;
 }
 
-keyboard* window::get_keyboard()
+std::shared_ptr<Keyboard> Window::get_keyboard()
 {
-	if (!p_keyboard_)
+	if (!keyboard_)
 	{
 		throw ATUM_WND_NO_GFX_EXCEPT();
 	}
-	return p_keyboard_.get();
+	return keyboard_;
 }
 
-graphics* window::get_graphics()
+std::shared_ptr<Graphics> Window::get_graphics()
 {
-	if (!p_graphics_)
+	if (!graphics_)
 	{
 		throw ATUM_WND_NO_GFX_EXCEPT();
 	}
-	return p_graphics_.get();
+	return graphics_;
 }
 
-LRESULT CALLBACK window::handle_msg_setup(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
+LRESULT CALLBACK Window::handleMsgSetup(const HWND window, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES // defined in LoggingConfig.h
-	PLOGV << windows_message_map(msg, l_param, w_param).c_str();
+	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
 #endif
 
 	if (msg == WM_NCCREATE)
 	{
-		const CREATESTRUCTW* const p_create = reinterpret_cast<CREATESTRUCTW*>(l_param);  // NOLINT(performance-no-int-to-ptr)
-		window* const p_wnd = static_cast<window*>(p_create->lpCreateParams);
-		SetWindowLongPtr(window_handle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(p_wnd));
-		SetWindowLongPtr(window_handle, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&window::handle_msg_thunk));
-		return handle_msg(window_handle, msg, w_param, l_param);
+		const CREATESTRUCTW* const p_create = reinterpret_cast<CREATESTRUCTW*>(lParam);  // NOLINT(performance-no-int-to-ptr)
+		Window* const p_wnd = static_cast<Window*>(p_create->lpCreateParams);
+		SetWindowLongPtr(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(p_wnd));
+		SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::handleMsgThunk));
+		return handleMsg(window, msg, wParam, lParam);
 	}
-	return DefWindowProc(window_handle, msg, w_param, l_param);
+	return DefWindowProc(window, msg, wParam, lParam);
 }
 
-LRESULT CALLBACK window::handle_msg_thunk(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
+LRESULT CALLBACK Window::handleMsgThunk(const HWND window, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
 {
-	return handle_msg(window_handle, msg, w_param, l_param);
+	return handleMsg(window, msg, wParam, lParam);
 }
 
-HWND window::set_active(const HWND window_handle)
+HWND Window::setActive(const HWND window)
 {
-	if (p_mouse_->is_in_window())
+	if (mouse_->isInWindow())
 	{
-		if (const HWND active_window = GetActiveWindow(); active_window != window_handle)
+		if (const HWND active_window = GetActiveWindow(); active_window != window)
 		{
-			return SetActiveWindow(window_handle);
+			return SetActiveWindow(window);
 		}
 	}
 
@@ -305,19 +314,19 @@ HWND window::set_active(const HWND window_handle)
 }
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param);
-LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, const WPARAM w_param, const LPARAM l_param) noexcept
+LRESULT CALLBACK Window::handleMsg(const HWND window, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES
-	PLOGV << windows_message_map(msg, l_param, w_param).c_str();
+	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
 #endif
 #ifdef LOG_WINDOW_MOUSE_MESSAGES
 	if (msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST)
 	{
-		PLOGV << windows_message_map(msg, l_param, w_param).c_str();
+		PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
 	}
 #endif
 	//PLOGV << "ImGui_ImplWin32_WndProcHandler";
-	if(ImGui_ImplWin32_WndProcHandler(window_handle, msg, w_param, l_param))
+	if(ImGui_ImplWin32_WndProcHandler(window, msg, wParam, lParam))
 	{
 		return true;
 	}
@@ -328,21 +337,21 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_CREATE:
 	{
 		RECT rect;
-		GetWindowRect(window_handle, &rect);
+		GetWindowRect(window, &rect);
 		x_ = rect.left;
 		y_ = rect.top;
 		break;
 	}
 	case WM_COMMAND:
 	{
-		const int window_message_id = LOWORD(w_param);
+		const int window_message_id = LOWORD(wParam);
 		// ReSharper disable once CppDeclaratorNeverUsed
-		const int window_message_event = HIWORD(w_param);
+		const int window_message_event = HIWORD(wParam);
 		switch (window_message_id)
 		{
 		case 0:
 		default:
-			return DefWindowProc(window_handle, msg, w_param, l_param);
+			return DefWindowProc(window, msg, wParam, lParam);
 		}
 		break;
 	}
@@ -351,14 +360,14 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 		return 0;
 		break;
 	case WM_KILLFOCUS:
-		p_keyboard_->clear_state();
+		keyboard_->clearState();
 		break;
 	case WM_SHOWWINDOW:
 	{
-		if (w_param == TRUE) // The window is being shown
+		if (wParam == TRUE) // The window is being shown
 		{
 			RECT rect;
-			GetWindowRect(window_handle, &rect);
+			GetWindowRect(window, &rect);
 			x_ = rect.left;
 			y_ = rect.top;
 		}
@@ -366,11 +375,11 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	}
 	case WM_MOVE:
 	{
-		const int x_pos = static_cast<short>(LOWORD(l_param)); // Horizontal position
-		const int y_pos = static_cast<short>(HIWORD(l_param)); // Vertical position
+		const int x_pos = static_cast<short>(LOWORD(lParam)); // Horizontal position
+		const int y_pos = static_cast<short>(HIWORD(lParam)); // Vertical position
 
 		// Calculate how far the window has moved
-		if (p_mouse_)
+		if (mouse_)
 		{
 			const int x_delta = x_pos - x_;
 			const int y_delta = y_pos - y_;
@@ -380,7 +389,7 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 #endif
 
 			// Update the mouse position so that the elements in the window which are dependent on the mouse position, are updated to appear stationary
-			p_mouse_->on_mouse_move(p_mouse_->pos().x - x_delta, p_mouse_->pos().y - y_delta);
+			mouse_->onMouseMove(mouse_->pos().x - x_delta, mouse_->pos().y - y_delta);
 		}
 
 		// Store the new position for future calculations
@@ -390,7 +399,7 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 		break;
 	}
 	case WM_SIZE:
-		if (w_param == SIZE_MINIMIZED)
+		if (wParam == SIZE_MINIMIZED)
 		{
 			// The window was minimized (you should probably suspend the application)
 			if (!minimized_)
@@ -403,30 +412,30 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			// The window was minimized and is now restored (resume from suspend)
 			minimized_ = false;
 		}
-		else if (!in_sizemove_)
+		else if (!inSizeMove_)
 		{
 			// Handle the swapchain resize for maximize or unmaximize
-			set_target_dimensions(LOWORD(l_param), HIWORD(l_param));
+			setTargetDimensions(LOWORD(lParam), HIWORD(lParam));
 		}
 		break;
 	case WM_ENTERSIZEMOVE:
 		// We want to avoid trying to resizing the swapchain as the user does the 'rubber band' resize
-		in_sizemove_ = true;
+		inSizeMove_ = true;
 		break;
 	case WM_EXITSIZEMOVE:
 		// Here is the other place where you handle the swapchain resize after the user stops using the 'rubber-band'
-		in_sizemove_ = false;
+		inSizeMove_ = false;
 		break;
 	case WM_GETMINMAXINFO:
 	{
 		// We want to prevent the window from being set too tiny
-		const auto info = reinterpret_cast<MINMAXINFO*>(l_param);
+		const auto info = reinterpret_cast<MINMAXINFO*>(lParam);
 		info->ptMinTrackSize.x = 320;
 		info->ptMinTrackSize.y = 200;
 	}
 	break;
 	case WM_SYSCOMMAND:
-		if ((w_param & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
+		if ((wParam & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
 			return 0;
 		break;
 	case WM_DESTROY:
@@ -436,10 +445,10 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	case WM_DPICHANGED:
 		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DpiEnableScaleViewports)
 		{
-			const int dpi = HIWORD(w_param);
+			const int dpi = HIWORD(wParam);
 			PLOGI << "WM_DPICHANGED to " << dpi << "(" << static_cast<float>(dpi) / 96.0f * 100.0f << ")";
-			const RECT* suggested_rect = reinterpret_cast<RECT*>(l_param);
-			::SetWindowPos(window_handle_, nullptr, suggested_rect->left, suggested_rect->top, suggested_rect->right - suggested_rect->left, suggested_rect->bottom - suggested_rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
+			const RECT* suggested_rect = reinterpret_cast<RECT*>(lParam);
+			::SetWindowPos(windowHandle_, nullptr, suggested_rect->left, suggested_rect->top, suggested_rect->right - suggested_rect->left, suggested_rect->bottom - suggested_rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
 		}
 		break;
 #endif
@@ -453,55 +462,55 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 			return 0;
 		}
 		// Filter keyboard autorepeat
-		if (!(l_param & 0x40000000 /* previous key state */) || p_keyboard_->is_autorepeat_enabled())
+		if (!(lParam & 0x40000000 /* previous key state */) || keyboard_->isAutorepeatEnabled())
 		{
-			p_keyboard_->on_key_pressed(static_cast<unsigned char>(w_param));
+			keyboard_->onKeyPressed(static_cast<unsigned char>(wParam));
 		}
 		break;
 	}
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
-		p_keyboard_->on_key_released(static_cast<unsigned char>(w_param));
+		keyboard_->onKeyReleased(static_cast<unsigned char>(wParam));
 		break;
 	case WM_CHAR:
-		p_keyboard_->on_char(static_cast<unsigned char>(w_param));
+		keyboard_->onChar(static_cast<unsigned char>(wParam));
 		break;
 		/* Mouse */
 	case WM_MOUSEMOVE:
 	{
-		if (const auto win = reinterpret_cast<window*>(GetWindowLongPtr(window_handle, GWLP_USERDATA)))  // NOLINT(performance-no-int-to-ptr)
+		if (const auto win = reinterpret_cast<Window*>(GetWindowLongPtr(window, GWLP_USERDATA)))  // NOLINT(performance-no-int-to-ptr)
 		{
-			const auto [x, y] = MAKEPOINTS(l_param);
+			const auto [x, y] = MAKEPOINTS(lParam);
 
 			// mouse is inside client region
 			if (x >= 0 && x < win->width_ && y >= 0 && y < win->height_)
 			{
 				// but internal state is still outside client region
-				if (!p_mouse_->is_in_window())
+				if (!mouse_->isInWindow())
 				{
 					// fix the state
-					p_mouse_->on_mouse_enter(x, y);
-					SetCapture(window_handle);
+					mouse_->onMouseEnter(x, y);
+					SetCapture(window);
 				}
 				else
 				{
-					p_mouse_->on_mouse_move(x, y);
+					mouse_->onMouseMove(x, y);
 				}
 			}
 			// mouse is outside client region and internal state places it inside client region
-			else if (p_mouse_->is_in_window())
+			else if (mouse_->isInWindow())
 			{
 				// because a button is being held down we want to keep track of the mouse position outside the client region boundaries
-				if (p_mouse_->is_left_pressed() || p_mouse_->is_right_pressed() || p_mouse_->is_middle_pressed() || p_mouse_->is_x1_pressed() || p_mouse_->is_x2_pressed())
+				if (mouse_->isLeftPressed() || mouse_->isRightPressed() || mouse_->isMiddlePressed() || mouse_->isX1Pressed() || mouse_->isX2Pressed())
 				{
-					p_mouse_->on_mouse_move(x, y);
+					mouse_->onMouseMove(x, y);
 				}
 				// but no buttons ARE being held down
 				else
 				{
 					// fix the state
 					ReleaseCapture();
-					p_mouse_->on_mouse_leave();
+					mouse_->onMouseLeave();
 				}
 			}
 		}
@@ -509,55 +518,55 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	}
 	case WM_LBUTTONDOWN:
 	{
-		const auto [x, y] = MAKEPOINTS(l_param);
-		set_active(window_handle);
-		p_mouse_->on_left_pressed(x, y);
+		const auto [x, y] = MAKEPOINTS(lParam);
+		setActive(window);
+		mouse_->onLeftPressed(x, y);
 		break;
 	}
 	case WM_LBUTTONUP:
 	{
-		const auto [x, y] = MAKEPOINTS(l_param);
-		p_mouse_->on_left_released(x, y);
+		const auto [x, y] = MAKEPOINTS(lParam);
+		mouse_->onLeftReleased(x, y);
 		break;
 	}
 	case WM_RBUTTONDOWN:
 	{
-		const auto [x, y] = MAKEPOINTS(l_param);
-		set_active(window_handle);
-		p_mouse_->on_right_pressed(x, y);
+		const auto [x, y] = MAKEPOINTS(lParam);
+		setActive(window);
+		mouse_->onRightPressed(x, y);
 		break;
 	}
 	case WM_RBUTTONUP:
 	{
-		const auto [x, y] = MAKEPOINTS(l_param);
-		p_mouse_->on_right_released(x, y);
+		const auto [x, y] = MAKEPOINTS(lParam);
+		mouse_->onRightReleased(x, y);
 		break;
 	}
 	case WM_MBUTTONDOWN:
 	{
-		const auto [x, y] = MAKEPOINTS(l_param);
-		set_active(window_handle);
-		p_mouse_->on_middle_pressed(x, y);
+		const auto [x, y] = MAKEPOINTS(lParam);
+		setActive(window);
+		mouse_->onMiddlePressed(x, y);
 		break;
 	}
 	case WM_MBUTTONUP:
 	{
-		const auto [x, y] = MAKEPOINTS(l_param);
-		p_mouse_->on_middle_released(x, y);
+		const auto [x, y] = MAKEPOINTS(lParam);
+		mouse_->onMiddleReleased(x, y);
 		break;
 	}
 	case WM_MOUSEWHEEL:
 	case WM_MOUSEHWHEEL:
 	{
-		const auto [x, y] = MAKEPOINTS(l_param);
-		const int wheel_delta = GET_WHEEL_DELTA_WPARAM(w_param);
+		const auto [x, y] = MAKEPOINTS(lParam);
+		const int wheel_delta = GET_WHEEL_DELTA_WPARAM(wParam);
 		switch (msg)
 		{
 		case WM_MOUSEWHEEL: // Vertical mouse scroll wheel
-			p_mouse_->on_v_wheel_delta(x, y, wheel_delta);
+			mouse_->onVWheelDelta(x, y, wheel_delta);
 			break;
 		case WM_MOUSEHWHEEL: // Horizontal mouse scroll wheel
-			p_mouse_->on_h_wheel_delta(x, y, wheel_delta);
+			mouse_->onHWheelDelta(x, y, wheel_delta);
 			break;
 		default:
 			break;
@@ -566,15 +575,15 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	}
 	case WM_XBUTTONDOWN:
 	{
-		const auto [x, y] = MAKEPOINTS(l_param);
-		set_active(window_handle);
-		switch GET_XBUTTON_WPARAM(w_param)
+		const auto [x, y] = MAKEPOINTS(lParam);
+		setActive(window);
+		switch GET_XBUTTON_WPARAM(wParam)
 		{
 		case XBUTTON1:
-			p_mouse_->on_x1_pressed(x, y);
+			mouse_->onX1Pressed(x, y);
 			break;
 		case XBUTTON2:
-			p_mouse_->on_x2_pressed(x, y);
+			mouse_->onX2Pressed(x, y);
 			break;
 		default:
 			break;
@@ -583,14 +592,14 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	}
 	case WM_XBUTTONUP:
 	{
-		const auto [x, y] = MAKEPOINTS(l_param);
-		switch GET_XBUTTON_WPARAM(w_param)
+		const auto [x, y] = MAKEPOINTS(lParam);
+		switch GET_XBUTTON_WPARAM(wParam)
 		{
 		case XBUTTON1:
-			p_mouse_->on_x1_released(x, y);
+			mouse_->onX1Released(x, y);
 			break;
 		case XBUTTON2:
-			p_mouse_->on_x2_released(x, y);
+			mouse_->onX2Released(x, y);
 			break;
 		default:
 			break;
@@ -599,47 +608,47 @@ LRESULT CALLBACK window::handle_msg(const HWND window_handle, const UINT msg, co
 	}
 	default: break;
 	}
-	return DefWindowProc(window_handle, msg, w_param, l_param);
+	return DefWindowProc(window, msg, wParam, lParam);
 }
 
-window::hresult_exception::hresult_exception(int line, const char* file, HRESULT hresult) noexcept
+Window::HresultException::HresultException(int line, const char* file, HRESULT hresult) noexcept
 	:
-	exception(line, file),
+	Exception(line, file),
 	hresult_(hresult)
 {}
 
-const char* window::hresult_exception::what() const noexcept
+const char* Window::HresultException::what() const noexcept
 {
 	std::ostringstream out;
-	out << "[Error Code] " << get_error_code() << "\n"
-		<< "[Description] " << get_error_description() << "\n"
-		<< get_origin_string();
-	what_buffer_ = out.str();
-	return what_buffer_.c_str();
+	out << "[Error Code] " << getErrorCode() << "\n"
+		<< "[Description] " << getErrorDescription() << "\n"
+		<< getOriginString();
+	whatBuffer_ = out.str();
+	return whatBuffer_.c_str();
 }
 
-const char* window::hresult_exception::get_type() const noexcept
+const char* Window::HresultException::getType() const noexcept
 {
 	return "Atum Window Exception";
 }
 
-std::string window::exception::translate_error_code(const HRESULT result) noexcept
+std::string Window::Exception::translateErrorCode(const HRESULT result) noexcept
 {
 	std::string message = std::system_category().message(result);
 	return message;
 }
 
-HRESULT window::hresult_exception::get_error_code() const noexcept
+HRESULT Window::HresultException::getErrorCode() const noexcept
 {
 	return hresult_;
 }
 
-std::string window::hresult_exception::get_error_description() const noexcept
+std::string Window::HresultException::getErrorDescription() const noexcept
 {
-	return translate_error_code(hresult_);
+	return translateErrorCode(hresult_);
 }
 
-const char* window::no_gfx_exception::get_type() const noexcept
+const char* Window::NoGfxException::getType() const noexcept
 {
 	return "Atum Window Exception [No Graphics]";
 }

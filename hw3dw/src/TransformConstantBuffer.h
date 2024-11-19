@@ -5,20 +5,20 @@
 #include "Drawable.h"
 #include <DirectXMath.h>
 
-class transform_constant_buffer : public bindable
+class TransformConstantBuffer : public Bindable
 {
 public:
-	transform_constant_buffer(graphics& graphics, const drawable& parent);
+	TransformConstantBuffer(Graphics& graphics, const Drawable& parent);
 
-	transform_constant_buffer() = delete;
-	~transform_constant_buffer() override = default;
-	transform_constant_buffer(const transform_constant_buffer&) = delete;
-	transform_constant_buffer& operator=(const transform_constant_buffer&) = delete;
-	transform_constant_buffer(const transform_constant_buffer&&) = delete;
-	transform_constant_buffer& operator=(const transform_constant_buffer&&) = delete;
+	TransformConstantBuffer() = delete;
+	~TransformConstantBuffer() override = default;
+	TransformConstantBuffer(const TransformConstantBuffer&) = delete;
+	TransformConstantBuffer& operator=(const TransformConstantBuffer&) = delete;
+	TransformConstantBuffer(const TransformConstantBuffer&&) = delete;
+	TransformConstantBuffer& operator=(const TransformConstantBuffer&&) = delete;
 
-	void bind(graphics& graphics) noexcept override;
+	void bind(Graphics& graphics) noexcept override;
 private:
-	static std::unique_ptr<vertex_constant_buffer<DirectX::XMMATRIX>> p_vertex_constant_buffer_;
-	const drawable& parent_;
+	static std::unique_ptr<VertexConstantBuffer<DirectX::XMMATRIX>> vertexConstantBuffer_;
+	const Drawable& parent_;
 };

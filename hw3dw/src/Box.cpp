@@ -4,7 +4,7 @@
 #include "BindableIncludes.h"
 #include "Cube.h"
 
-box::box(graphics& graphics,
+Box::Box(Graphics& graphics,
 	std::mt19937& rng,
 	std::uniform_real_distribution<float>& distance_distribution,									// rdist
 	std::uniform_real_distribution<float>& spherical_coordinate_position_distribution,				// adist
@@ -12,8 +12,8 @@ box::box(graphics& graphics,
 	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution,	// odist
 	std::uniform_real_distribution<float>& z_axis_distortion_distribution							// bdist
 )
-	: drawable_static_storage(),
-	radius_distance_from_center_(distance_distribution(rng)),
+	: DrawableStaticStorage(),
+	radiusDistanceFromCenter_(distance_distribution(rng)),
 	theta_(spherical_coordinate_position_distribution(rng)),
 	phi_(spherical_coordinate_position_distribution(rng)),
 	rho_(spherical_coordinate_position_distribution(rng)),
@@ -26,23 +26,23 @@ box::box(graphics& graphics,
 {
 	namespace dx = DirectX;
 
-	if (!is_static_initialized())
+	if (!isStaticInitialized())
 	{
 		struct vertex
 		{
 			dx::XMFLOAT3 pos;
 		};
-		const auto model = cube::make<vertex>();
+		const auto model = Cube::make<vertex>();
 
-		add_static_bind(std::make_unique<vertex_buffer>(graphics, model.vertices()));
+		addStaticBind(std::make_unique<VertexBuffer>(graphics, model.vertices()));
 
-		auto p_vertex_shader = std::make_unique<vertex_shader>(graphics, L"ColorIndexVS.cso");
-		auto p_vertex_shader_bytecode = p_vertex_shader->get_byte_code();
-		add_static_bind(std::move(p_vertex_shader));
+		auto p_vertex_shader = std::make_unique<VertexShader>(graphics, L"ColorIndexVS.cso");
+		auto p_vertex_shader_bytecode = p_vertex_shader->getByteCode();
+		addStaticBind(std::move(p_vertex_shader));
 
-		add_static_bind(std::make_unique<pixel_shader>(graphics, L"ColorIndexPS.cso"));
+		addStaticBind(std::make_unique<PixelShader>(graphics, L"ColorIndexPS.cso"));
 
-		add_static_index_buffer(std::make_unique<index_buffer>(graphics, model.indices()));
+		addStaticIndexBuffer(std::make_unique<IndexBuffer>(graphics, model.indices()));
 
 		struct pixel_shader_constants
 		{
@@ -67,7 +67,7 @@ box::box(graphics& graphics,
 				{0.0f, 1.0f, 1.0f, 1.0f}, // Cyan
 			}
 		};
-		add_static_bind(std::make_unique<pixel_constant_buffer<pixel_shader_constants>>(graphics, constant_buffer));
+		addStaticBind(std::make_unique<PixelConstantBuffer<pixel_shader_constants>>(graphics, constant_buffer));
 
 		const std::vector<D3D11_INPUT_ELEMENT_DESC> input_element_descs =
 		{
@@ -81,16 +81,16 @@ box::box(graphics& graphics,
 				.InstanceDataStepRate = 0u
 			},
 		};
-		add_static_bind(std::make_unique<input_layout>(graphics, input_element_descs, p_vertex_shader_bytecode));
+		addStaticBind(std::make_unique<InputLayout>(graphics, input_element_descs, p_vertex_shader_bytecode));
 
-		add_static_bind(std::make_unique<topology>(graphics, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+		addStaticBind(std::make_unique<Topology>(graphics, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 	}
 	else
 	{
-		set_index_buffer_from_static_binds();
+		setIndexBufferFromStaticBinds();
 	}
 
-	drawable::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
+	Drawable::addBind(std::make_unique<TransformConstantBuffer>(graphics, *this));
 
 	// model deformation transform (per instance, not stored as bind)
 	dx::XMStoreFloat3x3(
@@ -99,20 +99,20 @@ box::box(graphics& graphics,
 	);
 }
 
-void box::update(const float dt) noexcept
+void Box::update(const float dt) noexcept
 {
-	roll_ += wrap_angle(droll_ * dt);
-	pitch_ += wrap_angle(dpitch_ * dt);
-	yaw_ += wrap_angle(dyaw_ * dt);
-	theta_ += wrap_angle(dtheta_ * dt);
-	phi_ += wrap_angle(dphi_ * dt);
-	rho_ += wrap_angle(drho_ * dt);
+	roll_ += wrapAngle(droll_ * dt);
+	pitch_ += wrapAngle(dpitch_ * dt);
+	yaw_ += wrapAngle(dyaw_ * dt);
+	theta_ += wrapAngle(dtheta_ * dt);
+	phi_ += wrapAngle(dphi_ * dt);
+	rho_ += wrapAngle(drho_ * dt);
 }
 
-DirectX::XMMATRIX box::get_transform_xm() const noexcept
+DirectX::XMMATRIX Box::getTransformXm() const noexcept
 {
 	return DirectX::XMMatrixRotationRollPitchYaw(pitch_, yaw_, roll_) *
-		DirectX::XMMatrixTranslation(radius_distance_from_center_, 0.0f, 0.0f) *
+		DirectX::XMMatrixTranslation(radiusDistanceFromCenter_, 0.0f, 0.0f) *
 		DirectX::XMMatrixRotationRollPitchYaw(theta_, phi_, rho_) *
 		DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
 }

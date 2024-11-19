@@ -2,18 +2,18 @@
 #include "Bindable.h"
 #include "Surface.h"
 
-class texture : public bindable
+class Texture : public Bindable
 {
 public:
-	texture() = default;
-	texture(graphics& graphics, const surface& surface);
-	~texture() override = default;
-	texture(const texture&) = delete;
-	texture& operator=(const texture&) = delete;
-	texture(const texture&&) = delete;
-	texture& operator=(const texture&&) = delete;
+	Texture() = default;
+	Texture(Graphics& graphics, const Surface& surface);
+	~Texture() override = default;
+	Texture(const Texture&) = delete;
+	Texture& operator=(const Texture&) = delete;
+	Texture(const Texture&&) = delete;
+	Texture& operator=(const Texture&&) = delete;
 
-	void bind(graphics& graphics) noexcept override;
+	void bind(Graphics& graphics) noexcept override;
 protected:
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> p_texture_view_;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> textureView_;
 };

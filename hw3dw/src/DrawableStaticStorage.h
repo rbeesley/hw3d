@@ -7,66 +7,66 @@
 #include "Logging.h"
 
 template<class _>
-class drawable_static_storage : public drawable
+class DrawableStaticStorage : public Drawable
 {
 public:
 	// Copy and move semantics required for drawables
-	//drawable_static_storage(const drawable_static_storage&) = delete;
-	//drawable_static_storage& operator=(const drawable_static_storage&) = delete;
-	//drawable_static_storage(const drawable_static_storage&&) = delete;
-	//drawable_static_storage& operator=(const drawable_static_storage&&) = delete;
+	//DrawableStaticStorage(const DrawableStaticStorage&) = delete;
+	//DrawableStaticStorage& operator=(const DrawableStaticStorage&) = delete;
+	//DrawableStaticStorage(const DrawableStaticStorage&&) = delete;
+	//DrawableStaticStorage& operator=(const DrawableStaticStorage&&) = delete;
 
-	static bool is_static_initialized() noexcept
+	static bool isStaticInitialized() noexcept
 	{
-		return !static_binds_.empty();
+		return !staticBinds_.empty();
 	}
 
-	static std::string clean_type_name(const std::string& type_name) {
+	static std::string cleanTypeName(const std::string& typeName) {
 		// Regular expression to match the core type and strip out unnecessary parts
 		const std::regex re(R"((.+?)(?=<struct))");
-		if (std::smatch match; std::regex_search(type_name, match, re)) {
+		if (std::smatch match; std::regex_search(typeName, match, re)) {
 			return match.str();
 		}
-		return type_name;
+		return typeName;
 	}
 
-	static void add_static_bind(std::unique_ptr<bindable> p_bind) noexcept(!IS_DEBUG)
+	static void addStaticBind(std::unique_ptr<Bindable> bind) noexcept(!IS_DEBUG)
 	{
-		PLOGV << "binding " << clean_type_name(typeid(*p_bind).name());
-		assert("*Must* use add_index_buffer or add_static_index_buffer to bind index buffer" && typeid(*p_bind) != typeid(index_buffer));
-		static_binds_.push_back(std::move(p_bind));
+		PLOGV << "binding " << cleanTypeName(typeid(*bind).name());
+		assert("*Must* use add_index_buffer or addStaticIndexBuffer to bind index buffer" && typeid(*bind) != typeid(IndexBuffer));
+		staticBinds_.push_back(std::move(bind));
 	}
 
-	void add_static_index_buffer(std::unique_ptr<index_buffer> p_index_buffer) noexcept(!IS_DEBUG)
+	void addStaticIndexBuffer(std::unique_ptr<IndexBuffer> indexBuffer) noexcept(!IS_DEBUG)
 	{
 		PLOGV << "index buffer";
-		assert("Attempting to add index buffer a second time" && p_index_buffer_ == nullptr);
-		p_index_buffer_ = p_index_buffer.get();
-		static_binds_.push_back(std::move(p_index_buffer));
+		assert("Attempting to add index buffer a second time" && indexBuffer_ == nullptr);
+		indexBuffer_ = indexBuffer.get();
+		staticBinds_.push_back(std::move(indexBuffer));
 	}
 
-	void set_index_buffer_from_static_binds() noexcept(!IS_DEBUG)
+	void setIndexBufferFromStaticBinds() noexcept(!IS_DEBUG)
 	{
-		assert("Attempting to add index buffer a second time" && p_index_buffer_ == nullptr);
-		for (const auto& bind : static_binds_)
+		assert("Attempting to add index buffer a second time" && indexBuffer_ == nullptr);
+		for (const auto& bind : staticBinds_)
 		{
-			if (const auto p_index_buffer = dynamic_cast<index_buffer*>(bind.get()))
+			if (const auto indexBuffer = dynamic_cast<IndexBuffer*>(bind.get()))
 			{
-				p_index_buffer_ = p_index_buffer;
+				indexBuffer_ = indexBuffer;
 				return;
 			}
 		}
 	}
 
 private:
-	const std::vector<std::unique_ptr<bindable>>& get_static_binds() const noexcept override
+	const std::vector<std::unique_ptr<Bindable>>& getStaticBinds() const noexcept override
 	{
-		return static_binds_;
+		return staticBinds_;
 	}
 
 private:
-	static std::vector<std::unique_ptr<bindable>> static_binds_;
+	static std::vector<std::unique_ptr<Bindable>> staticBinds_;
 };
 
 template<class T>
-std::vector<std::unique_ptr<bindable>> drawable_static_storage<T>::static_binds_;
+std::vector<std::unique_ptr<Bindable>> DrawableStaticStorage<T>::staticBinds_;

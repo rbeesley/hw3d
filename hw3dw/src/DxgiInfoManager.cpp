@@ -11,9 +11,9 @@
 
 #pragma comment(lib, "dxguid.lib")
 
-#define GFX_THROW_NOINFO(hrcall) if( FAILED(hresult = (hrcall))) throw graphics::hresult_exception(__LINE__, __FILE__, hresult)
+#define GFX_THROW_NOINFO(hrcall) if( FAILED(hresult = (hrcall))) throw Graphics::HresultException(__LINE__, __FILE__, hresult)
 
-dxgi_info_manager::dxgi_info_manager()
+DxgiInfoManager::DxgiInfoManager()
 {
 	// define function signature of DXGIGetDebugInterface
 	typedef HRESULT(WINAPI* DXGIGetDebugInterface)(REFIID, void**);
@@ -42,38 +42,38 @@ dxgi_info_manager::dxgi_info_manager()
 #endif
 
 	HRESULT hresult;
-	GFX_THROW_NOINFO(debug_interface(__uuidof(IDXGIInfoQueue), &p_dxgi_info_queue_));
+	GFX_THROW_NOINFO(debug_interface(__uuidof(IDXGIInfoQueue), &dxgiInfoQueue_));
 
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
 }
 
-void dxgi_info_manager::set() noexcept
+void DxgiInfoManager::set() noexcept
 {
 	// set the index (next) so that the next all to GetMessages()
 	// will only get errors generated after this call
-	next_ = p_dxgi_info_queue_->GetNumStoredMessages(DXGI_DEBUG_ALL);
+	next_ = dxgiInfoQueue_->GetNumStoredMessages(DXGI_DEBUG_ALL);
 }
 
-std::vector<std::string> dxgi_info_manager::get_messages() const
+std::vector<std::string> DxgiInfoManager::getMessages() const
 {
 	std::vector<std::string> messages;
-	const auto end = p_dxgi_info_queue_->GetNumStoredMessages(DXGI_DEBUG_ALL);
+	const auto end = dxgiInfoQueue_->GetNumStoredMessages(DXGI_DEBUG_ALL);
 	for (auto i = next_; i < end; i++)
 	{
 		HRESULT hresult;
 		SIZE_T message_length = 0;
 
 		// Get the size of message i in bytes
-		GFX_THROW_NOINFO(p_dxgi_info_queue_->GetMessage(DXGI_DEBUG_ALL, i, nullptr, &message_length));
+		GFX_THROW_NOINFO(dxgiInfoQueue_->GetMessage(DXGI_DEBUG_ALL, i, nullptr, &message_length));
 
 		// Allocate memory for the message
 		auto bytes = std::make_unique<byte[]>(message_length);
 		auto message = reinterpret_cast<DXGI_INFO_QUEUE_MESSAGE*>(bytes.get());
 
 		// Retrieve the message and push its description into the messages queue
-		GFX_THROW_NOINFO(p_dxgi_info_queue_->GetMessage(DXGI_DEBUG_ALL, i, message, &message_length));
+		GFX_THROW_NOINFO(dxgiInfoQueue_->GetMessage(DXGI_DEBUG_ALL, i, message, &message_length));
 		messages.emplace_back(message->pDescription);
 	}
 

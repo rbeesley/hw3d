@@ -5,7 +5,7 @@
 #include <sstream>
 #include <string>
 
-virtual_key_map::virtual_key_map()
+VirtualKeyMap::VirtualKeyMap()
 	:
 	map_({
 	// VK_*s defined in WinUser.h
@@ -330,9 +330,9 @@ virtual_key_map::virtual_key_map()
 		})
 {}
 
-std::string virtual_key_map::operator()(const unsigned char virtual_key_code) const
+std::string VirtualKeyMap::operator()(const unsigned char virtualKeyCode) const
 {
-	const auto it = map_.find(virtual_key_code);
+	const auto it = map_.find(virtualKeyCode);
 
 	std::ostringstream out;
 	if (it != map_.end())
@@ -342,7 +342,7 @@ std::string virtual_key_map::operator()(const unsigned char virtual_key_code) co
 	else
 	{
 		out << " Unknown message: 0x"
-			<< std::setw(8) << std::right << std::setfill('0') << std::hex << virtual_key_code;
+			<< std::setw(8) << std::right << std::setfill('0') << std::hex << virtualKeyCode;
 	}
 
 	return out.str();
@@ -352,7 +352,7 @@ std::string virtual_key_map::operator()(const unsigned char virtual_key_code) co
  * This is an alternative to using the map, using Windows built in method for identifying the VK_*.
  * GetKeyNameText() doesn't seem to handle some virtual keys like VK_BROWSER_SEARCH without error.
  */
- //std::string virtual_key_map::operator()(const unsigned char virtual_key_code) const
+ //std::string VirtualKeyMap::operator()(const unsigned char virtual_key_code) const
  //{
  //	UINT scan_code = MapVirtualKey(virtual_key_code, MAPVK_VK_TO_VSC);
  //

@@ -4,42 +4,42 @@
 #include "AtumMath.h"
 #include "IndexedTriangleList.h"
 
-class plane
+class Plane
 {
 public:
 	template<class V>
-	static indexed_triangle_list<V> make(std::function<void(std::vector<V>&)> set_attributes = nullptr)
+	static IndexedTriangleList<V> make(std::function<void(std::vector<V>&)> set_attributes = nullptr)
 	{
-		return make_tessellated<V>(1, 1, set_attributes);
+		return makeTessellated<V>(1, 1, set_attributes);
 	}
 
 	template<class V>
-	static indexed_triangle_list<V> make_tessellated(const int divisions_x, const int divisions_y, std::function<void(std::vector<V>&)> set_attributes = nullptr)
+	static IndexedTriangleList<V> makeTessellated(const int divisionsX, const int divisionsY, std::function<void(std::vector<V>&)> setAttributes = nullptr)
 	{
 		namespace dx = DirectX;
-		assert(divisions_x >= 1);
-		assert(divisions_y >= 1);
+		assert(divisionsX >= 1);
+		assert(divisionsY >= 1);
 
-		const int number_vertices_x = divisions_x + 1;
-		const int number_vertices_y = divisions_y + 1;
-		std::vector<V> vertices(number_vertices_x * number_vertices_y);
+		const int numberVerticesX = divisionsX + 1;
+		const int numberVerticesY = divisionsY + 1;
+		std::vector<V> vertices(numberVerticesX * numberVerticesY);
 		{
 			constexpr float height = 2.0f;
 			constexpr float width = 2.0f;
-			constexpr float side_x = width / 2.0f;
-			constexpr float side_y = height / 2.0f;
-			const float division_size_x = width / static_cast<float>(divisions_x);
-			const float division_size_y = height / static_cast<float>(divisions_y);
-			const auto bottom_left = dx::XMVectorSet(-side_x, -side_y, 0.0f, 0.0f);
+			constexpr float sideX = width / 2.0f;
+			constexpr float sideY = height / 2.0f;
+			const float divisionSizeX = width / static_cast<float>(divisionsX);
+			const float divisionSizeY = height / static_cast<float>(divisionsY);
+			const auto bottomLeft = dx::XMVectorSet(-sideX, -sideY, 0.0f, 0.0f);
 
-			for (int y = 0, i = 0; y < number_vertices_y; y++)
+			for (int y = 0, i = 0; y < numberVerticesY; y++)
 			{
-				const float y_pos = static_cast<float>(y) * division_size_y;
-				for (int x = 0; x < number_vertices_x; x++, i++)
+				const float yPos = static_cast<float>(y) * divisionSizeY;
+				for (int x = 0; x < numberVerticesX; x++, i++)
 				{
 					const auto vertex = dx::XMVectorAdd(
-						bottom_left,
-						dx::XMVectorSet(static_cast<float>(x) * division_size_x, y_pos, 0.0f, 0.0f)
+						bottomLeft,
+						dx::XMVectorSet(static_cast<float>(x) * divisionSizeX, yPos, 0.0f, 0.0f)
 					);
 					dx::XMStoreFloat3(&vertices[i].pos, vertex);
 				}
@@ -47,36 +47,36 @@ public:
 		}
 
 		std::vector<unsigned short> indices;
-		indices.reserve(static_cast<std::vector<unsigned short>::size_type>(sq(divisions_x * divisions_y)) * 6);
+		indices.reserve(static_cast<std::vector<unsigned short>::size_type>(sq(divisionsX * divisionsY)) * 6);
 		{
-			const auto vertex_pos_to_index = [number_vertices_x](const size_t x, const size_t y)
+			const auto vertexPosToIndex = [numberVerticesX](const size_t x, const size_t y)
 			{
-				return static_cast<unsigned short>(y * number_vertices_x + x);
+				return static_cast<unsigned short>(y * numberVerticesX + x);
 			};
 
-			for (size_t y = 0; y < divisions_y; y++)
+			for (size_t y = 0; y < divisionsY; y++)
 			{
-				for (size_t x = 0; x < divisions_x; x++)
+				for (size_t x = 0; x < divisionsX; x++)
 				{
-					const std::array<unsigned short, 4> index_array =
+					const std::array<unsigned short, 4> indexArray =
 					{
-						vertex_pos_to_index(x, y),
-						vertex_pos_to_index(x + 1, y),
-						vertex_pos_to_index(x, y + 1),
-						vertex_pos_to_index(x + 1, y + 1)
+						vertexPosToIndex(x, y),
+						vertexPosToIndex(x + 1, y),
+						vertexPosToIndex(x, y + 1),
+						vertexPosToIndex(x + 1, y + 1)
 					};
-					indices.push_back(index_array[0]);
-					indices.push_back(index_array[2]);
-					indices.push_back(index_array[1]);
-					indices.push_back(index_array[1]);
-					indices.push_back(index_array[2]);
-					indices.push_back(index_array[3]);
+					indices.push_back(indexArray[0]);
+					indices.push_back(indexArray[2]);
+					indices.push_back(indexArray[1]);
+					indices.push_back(indexArray[1]);
+					indices.push_back(indexArray[2]);
+					indices.push_back(indexArray[3]);
 				}
 			}
 		}
 
-		if (set_attributes) {
-			set_attributes(vertices);
+		if (setAttributes) {
+			setAttributes(vertices);
 		}
 
 		return

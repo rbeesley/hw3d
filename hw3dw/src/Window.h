@@ -12,96 +12,97 @@
 #include "Mouse.h"
 #include "Graphics.h"
 
-class window
+class Window
 {
 private:
 	// singleton
-	class window_class {
+	class WindowClass {
 	public:
-		window_class();
-		~window_class();
-		window_class(const window_class&) = delete;
-		window_class& operator=(const window_class&) = delete;
-		window_class(const window_class&&) = delete;
-		window_class& operator=(const window_class&&) = delete;
-		void initialize() const noexcept;
+		WindowClass();
+		~WindowClass();
+		WindowClass(const WindowClass&) = delete;
+		WindowClass& operator=(const WindowClass&) = delete;
+		WindowClass(const WindowClass&&) = delete;
+		WindowClass& operator=(const WindowClass&&) = delete;
 		void shutdown() const noexcept;
-		static LPCWSTR get_name() noexcept;
-		HINSTANCE get_instance() const noexcept;
+		static LPCWSTR getName() noexcept;
+		HINSTANCE getInstance() const noexcept;
 	private:
-		static constexpr LPCWSTR window_class_name = L"Atum.D3D";
-		HINSTANCE instance_handle_;
+		static constexpr LPCWSTR windowClassName = L"Atum.D3D";
+		HINSTANCE instanceHandle_;
 	};
 public:
-	class exception : public atum_exception {
-		using atum_exception::atum_exception;
+	class Exception : public AtumException {
+		using AtumException::AtumException;
 	public:
-		static std::string translate_error_code(HRESULT result) noexcept;
+		static std::string translateErrorCode(HRESULT result) noexcept;
 	private:
 		HRESULT result_;
 	};
 public:
-	class hresult_exception : public exception
+	class HresultException : public Exception
 	{
 	public:
-		hresult_exception(int line, const char* file, HRESULT hresult) noexcept;
+		HresultException(int line, const char* file, HRESULT hresult) noexcept;
 		const char* what() const noexcept override;
-		const char* get_type() const noexcept override;
-		HRESULT get_error_code() const noexcept;
-		std::string get_error_description() const noexcept;
+		const char* getType() const noexcept override;
+		HRESULT getErrorCode() const noexcept;
+		std::string getErrorDescription() const noexcept;
 	private:
 		HRESULT hresult_;
 	};
-	class no_gfx_exception : public exception
+	class NoGfxException : public Exception
 	{
 	public:
-		using exception::exception;
-		const char* get_type() const noexcept override;
+		using Exception::Exception;
+		const char* getType() const noexcept override;
 
 	};
 public:
-	struct window_dimensions
+	struct WindowDimensions
 	{
 		unsigned int width;
 		unsigned int height;
 	};
 
-	window() noexcept = default;
-	~window();
+	void createWindow(LPCWSTR name);
+	void configureImGui();
+	static void initializeStaticMembers();
+	static void shutdownStaticMembers();
+	explicit Window(int width, int height, LPCWSTR name);
+	~Window();
 
-	window(const window&) = delete;
-	window& operator=(const window&) = delete;
-	window(const window&&) = delete;
-	window& operator=(const window&&) = delete;
+	Window(const Window&) = delete;
+	Window& operator=(const Window&) = delete;
+	Window(const Window&&) = delete;
+	Window& operator=(const Window&&) = delete;
 
-	void initialize(int width, int height, LPCWSTR name);
-	[[nodiscard]] static HWND get_handle();
-	void shutdown() const;
-	static std::optional<unsigned int> process_messages();
-	static mouse* get_mouse();
-	static keyboard* get_keyboard();
-	static graphics* get_graphics();
-	static void set_title(const std::wstring& title);
-	static void set_target_dimensions(unsigned int width, unsigned int height);
-	static window_dimensions get_target_dimensions();
+	[[nodiscard]] static HWND getHandle();
+	static std::optional<unsigned int> processMessages();
+	std::shared_ptr<Mouse> get_mouse();
+	std::shared_ptr<Keyboard> get_keyboard();
+	std::shared_ptr<Graphics> get_graphics();
+	static void setTitle(const std::wstring& title);
+	static void setTargetDimensions(unsigned int width, unsigned int height);
+	static WindowDimensions getTargetDimensions();
 private:
-	static LRESULT CALLBACK handle_msg_setup(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
-	static LRESULT CALLBACK handle_msg_thunk(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
-	static HWND set_active(HWND window_handle);
-	static LRESULT CALLBACK handle_msg(HWND window_handle, UINT msg, WPARAM w_param, LPARAM l_param) noexcept;
+	static LRESULT CALLBACK handleMsgSetup(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+	static LRESULT CALLBACK handleMsgThunk(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+	static HWND setActive(HWND window);
+	static LRESULT CALLBACK handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 public:
 private:
-	inline static std::unique_ptr<mouse> p_mouse_;
-	inline static std::unique_ptr<keyboard> p_keyboard_;
-	inline static std::unique_ptr<graphics> p_graphics_;
+	static std::shared_ptr<Mouse> mouse_;
+	static std::shared_ptr<Keyboard> keyboard_;
+	std::shared_ptr<Graphics> graphics_;
 	inline static int x_{};
 	inline static int y_{};
 	int width_{};
 	int height_{};
-	static bool in_sizemove_;
+	static bool inSizeMove_;
 	static bool minimized_;
-	static unsigned int target_width_;
-	static unsigned int target_height_;
-	std::unique_ptr<window_class> window_class_;
-	static inline HWND window_handle_;
+	static unsigned int targetWidth_;
+	static unsigned int targetHheight_;
+	std::unique_ptr<WindowClass> windowClass_;
+	static inline HWND windowHandle_;
 };

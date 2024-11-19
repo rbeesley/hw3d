@@ -1,20 +1,20 @@
 #pragma once
 #include "Bindable.h"
 
-class pixel_shader : public bindable
+class PixelShader : public Bindable
 {
 public:
-	pixel_shader(graphics& graphics, const std::wstring& path);
+	PixelShader(Graphics& graphics, const std::wstring& path);
 
-	~pixel_shader() override = default;
-	pixel_shader(const pixel_shader&) = delete;
-	pixel_shader& operator=(const pixel_shader&) = delete;
-	pixel_shader(const pixel_shader&&) = delete;
-	pixel_shader& operator=(const pixel_shader&&) = delete;
+	~PixelShader() override = default;
+	PixelShader(const PixelShader&) = delete;
+	PixelShader& operator=(const PixelShader&) = delete;
+	PixelShader(const PixelShader&&) = delete;
+	PixelShader& operator=(const PixelShader&&) = delete;
 
-	void bind(graphics& graphics) noexcept override;
+	void bind(Graphics& graphics) noexcept override;
 protected:
-	pixel_shader() = default;
+	PixelShader() = default;
 
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> p_pixel_shader_;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> pixelShader_;
 };

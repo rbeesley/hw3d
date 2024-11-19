@@ -2,30 +2,30 @@
 #include "BindableIncludes.h"
 #include "Cone.h"
 
-pyramid::pyramid(graphics& graphics,
+Pyramid::Pyramid(Graphics& graphics,
 	std::mt19937& rng,
-	std::uniform_real_distribution<float>& distance_distribution,									// rdist
-	std::uniform_real_distribution<float>& spherical_coordinate_position_distribution,				// adist
-	std::uniform_real_distribution<float>& rotation_of_drawable_distribution,						// ddist
-	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution	// odist
+	std::uniform_real_distribution<float>& distanceDistribution,								// rdist
+	std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,				// adist
+	std::uniform_real_distribution<float>& rotationOfDrawableDistribution,						// ddist
+	std::uniform_real_distribution<float>& sphericalCoordinateMovementOfDrawableDistribution	// odist
 )
 	:
-	radius_distance_from_center_(distance_distribution(rng)),
-	theta_(spherical_coordinate_position_distribution(rng)),
-	phi_(spherical_coordinate_position_distribution(rng)),
-	rho_(spherical_coordinate_position_distribution(rng)),
-	droll_(rotation_of_drawable_distribution(rng)),
-	dpitch_(rotation_of_drawable_distribution(rng)),
-	dyaw_(rotation_of_drawable_distribution(rng)),
-	dtheta_(spherical_coordinate_movement_of_drawable_distribution(rng)),
-	dphi_(spherical_coordinate_movement_of_drawable_distribution(rng)),
-	drho_(spherical_coordinate_movement_of_drawable_distribution(rng))
+	radiusDistanceFromCenter_(distanceDistribution(rng)),
+	theta_(sphericalCoordinatePositionDistribution(rng)),
+	phi_(sphericalCoordinatePositionDistribution(rng)),
+	rho_(sphericalCoordinatePositionDistribution(rng)),
+	droll_(rotationOfDrawableDistribution(rng)),
+	dpitch_(rotationOfDrawableDistribution(rng)),
+	dyaw_(rotationOfDrawableDistribution(rng)),
+	dtheta_(sphericalCoordinateMovementOfDrawableDistribution(rng)),
+	dphi_(sphericalCoordinateMovementOfDrawableDistribution(rng)),
+	drho_(sphericalCoordinateMovementOfDrawableDistribution(rng))
 {
 	namespace dx = DirectX;
 
-	if (!is_static_initialized())
+	if (!isStaticInitialized())
 	{
-		struct color
+		struct Color
 		{
 			unsigned char r;
 			unsigned char g;
@@ -33,14 +33,14 @@ pyramid::pyramid(graphics& graphics,
 			unsigned char a;
 		};
 
-		struct vertex
+		struct Vertex
 		{
 			dx::XMFLOAT3 pos;
-			color color;
+			Color color;
 		};
 
 		// Define vertex colors
-		std::vector<color> colors = {
+		std::vector<Color> colors = {
 			{255, 0, 0, 255},
 			{255, 255, 0, 255},
 			{0, 255, 0, 255},
@@ -50,29 +50,29 @@ pyramid::pyramid(graphics& graphics,
 		};
 
 		// Lambda to set colors
-		auto set_colors = [colors](std::vector<vertex>& vertices) {
+		auto setColors = [colors](std::vector<Vertex>& vertices) {
 			for (size_t i = 0; i < vertices.size() && i < colors.size(); ++i) {
 				vertices[i].color = colors[i];
 			}
 			};
 
 		// Create the model with vertices, indices, and the lambda
-		auto model = cone::make_tessellated<vertex>(4, set_colors);
+		auto model = Cone::makeTessellated<Vertex>(4, setColors);
 
 		// deform mesh linearly
 		model.transform(dx::XMMatrixScaling(1.0f, 1.0f, 0.7f));
 
-		add_static_bind(std::make_unique<vertex_buffer>(graphics, model.vertices()));
+		addStaticBind(std::make_unique<VertexBuffer>(graphics, model.vertices()));
 
-		auto p_vertex_shader = std::make_unique<vertex_shader>(graphics, L"ColorBlendVS.cso");
-		auto p_vertex_shader_bytecode = p_vertex_shader->get_byte_code();
-		add_static_bind(std::move(p_vertex_shader));
+		auto vertexShader = std::make_unique<VertexShader>(graphics, L"ColorBlendVS.cso");
+		auto vertexShaderBytecode = vertexShader->getByteCode();
+		addStaticBind(std::move(vertexShader));
 
-		add_static_bind(std::make_unique<pixel_shader>(graphics, L"ColorBlendPS.cso"));
+		addStaticBind(std::make_unique<PixelShader>(graphics, L"ColorBlendPS.cso"));
 
-		add_static_index_buffer(std::make_unique<index_buffer>(graphics, model.indices()));
+		addStaticIndexBuffer(std::make_unique<IndexBuffer>(graphics, model.indices()));
 
-		constexpr D3D11_INPUT_ELEMENT_DESC position_desc = {
+		constexpr D3D11_INPUT_ELEMENT_DESC positionDesc = {
 			.SemanticName = "Position",
 			.SemanticIndex = 0,
 			.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
@@ -82,7 +82,7 @@ pyramid::pyramid(graphics& graphics,
 			.InstanceDataStepRate = 0
 		};
 
-		constexpr D3D11_INPUT_ELEMENT_DESC color_desc = {
+		constexpr D3D11_INPUT_ELEMENT_DESC colorDesc = {
 			.SemanticName = "Color",
 			.SemanticIndex = 0,
 			.Format = DXGI_FORMAT::DXGI_FORMAT_R8G8B8A8_UNORM,
@@ -92,39 +92,39 @@ pyramid::pyramid(graphics& graphics,
 			.InstanceDataStepRate = 0
 		};
 
-		const std::vector input_element_descs =
+		const std::vector inputElementDescs =
 		{
-			position_desc,
-			color_desc
+			positionDesc,
+			colorDesc
 		};
 
-		add_static_bind(std::make_unique<input_layout>(graphics, input_element_descs, p_vertex_shader_bytecode));
+		addStaticBind(std::make_unique<InputLayout>(graphics, inputElementDescs, vertexShaderBytecode));
 
-		add_static_bind(std::make_unique<topology>(graphics, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+		addStaticBind(std::make_unique<Topology>(graphics, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 	}
 	else
 	{
-		set_index_buffer_from_static_binds();
+		setIndexBufferFromStaticBinds();
 	}
 
-	drawable::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
+	Drawable::addBind(std::make_unique<TransformConstantBuffer>(graphics, *this));
 }
 
-void pyramid::update(const float dt) noexcept
+void Pyramid::update(const float dt) noexcept
 {
-	roll_ += wrap_angle(droll_ * dt);
-	pitch_ += wrap_angle(dpitch_ * dt);
-	yaw_ += wrap_angle(dyaw_ * dt);
-	theta_ += wrap_angle(dtheta_ * dt);
-	phi_ += wrap_angle(dphi_ * dt);
-	rho_ += wrap_angle(drho_ * dt);
+	roll_ += wrapAngle(droll_ * dt);
+	pitch_ += wrapAngle(dpitch_ * dt);
+	yaw_ += wrapAngle(dyaw_ * dt);
+	theta_ += wrapAngle(dtheta_ * dt);
+	phi_ += wrapAngle(dphi_ * dt);
+	rho_ += wrapAngle(drho_ * dt);
 }
 
-DirectX::XMMATRIX pyramid::get_transform_xm() const noexcept
+DirectX::XMMATRIX Pyramid::getTransformXm() const noexcept
 {
 	namespace dx = DirectX;
 	return dx::XMMatrixRotationRollPitchYaw(pitch_, yaw_, roll_) *
-		dx::XMMatrixTranslation(radius_distance_from_center_, 0.0f, 0.0f) *
+		dx::XMMatrixTranslation(radiusDistanceFromCenter_, 0.0f, 0.0f) *
 		dx::XMMatrixRotationRollPitchYaw(theta_, phi_, rho_) *
 		dx::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
 }

@@ -1,16 +1,16 @@
 #pragma once
 #include <chrono>
 
-class timer
+class Timer
 {
 public:
-	timer() noexcept;
+	Timer() noexcept;
 
-	~timer() = default;
-	timer(const timer&) = delete;
-	timer& operator=(const timer&) = delete;
-	timer(const timer&&) = delete;
-	timer& operator=(const timer&&) = delete;
+	~Timer() = default;
+	Timer(const Timer&) = delete;
+	Timer& operator=(const Timer&) = delete;
+	Timer(const Timer&&) = delete;
+	Timer& operator=(const Timer&&) = delete;
 
 	float mark() noexcept;
 	float peek() const noexcept;

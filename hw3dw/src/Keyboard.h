@@ -7,51 +7,51 @@
 #define KEYBOARD_
 #include "AtumWindows.h"
 
-class keyboard
+class Keyboard
 {
 public:
-	keyboard() = default;
-	~keyboard() = default;
-	keyboard(const keyboard&) = delete;
-	keyboard& operator=(const keyboard&) = delete;
-	keyboard(const keyboard&&) = delete;
-	keyboard& operator=(const keyboard&&) = delete;
+	Keyboard() = default;
+	~Keyboard() = default;
+	Keyboard(const Keyboard&) = delete;
+	Keyboard& operator=(const Keyboard&) = delete;
+	Keyboard(const Keyboard&&) = delete;
+	Keyboard& operator=(const Keyboard&&) = delete;
 
 public:
-	class event
+	class Event
 	{
 	public:
-		enum class event_type : std::uint8_t
+		enum class EventType : std::uint8_t
 		{
-			press,
-			release,
-			invalid
+			PRESS,
+			RELEASE,
+			INVALID
 		};
-		using enum event_type;
+		using enum EventType;
 
 	private:
-		event_type event_type_;
+		EventType eventType_;
 		unsigned char code_;
 
 	public:
-		event() = delete;
-		event(const event_type event_type, const unsigned char code) noexcept
+		Event() = delete;
+		Event(const EventType eventType, const unsigned char code) noexcept
 			:
-			event_type_(event_type),
+			eventType_(eventType),
 			code_(code)
 		{}
 
-		[[nodiscard]] bool is_press() const noexcept
+		[[nodiscard]] bool isPress() const noexcept
 		{
-			return event_type_ == press;
+			return eventType_ == PRESS;
 		}
 
-		[[nodiscard]] bool is_release() const noexcept
+		[[nodiscard]] bool isRelease() const noexcept
 		{
-			return event_type_ == release;
+			return eventType_ == RELEASE;
 		}
 
-		[[nodiscard]] unsigned char get_code() const noexcept
+		[[nodiscard]] unsigned char getCode() const noexcept
 		{
 			return code_;
 		}
@@ -60,39 +60,39 @@ public:
 	// key event and char event management
 private:
 	template<typename T>
-	static void trim_buffer(std::queue<T>& buffer) noexcept;
+	static void trimBuffer(std::queue<T>& buffer) noexcept;
 
 	// key event management
 private:
-	std::optional<event> read_key() noexcept;
-	[[nodiscard]] bool is_key_empty() const noexcept;
-	void clear_event_buffer() noexcept;
+	std::optional<Event> readKey() noexcept;
+	[[nodiscard]] bool isKeyEmpty() const noexcept;
+	void clearEventBuffer() noexcept;
 public:
-	[[nodiscard]] bool is_key_pressed(unsigned char keycode) const noexcept;
-	void on_key_pressed(unsigned char key_code) noexcept;
-	void on_key_released(unsigned char key_code) noexcept;
-	void clear_state() noexcept;
+	[[nodiscard]] bool isKeyPressed(unsigned char keyCode) const noexcept;
+	void onKeyPressed(unsigned char keyCode) noexcept;
+	void onKeyReleased(unsigned char keyCode) noexcept;
+	void clearState() noexcept;
 
 	// char event management
 private:
-	std::optional<char> read_char() noexcept;
-	[[nodiscard]] bool is_char_empty() const noexcept;
-	void clear_char_buffer() noexcept;
+	std::optional<char> readChar() noexcept;
+	[[nodiscard]] bool isCharEmpty() const noexcept;
+	void clearCharBuffer() noexcept;
 	void clear() noexcept;
 public:
-	void on_char(unsigned char character) noexcept;
+	void onChar(unsigned char character) noexcept;
 
 	// auto repeat control
 public:
-	void enable_autorepeat() noexcept;
-	void disable_autorepeat() noexcept;
-	[[nodiscard]] bool is_autorepeat_enabled() const noexcept;
+	void enableAutorepeat() noexcept;
+	void disableAutorepeat() noexcept;
+	[[nodiscard]] bool isAutorepeatEnabled() const noexcept;
 
 private:
-	static constexpr unsigned int number_of_keys = 256u;
-	static constexpr unsigned int buffer_size = 16u;
-	bool autorepeat_enabled_ = false;
-	std::bitset<number_of_keys> key_state_;
-	std::queue<event> event_buffer_;
-	std::queue<char> char_buffer_;
+	static constexpr unsigned int NUMBER_OF_KEYS = 256u;
+	static constexpr unsigned int BUFFER_SIZE = 16u;
+	bool autorepeatEnabled_ = false;
+	std::bitset<NUMBER_OF_KEYS> keyState_;
+	std::queue<Event> eventBuffer_;
+	std::queue<char> charBuffer_;
 };

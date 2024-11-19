@@ -4,41 +4,41 @@
 #include <DirectXMath.h>
 #include "AtumMath.h"
 
-class sphere
+class Sphere
 {
 public:
 	template<class V>
-	static indexed_triangle_list<V> make()
+	static IndexedTriangleList<V> make()
 	{
-		return make_tessellated<V>(12, 24);
+		return makeTessellated<V>(12, 24);
 	}
 
 	template<class V>
-	static indexed_triangle_list<V> make_tessellated(const int latitudinal_divisions, const int longitudinal_divisions)
+	static IndexedTriangleList<V> makeTessellated(const int latitudinalDivisions, const int longitudinalDivisions)
 	{
 		namespace dx = DirectX;
-		assert(latitudinal_divisions >= 3);
-		assert(longitudinal_divisions >= 3);
+		assert(latitudinalDivisions >= 3);
+		assert(longitudinalDivisions >= 3);
 
 		constexpr float radius = 1.0f;
 		const auto base = dx::XMVectorSet(0.0f, 0.0f, radius, 0.0f);
-		const float latitudinal_angle = PI / static_cast<float>(latitudinal_divisions);
-		const float longitude_angle = 2.0f * PI / static_cast<float>(longitudinal_divisions);
+		const float latitudinalAngle = PI / static_cast<float>(latitudinalDivisions);
+		const float longitudeAngle = 2.0f * PI / static_cast<float>(longitudinalDivisions);
 
 		std::vector<V> vertices;
-		for (int index_latitude = 1; index_latitude < latitudinal_divisions; index_latitude++)
+		for (int indexLatitude = 1; indexLatitude < latitudinalDivisions; indexLatitude++)
 		{
-			const auto latitude_base = dx::XMVector3Transform(
+			const auto latitudeBase = dx::XMVector3Transform(
 				base,
-				dx::XMMatrixRotationX(latitudinal_angle * static_cast<float>(index_latitude))
+				dx::XMMatrixRotationX(latitudinalAngle * static_cast<float>(indexLatitude))
 			);
 
-			for (int index_longitude = 0; index_longitude < longitudinal_divisions; index_longitude++)
+			for (int indexLongitude = 0; indexLongitude < longitudinalDivisions; indexLongitude++)
 			{
 				vertices.emplace_back();
 				auto v = dx::XMVector3Transform(
-					latitude_base,
-					dx::XMMatrixRotationZ(longitude_angle * static_cast<float>(index_longitude))
+					latitudeBase,
+					dx::XMMatrixRotationZ(longitudeAngle * static_cast<float>(indexLongitude))
 				);
 
 				dx::XMStoreFloat3(&vertices.back().pos, v);
@@ -46,64 +46,64 @@ public:
 		}
 
 		// add the cap vertices
-		const auto index_north_pole = static_cast<unsigned short>(vertices.size());
+		const auto indexNorthPole = static_cast<unsigned short>(vertices.size());
 		vertices.emplace_back();
 		dx::XMStoreFloat3(&vertices.back().pos, base);
 
-		const auto index_south_pole = static_cast<unsigned short>(vertices.size());
+		const auto indexSouthPole = static_cast<unsigned short>(vertices.size());
 		vertices.emplace_back();
 		dx::XMStoreFloat3(&vertices.back().pos, dx::XMVectorNegate(base));
 
 		// ReSharper disable once CppLambdaCaptureNeverUsed
-		const auto calc_index = [latitudinal_divisions, longitudinal_divisions](const unsigned short index_latitude, const unsigned short index_longitude)
-			{ return index_latitude * longitudinal_divisions + index_longitude; };
+		const auto calcIndex = [latitudinalDivisions, longitudinalDivisions](const unsigned short indexLatitude, const unsigned short indexLongitude)
+			{ return indexLatitude * longitudinalDivisions + indexLongitude; };
 
 		std::vector<unsigned short> indices;
-		for (unsigned short index_latitude = 0; index_latitude < latitudinal_divisions - 2; index_latitude++)
+		for (unsigned short indexLatitude = 0; indexLatitude < latitudinalDivisions - 2; indexLatitude++)
 		{
-			for (unsigned short index_longitude = 0; index_longitude < longitudinal_divisions - 1; index_longitude++)
+			for (unsigned short indexLongitude = 0; indexLongitude < longitudinalDivisions - 1; indexLongitude++)
 			{
-				indices.push_back(calc_index(index_latitude, index_longitude));
-				indices.push_back(calc_index(index_latitude + 1, index_longitude));
-				indices.push_back(calc_index(index_latitude, index_longitude + 1));
-				indices.push_back(calc_index(index_latitude, index_longitude + 1));
-				indices.push_back(calc_index(index_latitude + 1, index_longitude));
-				indices.push_back(calc_index(index_latitude + 1, index_longitude + 1));
+				indices.push_back(calcIndex(indexLatitude, indexLongitude));
+				indices.push_back(calcIndex(indexLatitude + 1, indexLongitude));
+				indices.push_back(calcIndex(indexLatitude, indexLongitude + 1));
+				indices.push_back(calcIndex(indexLatitude, indexLongitude + 1));
+				indices.push_back(calcIndex(indexLatitude + 1, indexLongitude));
+				indices.push_back(calcIndex(indexLatitude + 1, indexLongitude + 1));
 			}
 
 			// wrap band
-			indices.push_back(calc_index(index_latitude, longitudinal_divisions - 1));
-			indices.push_back(calc_index(index_latitude + 1, longitudinal_divisions - 1));
-			indices.push_back(calc_index(index_latitude, 0));
-			indices.push_back(calc_index(index_latitude, 0));
-			indices.push_back(calc_index(index_latitude + 1, longitudinal_divisions - 1));
-			indices.push_back(calc_index(index_latitude + 1, 0));
+			indices.push_back(calcIndex(indexLatitude, longitudinalDivisions - 1));
+			indices.push_back(calcIndex(indexLatitude + 1, longitudinalDivisions - 1));
+			indices.push_back(calcIndex(indexLatitude, 0));
+			indices.push_back(calcIndex(indexLatitude, 0));
+			indices.push_back(calcIndex(indexLatitude + 1, longitudinalDivisions - 1));
+			indices.push_back(calcIndex(indexLatitude + 1, 0));
 		}
 
 		// cap fans
-		for (unsigned short index_longitude = 0; index_longitude < longitudinal_divisions - 1; index_longitude++)
+		for (unsigned short indexLongitude = 0; indexLongitude < longitudinalDivisions - 1; indexLongitude++)
 		{
 			// north
-			indices.push_back(index_north_pole);
-			indices.push_back(calc_index(0, index_longitude));
-			indices.push_back(calc_index(0, index_longitude + 1));
+			indices.push_back(indexNorthPole);
+			indices.push_back(calcIndex(0, indexLongitude));
+			indices.push_back(calcIndex(0, indexLongitude + 1));
 
 			// south
-			indices.push_back(calc_index(latitudinal_divisions - 2, index_longitude + 1));
-			indices.push_back(calc_index(latitudinal_divisions - 2, index_longitude));
-			indices.push_back(index_south_pole);
+			indices.push_back(calcIndex(latitudinalDivisions - 2, indexLongitude + 1));
+			indices.push_back(calcIndex(latitudinalDivisions - 2, indexLongitude));
+			indices.push_back(indexSouthPole);
 		}
 
 		// wrap triangles
 		// north
-		indices.push_back(index_north_pole);
-		indices.push_back(calc_index(0, longitudinal_divisions - 1));
-		indices.push_back(calc_index(0, 0));
+		indices.push_back(indexNorthPole);
+		indices.push_back(calcIndex(0, longitudinalDivisions - 1));
+		indices.push_back(calcIndex(0, 0));
 
 		// south
-		indices.push_back(calc_index(latitudinal_divisions - 2, 0));
-		indices.push_back(calc_index(latitudinal_divisions - 2, longitudinal_divisions - 1));
-		indices.push_back(index_south_pole);
+		indices.push_back(calcIndex(latitudinalDivisions - 2, 0));
+		indices.push_back(calcIndex(latitudinalDivisions - 2, longitudinalDivisions - 1));
+		indices.push_back(indexSouthPole);
 
 		return
 		{

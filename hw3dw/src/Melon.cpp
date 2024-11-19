@@ -3,36 +3,36 @@
 #include "BindableIncludes.h"
 #include "Sphere.h"
 
-melon::melon(graphics& graphics,
+Melon::Melon(Graphics& graphics,
 	std::mt19937& rng,
-	std::uniform_real_distribution<float>& distance_distribution,									// rdist
-	std::uniform_real_distribution<float>& spherical_coordinate_position_distribution,				// adist
-	std::uniform_real_distribution<float>& rotation_of_drawable_distribution,						// ddist
-	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution,	// odist
-	std::uniform_int_distribution<int>& latitude_distribution,
-	std::uniform_int_distribution<int>& longitude_distribution)
+	std::uniform_real_distribution<float>& distanceDistribution,									// rdist
+	std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,				// adist
+	std::uniform_real_distribution<float>& rotationOfDrawableDistribution,						// ddist
+	std::uniform_real_distribution<float>& sphericalCoordinateMovementOfDrawableDistribution,	// odist
+	std::uniform_int_distribution<int>& latitudeDistribution,
+	std::uniform_int_distribution<int>& longitudeDistribution)
 	:
-	distance_(distance_distribution(rng)),
-	theta_(spherical_coordinate_position_distribution(rng)),
-	phi_(spherical_coordinate_position_distribution(rng)),
-	rho_(spherical_coordinate_position_distribution(rng)),
-	droll_(rotation_of_drawable_distribution(rng)),
-	dpitch_(rotation_of_drawable_distribution(rng)),
-	dyaw_(rotation_of_drawable_distribution(rng)),
-	dtheta_(spherical_coordinate_movement_of_drawable_distribution(rng)),
-	dphi_(spherical_coordinate_movement_of_drawable_distribution(rng)),
-	drho_(spherical_coordinate_movement_of_drawable_distribution(rng))
+	radiusDistanceFromCenter_(distanceDistribution(rng)),
+	theta_(sphericalCoordinatePositionDistribution(rng)),
+	phi_(sphericalCoordinatePositionDistribution(rng)),
+	rho_(sphericalCoordinatePositionDistribution(rng)),
+	droll_(rotationOfDrawableDistribution(rng)),
+	dpitch_(rotationOfDrawableDistribution(rng)),
+	dyaw_(rotationOfDrawableDistribution(rng)),
+	dtheta_(sphericalCoordinateMovementOfDrawableDistribution(rng)),
+	dphi_(sphericalCoordinateMovementOfDrawableDistribution(rng)),
+	drho_(sphericalCoordinateMovementOfDrawableDistribution(rng))
 {
 	namespace dx = DirectX;
-	if (!is_static_initialized())
+	if (!isStaticInitialized())
 	{
-		auto p_vertex_shader = std::make_unique<vertex_shader>(graphics, L"ColorIndexVS.cso");
-		auto p_vertex_shader_bytecode = p_vertex_shader->get_byte_code();
-		add_static_bind(std::move(p_vertex_shader));
+		auto vertexShader = std::make_unique<VertexShader>(graphics, L"ColorIndexVS.cso");
+		auto vertexShaderBytecode = vertexShader->getByteCode();
+		addStaticBind(std::move(vertexShader));
 
-		add_static_bind(std::make_unique<pixel_shader>(graphics, L"ColorIndexPS.cso"));
+		addStaticBind(std::make_unique<PixelShader>(graphics, L"ColorIndexPS.cso"));
 
-		struct pixel_shader_constants
+		struct PixelShaderConstraints
 		{
 			struct
 			{
@@ -40,10 +40,10 @@ melon::melon(graphics& graphics,
 				float g;
 				float b;
 				float a;
-			} face_colors[8];
+			} faceColors[8];
 		};
 
-		const pixel_shader_constants constant_buffer =
+		const PixelShaderConstraints constantBuffer =
 		{
 			{
 				{ 1.0f,1.0f,1.0f },
@@ -57,9 +57,9 @@ melon::melon(graphics& graphics,
 			}
 		};
 
-		add_static_bind(std::make_unique<pixel_constant_buffer<pixel_shader_constants>>(graphics, constant_buffer));
+		addStaticBind(std::make_unique<PixelConstantBuffer<PixelShaderConstraints>>(graphics, constantBuffer));
 
-		constexpr D3D11_INPUT_ELEMENT_DESC position_desc = {
+		constexpr D3D11_INPUT_ELEMENT_DESC positionDesc = {
 			.SemanticName = "Position",
 			.SemanticIndex = 0,
 			.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
@@ -69,48 +69,48 @@ melon::melon(graphics& graphics,
 			.InstanceDataStepRate = 0
 		};
 
-		const std::vector<D3D11_INPUT_ELEMENT_DESC> input_element_descs =
+		const std::vector<D3D11_INPUT_ELEMENT_DESC> inputElementDescs =
 		{
-			position_desc
+			positionDesc
 		};
 
-		add_static_bind(std::make_unique<input_layout>(graphics, input_element_descs, p_vertex_shader_bytecode));
+		addStaticBind(std::make_unique<InputLayout>(graphics, inputElementDescs, vertexShaderBytecode));
 
-		add_static_bind(std::make_unique<topology>(graphics, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+		addStaticBind(std::make_unique<Topology>(graphics, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
 	}
 
-	struct vertex
+	struct Vertex
 	{
 		dx::XMFLOAT3 pos;
 	};
 
-	auto model = sphere::make_tessellated<vertex>(latitude_distribution(rng), longitude_distribution(rng));
+	auto model = Sphere::makeTessellated<Vertex>(latitudeDistribution(rng), longitudeDistribution(rng));
 
 	// deform vertices of model by linear transformation
 	model.transform(dx::XMMatrixScaling(1.0f, 1.0f, 1.2f));
 
-	drawable::add_bind(std::make_unique<vertex_buffer>(graphics, model.vertices()));
+	Drawable::addBind(std::make_unique<VertexBuffer>(graphics, model.vertices()));
 
-	drawable::add_index_buffer(std::make_unique<index_buffer>(graphics, model.indices()));
+	Drawable::addIndexBuffer(std::make_unique<IndexBuffer>(graphics, model.indices()));
 
-	drawable::add_bind(std::make_unique<transform_constant_buffer>(graphics, *this));
+	Drawable::addBind(std::make_unique<TransformConstantBuffer>(graphics, *this));
 }
 
-void melon::update(const float dt) noexcept
+void Melon::update(const float dt) noexcept
 {
-	roll_ += wrap_angle(droll_ * dt);
-	pitch_ += wrap_angle(dpitch_ * dt);
-	yaw_ += wrap_angle(dyaw_ * dt);
-	theta_ += wrap_angle(dtheta_ * dt);
-	phi_ += wrap_angle(dphi_ * dt);
-	rho_ += wrap_angle(drho_ * dt);
+	roll_ += wrapAngle(droll_ * dt);
+	pitch_ += wrapAngle(dpitch_ * dt);
+	yaw_ += wrapAngle(dyaw_ * dt);
+	theta_ += wrapAngle(dtheta_ * dt);
+	phi_ += wrapAngle(dphi_ * dt);
+	rho_ += wrapAngle(drho_ * dt);
 }
 
-DirectX::XMMATRIX melon::get_transform_xm() const noexcept
+DirectX::XMMATRIX Melon::getTransformXm() const noexcept
 {
 	namespace dx = DirectX;
 	return dx::XMMatrixRotationRollPitchYaw(pitch_, yaw_, roll_) *
-		dx::XMMatrixTranslation(distance_, 0.0f, 0.0f) *
+		dx::XMMatrixTranslation(radiusDistanceFromCenter_, 0.0f, 0.0f) *
 		dx::XMMatrixRotationRollPitchYaw(theta_, phi_, rho_) *
 		dx::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
 }
