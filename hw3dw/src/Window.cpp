@@ -1,16 +1,16 @@
-#include "Window.h"
+#include "Window.hpp"
 
 #include <system_error>
 
-#include "Console.h"
+#include "Console.hpp"
 #include "imgui.h"
-#include "Logging.h"
+#include "Logging.hpp"
 #include "Resources/resource.h"
-#include "WindowsThrowMacros.h"
+#include "WindowsThrowMacros.hpp"
 #include "backends/imgui_impl_win32.h"
 
 #if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in LoggingConfig.h
-#include "WindowsMessageMap.h"
+#include "WindowsMessageMap.hpp"
 
 const static class WindowsMessageMap windowsMessageMap;
 #endif
@@ -116,9 +116,13 @@ void Window::configureImGui()
 	PLOGI << "Configure Dear ImGui";
 
 	// Setup Dear ImGui context
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "IMGUI_CHECKVERSION();";
+#endif
 	IMGUI_CHECKVERSION();
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "ImGui::CreateContext();";
+#endif
 	ImGui::CreateContext();
 	PLOGD << "Set Dear ImGui flags";
 	ImGuiIO& im_gui_io = ImGui::GetIO();
@@ -151,7 +155,9 @@ void Window::configureImGui()
 #endif
 
 	PLOGI << "Setup Dear ImGui Platform backend";
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "ImGui_ImplWin32_Init()";
+#endif
 	ImGui_ImplWin32_Init(windowHandle_);
 }
 
@@ -181,7 +187,9 @@ Window::Window(const int width, const int height, const LPCWSTR name)
 
 	// Create the graphics object
 	PLOGD << "Create the DirectX graphics object";
-	PLOGV << "p_graphics_ = std::make_unique<Graphics>(windowHandle_, width_, height_);";
+#ifdef LOG_GRAPHICS_CALLS
+	PLOGV << "graphics_ = std::make_unique<Graphics>(windowHandle_, width_, height_);";
+#endif
 	graphics_ = std::make_unique<Graphics>(windowHandle_, width_, height_);
 
 	// Check for an error
@@ -204,9 +212,13 @@ HWND Window::getHandle()
 Window::~Window()
 {
 	PLOGD << "Destroy Window";
-	PLOGV << "p_graphics_->shutdown();";
+#ifdef LOG_GRAPHICS_CALLS
+	PLOGV << "graphics_->shutdown();";
+#endif
 	graphics_->shutdown();
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "ImGui_ImplWin32_Shutdown();";
+#endif
 	ImGui_ImplWin32_Shutdown();
 	windowClass_->shutdown();	PLOGV << "ImGui::DestroyContext()";
 	ImGui::DestroyContext();
@@ -224,14 +236,18 @@ void Window::setTitle(const std::wstring& title)
 
 void Window::setTargetDimensions(const unsigned int width, const unsigned int height)
 {
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "setTargetDimensions(width: " << width << ", height: " << height << ");";
+#endif
 	targetWidth_ = width;
 	targetHheight_ = height;
 }
 
 Window::WindowDimensions Window::getTargetDimensions()
 {
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "getTargetDimensions() : width: " << targetWidth_ << ", height: " << targetHheight_ << "";
+#endif
 	return {targetWidth_, targetHheight_};
 }
 

@@ -1,7 +1,7 @@
-#include "DxgiInfoManager.h"
-#include "Graphics.h"
-#include "Window.h"
-#include "WindowsThrowMacros.h"
+#include "DxgiInfoManager.hpp"
+#include "Graphics.hpp"
+#include "Window.hpp"
+#include "WindowsThrowMacros.hpp"
 
 #include <dxgidebug.h>
 #include <memory>

@@ -1,8 +1,8 @@
-﻿#include "Mouse.h"
+﻿#include "Mouse.hpp"
 
 #include <optional>
 
-#include "Logging.h"
+#include "Logging.hpp"
 
 #if defined(LOG_MOUSE_MESSAGES) // defined in LoggingConfig.h
 #include <format>

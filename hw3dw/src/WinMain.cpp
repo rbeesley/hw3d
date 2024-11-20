@@ -4,8 +4,8 @@
 #include <tchar.h>
 #include <cwctype>
 
-#include "App.h"
-#include "Logging.h"
+#include "App.hpp"
+#include "Logging.hpp"
 
 #define WAIT_FOR_DEBUGGER FALSE
 

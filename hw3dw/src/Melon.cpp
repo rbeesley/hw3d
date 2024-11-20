@@ -1,16 +1,16 @@
-#include "Melon.h"
+#include "Melon.hpp"
 
-#include "BindableIncludes.h"
-#include "Sphere.h"
+#include "BindableIncludes.hpp"
+#include "Sphere.hpp"
 
 Melon::Melon(Graphics& graphics,
-	std::mt19937& rng,
-	std::uniform_real_distribution<float>& distanceDistribution,									// rdist
-	std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,				// adist
-	std::uniform_real_distribution<float>& rotationOfDrawableDistribution,						// ddist
-	std::uniform_real_distribution<float>& sphericalCoordinateMovementOfDrawableDistribution,	// odist
-	std::uniform_int_distribution<int>& latitudeDistribution,
-	std::uniform_int_distribution<int>& longitudeDistribution)
+             std::mt19937& rng,
+             std::uniform_real_distribution<float>& distanceDistribution,									// rdist
+             std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,				// adist
+             std::uniform_real_distribution<float>& rotationOfDrawableDistribution,						// ddist
+             std::uniform_real_distribution<float>& sphericalCoordinateMovementOfDrawableDistribution,	// odist
+             std::uniform_int_distribution<int>& latitudeDistribution,
+             std::uniform_int_distribution<int>& longitudeDistribution)
 	:
 	radiusDistanceFromCenter_(distanceDistribution(rng)),
 	theta_(sphericalCoordinatePositionDistribution(rng)),

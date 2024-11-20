@@ -1,17 +1,17 @@
-#include "Sheet.h"
-#include "BindableIncludes.h"
-#include "Plane.h"
-#include "Surface.h"
-#include "Texture.h"
-#include "Sampler.h"
+#include "Sheet.hpp"
+#include "BindableIncludes.hpp"
+#include "Plane.hpp"
+#include "Surface.hpp"
+#include "Texture.hpp"
+#include "Sampler.hpp"
 
 
 Sheet::Sheet(Graphics& graphics,
-	std::mt19937& rng,
-	std::uniform_real_distribution<float>& distanceDistribution,								// rdist
-	std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,				// adist
-	std::uniform_real_distribution<float>& rotationOfDrawableDistribution,						// ddist
-	std::uniform_real_distribution<float>& sphericalCoordinateMovementOfDrawableDistribution	// odist
+             std::mt19937& rng,
+             std::uniform_real_distribution<float>& distanceDistribution,								// rdist
+             std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,				// adist
+             std::uniform_real_distribution<float>& rotationOfDrawableDistribution,						// ddist
+             std::uniform_real_distribution<float>& sphericalCoordinateMovementOfDrawableDistribution	// odist
 )
 	:
 	radiusDistanceFromCenter_(distanceDistribution(rng)),

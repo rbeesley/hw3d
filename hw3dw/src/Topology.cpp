@@ -1,4 +1,4 @@
-#include "Topology.h"
+#include "Topology.hpp"
 
 Topology::Topology(Graphics& graphics, D3D11_PRIMITIVE_TOPOLOGY type)
 	:

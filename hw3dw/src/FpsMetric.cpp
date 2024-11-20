@@ -1,4 +1,4 @@
-#include "FpsMetric.h"
+#include "FpsMetric.hpp"
 #include <mmsystem.h>
 
 void FpsMetric::initialize()

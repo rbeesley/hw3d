@@ -1,7 +1,7 @@
-#include "GDIPlusManager.h"
+#include "GDIPlusManager.hpp"
 #include <gdiplus.h>
 
-#include "Logging.h"
+#include "Logging.hpp"
 
 namespace Gdiplus
 {

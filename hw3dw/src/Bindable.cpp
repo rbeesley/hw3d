@@ -1,4 +1,4 @@
-#include "Bindable.h"
+#include "Bindable.hpp"
 
 ID3D11DeviceContext* Bindable::getContext(const Graphics& graphics) noexcept
 {

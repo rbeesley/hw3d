@@ -1,4 +1,4 @@
-#include "Logging.h"
+#include "Logging.hpp"
 
 #include <3rdParty/plog/Init.h>
 #include <3rdParty/plog/Appenders/ColorConsoleAppender.h>

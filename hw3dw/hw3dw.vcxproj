@@ -206,7 +206,6 @@
     <ClCompile Include="src\Drawable.cpp" />
     <ClCompile Include="src\DxgiInfoManager.cpp" />
     <ClCompile Include="src\GDIPlusManager.cpp" />
-    <ClCompile Include="src\GDIPlusManager.h" />
     <ClCompile Include="src\Graphics.cpp" />
     <ClCompile Include="src\IndexBufffer.cpp" />
     <ClCompile Include="src\InputLayout.cpp" />
@@ -243,81 +242,82 @@
     <ClInclude Include="3rdParty\ImGui\imstb_textedit.h" />
     <ClInclude Include="3rdParty\ImGui\imstb_truetype.h" />
     <ClInclude Include="3rdParty\ImGui\misc\cpp\imgui_stdlib.h" />
-    <ClInclude Include="3rdparty\plog\Appenders\AndroidAppender.h" />
-    <ClInclude Include="3rdparty\plog\Appenders\ArduinoAppender.h" />
-    <ClInclude Include="3rdparty\plog\Appenders\ColorConsoleAppender.h" />
-    <ClInclude Include="3rdparty\plog\Appenders\ConsoleAppender.h" />
-    <ClInclude Include="3rdparty\plog\Appenders\DebugOutputAppender.h" />
-    <ClInclude Include="3rdparty\plog\Appenders\DynamicAppender.h" />
-    <ClInclude Include="3rdparty\plog\Appenders\EventLogAppender.h" />
-    <ClInclude Include="3rdparty\plog\Appenders\IAppender.h" />
-    <ClInclude Include="3rdparty\plog\Appenders\RollingFileAppender.h" />
-    <ClInclude Include="3rdparty\plog\Converters\NativeEOLConverter.h" />
-    <ClInclude Include="3rdparty\plog\Converters\UTF8Converter.h" />
-    <ClInclude Include="3rdparty\plog\Formatters\CsvFormatter.h" />
-    <ClInclude Include="3rdparty\plog\Formatters\FuncMessageFormatter.h" />
-    <ClInclude Include="3rdparty\plog\Formatters\MessageOnlyFormatter.h" />
-    <ClInclude Include="3rdparty\plog\Formatters\TxtFormatter.h" />
-    <ClInclude Include="3rdparty\plog\Helpers\AscDump.h" />
-    <ClInclude Include="3rdparty\plog\Helpers\HexDump.h" />
-    <ClInclude Include="3rdparty\plog\Helpers\PrintVar.h" />
-    <ClInclude Include="3rdparty\plog\Init.h" />
-    <ClInclude Include="3rdparty\plog\Initializers\ConsoleInitializer.h" />
-    <ClInclude Include="3rdparty\plog\Initializers\RollingFileInitializer.h" />
-    <ClInclude Include="3rdparty\plog\Log.h" />
-    <ClInclude Include="3rdparty\plog\Logger.h" />
-    <ClInclude Include="3rdparty\plog\Record.h" />
-    <ClInclude Include="3rdparty\plog\Severity.h" />
-    <ClInclude Include="3rdparty\plog\Util.h" />
-    <ClInclude Include="3rdparty\plog\WinApi.h" />
-    <ClInclude Include="src\AppThrowMacros.h" />
-    <ClInclude Include="src\CpuMetric.h" />
-    <ClInclude Include="src\FpsMetric.h" />
-    <ClInclude Include="src\AtumMath.h" />
-    <ClInclude Include="src\BindableIncludes.h" />
-    <ClInclude Include="src\Bindable.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\AndroidAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\ArduinoAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\ColorConsoleAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\ConsoleAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\DebugOutputAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\DynamicAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\EventLogAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\IAppender.h" />
+    <ClInclude Include="3rdParty\plog\Appenders\RollingFileAppender.h" />
+    <ClInclude Include="3rdParty\plog\Converters\NativeEOLConverter.h" />
+    <ClInclude Include="3rdParty\plog\Converters\UTF8Converter.h" />
+    <ClInclude Include="3rdParty\plog\Formatters\CsvFormatter.h" />
+    <ClInclude Include="3rdParty\plog\Formatters\FuncMessageFormatter.h" />
+    <ClInclude Include="3rdParty\plog\Formatters\MessageOnlyFormatter.h" />
+    <ClInclude Include="3rdParty\plog\Formatters\TxtFormatter.h" />
+    <ClInclude Include="3rdParty\plog\Helpers\AscDump.h" />
+    <ClInclude Include="3rdParty\plog\Helpers\HexDump.h" />
+    <ClInclude Include="3rdParty\plog\Helpers\PrintVar.h" />
+    <ClInclude Include="3rdParty\plog\Init.h" />
+    <ClInclude Include="3rdParty\plog\Initializers\ConsoleInitializer.h" />
+    <ClInclude Include="3rdParty\plog\Initializers\RollingFileInitializer.h" />
+    <ClInclude Include="3rdParty\plog\Log.h" />
+    <ClInclude Include="3rdParty\plog\Logger.h" />
+    <ClInclude Include="3rdParty\plog\Record.h" />
+    <ClInclude Include="3rdParty\plog\Severity.h" />
+    <ClInclude Include="3rdParty\plog\Util.h" />
+    <ClInclude Include="3rdParty\plog\WinApi.h" />
     <ClInclude Include="lib\DXErr\DXErr.h" />
-    <ClInclude Include="src\App.h" />
-    <ClInclude Include="src\Box.h" />
-    <ClInclude Include="src\Cone.h" />
-    <ClInclude Include="src\ConstantBuffers.h" />
-    <ClInclude Include="src\Cube.h" />
-    <ClInclude Include="src\DrawableStaticStorage.h" />
-    <ClInclude Include="src\Drawable.h" />
-    <ClInclude Include="src\DxgiInfoManager.h" />
-    <ClInclude Include="src\Graphics.h" />
-    <ClInclude Include="src\GraphicsThrowMacros.h" />
-    <ClInclude Include="src\IndexBuffer.h" />
-    <ClInclude Include="src\IndexedTriangleList.h" />
-    <ClInclude Include="src\InputLayout.h" />
-    <ClInclude Include="src\LoggingConfig.h" />
-    <ClInclude Include="src\Keyboard.h" />
+    <ClInclude Include="src\AppThrowMacros.hpp" />
+    <ClInclude Include="src\CpuMetric.hpp" />
+    <ClInclude Include="src\FpsMetric.hpp" />
+    <ClInclude Include="src\AtumMath.hpp" />
+    <ClInclude Include="src\BindableIncludes.hpp" />
+    <ClInclude Include="src\Bindable.hpp" />
+    <ClInclude Include="src\App.hpp" />
+    <ClInclude Include="src\Box.hpp" />
+    <ClInclude Include="src\Cone.hpp" />
+    <ClInclude Include="src\ConstantBuffers.hpp" />
+    <ClInclude Include="src\Cube.hpp" />
+    <ClInclude Include="src\DrawableStaticStorage.hpp" />
+    <ClInclude Include="src\Drawable.hpp" />
+    <ClInclude Include="src\DxgiInfoManager.hpp" />
+    <ClInclude Include="src\GDIPlusManager.hpp" />
+    <ClInclude Include="src\Graphics.hpp" />
+    <ClInclude Include="src\GraphicsThrowMacros.hpp" />
+    <ClInclude Include="src\IndexBuffer.hpp" />
+    <ClInclude Include="src\IndexedTriangleList.hpp" />
+    <ClInclude Include="src\InputLayout.hpp" />
+    <ClInclude Include="src\LoggingConfig.hpp" />
+    <ClInclude Include="src\Keyboard.hpp" />
     <ClInclude Include="resources\resource.h" />
-    <ClInclude Include="src\AtumException.h" />
-    <ClInclude Include="src\AtumWindows.h" />
-    <ClInclude Include="src\Console.h" />
-    <ClInclude Include="src\Logging.h" />
-    <ClInclude Include="src\Melon.h" />
-    <ClInclude Include="src\Mouse.h" />
-    <ClInclude Include="src\PixelShader.h" />
-    <ClInclude Include="src\Plane.h" />
-    <ClInclude Include="src\Prism.h" />
-    <ClInclude Include="src\Pyramid.h" />
-    <ClInclude Include="src\Sampler.h" />
-    <ClInclude Include="src\Sheet.h" />
-    <ClInclude Include="src\SkinnedBox.h" />
-    <ClInclude Include="src\Sphere.h" />
-    <ClInclude Include="src\Surface.h" />
-    <ClInclude Include="src\Texture.h" />
-    <ClInclude Include="src\Topology.h" />
-    <ClInclude Include="src\TransformConstantBuffer.h" />
-    <ClInclude Include="src\VertexShader.h" />
-    <ClInclude Include="src\Window.h" />
-    <ClInclude Include="src\WindowsMessageMap.h" />
-    <ClInclude Include="src\VirtualKeyMap.h" />
-    <ClInclude Include="src\Timer.h" />
-    <ClInclude Include="src\WindowsThrowMacros.h" />
-    <ClInclude Include="src\VertexBuffer.h" />
+    <ClInclude Include="src\AtumException.hpp" />
+    <ClInclude Include="src\AtumWindows.hpp" />
+    <ClInclude Include="src\Console.hpp" />
+    <ClInclude Include="src\Logging.hpp" />
+    <ClInclude Include="src\Melon.hpp" />
+    <ClInclude Include="src\Mouse.hpp" />
+    <ClInclude Include="src\PixelShader.hpp" />
+    <ClInclude Include="src\Plane.hpp" />
+    <ClInclude Include="src\Prism.hpp" />
+    <ClInclude Include="src\Pyramid.hpp" />
+    <ClInclude Include="src\Sampler.hpp" />
+    <ClInclude Include="src\Sheet.hpp" />
+    <ClInclude Include="src\SkinnedBox.hpp" />
+    <ClInclude Include="src\Sphere.hpp" />
+    <ClInclude Include="src\Surface.hpp" />
+    <ClInclude Include="src\Texture.hpp" />
+    <ClInclude Include="src\Topology.hpp" />
+    <ClInclude Include="src\TransformConstantBuffer.hpp" />
+    <ClInclude Include="src\VertexShader.hpp" />
+    <ClInclude Include="src\Window.hpp" />
+    <ClInclude Include="src\WindowsMessageMap.hpp" />
+    <ClInclude Include="src\VirtualKeyMap.hpp" />
+    <ClInclude Include="src\Timer.hpp" />
+    <ClInclude Include="src\WindowsThrowMacros.hpp" />
+    <ClInclude Include="src\VertexBuffer.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="hw3dw.rc" />
@@ -327,70 +327,34 @@
       <DeploymentContent>true</DeploymentContent>
     </CopyFileToFolders>
     <CopyFileToFolders Include="images\cube.png">
-      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</DeploymentContent>
+      <DeploymentContent>true</DeploymentContent>
     </CopyFileToFolders>
     <Image Include="resources\hw3d.ico" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\ColorBlendPS.hlsl">
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderModel>4.0</ShaderModel>
+      <ShaderType>Pixel</ShaderType>
     </FxCompile>
     <FxCompile Include="shaders\ColorBlendVS.hlsl">
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+      <ShaderModel>4.0</ShaderModel>
+      <ShaderType>Vertex</ShaderType>
     </FxCompile>
     <FxCompile Include="shaders\ColorIndexPS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="shaders\ColorIndexVS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="shaders\TexturePS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
+      <ShaderType>Pixel</ShaderType>
+      <ShaderModel>4.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="shaders\TextureVS.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">4.0</ShaderModel>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">4.0</ShaderModel>
+      <ShaderType>Vertex</ShaderType>
+      <ShaderModel>4.0</ShaderModel>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

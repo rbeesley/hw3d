@@ -1,16 +1,16 @@
-#include "Box.h"
+#include "Box.hpp"
 
-#include "AtumMath.h"
-#include "BindableIncludes.h"
-#include "Cube.h"
+#include "AtumMath.hpp"
+#include "BindableIncludes.hpp"
+#include "Cube.hpp"
 
 Box::Box(Graphics& graphics,
-	std::mt19937& rng,
-	std::uniform_real_distribution<float>& distance_distribution,									// rdist
-	std::uniform_real_distribution<float>& spherical_coordinate_position_distribution,				// adist
-	std::uniform_real_distribution<float>& rotation_of_drawable_distribution,						// ddist
-	std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution,	// odist
-	std::uniform_real_distribution<float>& z_axis_distortion_distribution							// bdist
+         std::mt19937& rng,
+         std::uniform_real_distribution<float>& distance_distribution,									// rdist
+         std::uniform_real_distribution<float>& spherical_coordinate_position_distribution,				// adist
+         std::uniform_real_distribution<float>& rotation_of_drawable_distribution,						// ddist
+         std::uniform_real_distribution<float>& spherical_coordinate_movement_of_drawable_distribution,	// odist
+         std::uniform_real_distribution<float>& z_axis_distortion_distribution							// bdist
 )
 	: DrawableStaticStorage(),
 	radiusDistanceFromCenter_(distance_distribution(rng)),

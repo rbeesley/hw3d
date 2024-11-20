@@ -96,7 +96,7 @@
     <ClCompile Include="src\Pyramid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\GDIPlusManager.h">
+    <ClCompile Include="src\GDIPlusManager.hpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\GDIPlusManager.cpp">
@@ -143,16 +143,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\AtumException.h">
+    <ClInclude Include="src\AtumException.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\AtumWindows.h">
+    <ClInclude Include="src\AtumWindows.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Console.h">
+    <ClInclude Include="src\Console.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Logging.h">
+    <ClInclude Include="src\Logging.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdParty\plog\Appenders\AndroidAppender.h">
@@ -239,130 +239,130 @@
     <ClInclude Include="Resources\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Window.h">
+    <ClInclude Include="src\Window.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\WindowsMessageMap.h">
+    <ClInclude Include="src\WindowsMessageMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Keyboard.h">
+    <ClInclude Include="src\Keyboard.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VirtualKeyMap.h">
+    <ClInclude Include="src\VirtualKeyMap.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\LoggingConfig.h">
+    <ClInclude Include="src\LoggingConfig.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Mouse.h">
+    <ClInclude Include="src\Mouse.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\App.h">
+    <ClInclude Include="src\App.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Graphics.h">
+    <ClInclude Include="src\Graphics.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Timer.h">
+    <ClInclude Include="src\Timer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\DxgiInfoManager.h">
+    <ClInclude Include="src\DxgiInfoManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="lib\DXErr\DXErr.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\BindableIncludes.h">
+    <ClInclude Include="src\BindableIncludes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Bindable.h">
+    <ClInclude Include="src\Bindable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Box.h">
+    <ClInclude Include="src\Box.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\ConstantBuffers.h">
+    <ClInclude Include="src\ConstantBuffers.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\DrawableStaticStorage.h">
+    <ClInclude Include="src\DrawableStaticStorage.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Drawable.h">
+    <ClInclude Include="src\Drawable.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\GraphicsThrowMacros.h">
+    <ClInclude Include="src\GraphicsThrowMacros.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\IndexBuffer.h">
+    <ClInclude Include="src\IndexBuffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\InputLayout.h">
+    <ClInclude Include="src\InputLayout.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\PixelShader.h">
+    <ClInclude Include="src\PixelShader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Topology.h">
+    <ClInclude Include="src\Topology.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\TransformConstantBuffer.h">
+    <ClInclude Include="src\TransformConstantBuffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VertexShader.h">
+    <ClInclude Include="src\VertexShader.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\WindowsThrowMacros.h">
+    <ClInclude Include="src\WindowsThrowMacros.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\VertexBuffer.h">
+    <ClInclude Include="src\VertexBuffer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Cube.h">
+    <ClInclude Include="src\Cube.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\IndexedTriangleList.h">
+    <ClInclude Include="src\IndexedTriangleList.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\AtumMath.h">
+    <ClInclude Include="src\AtumMath.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Plane.h">
+    <ClInclude Include="src\Plane.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Sphere.h">
+    <ClInclude Include="src\Sphere.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Cone.h">
+    <ClInclude Include="src\Cone.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Prism.h">
+    <ClInclude Include="src\Prism.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\FpsMetric.h">
+    <ClInclude Include="src\FpsMetric.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\CpuMetric.h">
+    <ClInclude Include="src\CpuMetric.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Melon.h">
+    <ClInclude Include="src\Melon.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Pyramid.h">
+    <ClInclude Include="src\Pyramid.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Surface.h">
+    <ClInclude Include="src\Surface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Sheet.h">
+    <ClInclude Include="src\Sheet.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Texture.h">
+    <ClInclude Include="src\Texture.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Sampler.h">
+    <ClInclude Include="src\Sampler.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\SkinnedBox.h">
+    <ClInclude Include="src\SkinnedBox.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="3rdParty\ImGui\backends\imgui_impl_dx11.h">
@@ -392,7 +392,7 @@
     <ClInclude Include="3rdParty\ImGui\misc\cpp\imgui_stdlib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\AppThrowMacros.h">
+    <ClInclude Include="src\AppThrowMacros.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

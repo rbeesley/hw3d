@@ -1,13 +1,13 @@
-#include "Pyramid.h"
-#include "BindableIncludes.h"
-#include "Cone.h"
+#include "Pyramid.hpp"
+#include "BindableIncludes.hpp"
+#include "Cone.hpp"
 
 Pyramid::Pyramid(Graphics& graphics,
-	std::mt19937& rng,
-	std::uniform_real_distribution<float>& distanceDistribution,								// rdist
-	std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,				// adist
-	std::uniform_real_distribution<float>& rotationOfDrawableDistribution,						// ddist
-	std::uniform_real_distribution<float>& sphericalCoordinateMovementOfDrawableDistribution	// odist
+                 std::mt19937& rng,
+                 std::uniform_real_distribution<float>& distanceDistribution,								// rdist
+                 std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,				// adist
+                 std::uniform_real_distribution<float>& rotationOfDrawableDistribution,						// ddist
+                 std::uniform_real_distribution<float>& sphericalCoordinateMovementOfDrawableDistribution	// odist
 )
 	:
 	radiusDistanceFromCenter_(distanceDistribution(rng)),

@@ -1,4 +1,4 @@
-#include "CpuMetric.h"
+#include "CpuMetric.hpp"
 #include <mmsystem.h>
 
 #pragma comment(lib, "winmm.lib")

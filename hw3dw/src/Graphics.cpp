@@ -1,10 +1,10 @@
 // ReSharper disable CppClangTidyClangDiagnosticExtraSemiStmt
-#include "Graphics.h"
-#include "GraphicsThrowMacros.h"
+#include "Graphics.hpp"
+#include "GraphicsThrowMacros.hpp"
 #include "DXErr.h"
 #include "backends/imgui_impl_dx11.h"
 
-#include "Logging.h"
+#include "Logging.hpp"
 
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
@@ -69,7 +69,9 @@ Graphics::Graphics(HWND parent, int width, int height) :
 	// For checking results of D3D functions
 	HRESULT hresult = {};
 
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "Create device, front/back buffers, swap chain, and rendering context";
+#endif
 	GFX_THROW_INFO(D3D11CreateDeviceAndSwapChain(
 		nullptr,
 		D3D_DRIVER_TYPE_HARDWARE,
@@ -87,7 +89,9 @@ Graphics::Graphics(HWND parent, int width, int height) :
 
 	createRenderTarget();
 
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "Create and set the depth stencil state";
+#endif
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc = {
 		.DepthEnable = TRUE,
 		.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL,
@@ -100,11 +104,15 @@ Graphics::Graphics(HWND parent, int width, int height) :
 	};
 
 	wrl::ComPtr<ID3D11DepthStencilState> depthStencilState;
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "device_->CreateDepthStencilState(&depthStencilDesc, &depthStencilState)";
+#endif
 	GFX_THROW_INFO(device_->CreateDepthStencilState(&depthStencilDesc, &depthStencilState));
 
 	PLOGD << "Bind depth state to the pipeline";
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "deviceContext_->OMSetDepthStencilState(depthStencilState.Get(), 0u);";
+#endif
 	deviceContext_->OMSetDepthStencilState(depthStencilState.Get(), 0u);
 
 	PLOGV << "Create depth stencil texture";
@@ -125,7 +133,9 @@ Graphics::Graphics(HWND parent, int width, int height) :
 	};
 
 	wrl::ComPtr<ID3D11Texture2D> depthStencil;
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "device_->CreateTexture2D(&depthDesc, nullptr, &depthStencil)";
+#endif
 	GFX_THROW_INFO(device_->CreateTexture2D(&depthDesc, nullptr, &depthStencil));
 
 	PLOGV << "Create view of the depth stencil texture";
@@ -139,12 +149,16 @@ Graphics::Graphics(HWND parent, int width, int height) :
 		}
 	};
 
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "device_->CreateDepthStencilView(depthStencil.Get(), &depthStencilViewDesc, &depthStencilView_))";
+#endif
 	GFX_THROW_INFO(
 		device_->CreateDepthStencilView(depthStencil.Get(), &depthStencilViewDesc, &depthStencilView_));
 
 	PLOGD << "Bind the render target and stencil views";
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "deviceContext_->OMSetRenderTargets(1u, renderTargetView_.GetAddressOf(), depthStencilView_.Get())";
+#endif
 	//  - Output Merger
 	deviceContext_->OMSetRenderTargets(1u, renderTargetView_.GetAddressOf(), depthStencilView_.Get());
 
@@ -161,7 +175,9 @@ Graphics::Graphics(HWND parent, int width, int height) :
 	deviceContext_->RSSetViewports(1u, &viewport);
 
 	PLOGD << "Setup Dear ImGui Render backend";
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "ImGui_ImplDX11_Init";
+#endif
 	ImGui_ImplDX11_Init(device_.Get(), deviceContext_.Get());
 }
 
@@ -175,11 +191,15 @@ void Graphics::createRenderTarget()
 #endif
 	PLOGD << "Get the address of the back buffer";
 	wrl::ComPtr<ID3D11Resource> backBuffer;
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "swapChain_->GetBuffer(0, IID_PPV_ARGS(&backBuffer))";
+#endif
 	GFX_THROW_INFO(swapChain_->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
 
 	PLOGD << "Use the back buffer address to create the render target";
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "device_->CreateRenderTargetView(backBuffer.Get(), nullptr, renderTargetView_.GetAddressOf())";
+#endif
 	GFX_THROW_INFO(device_->CreateRenderTargetView(backBuffer.Get(), nullptr, renderTargetView_.GetAddressOf()));
 #ifdef __clang__
 #pragma clang diagnostic pop
@@ -189,7 +209,9 @@ void Graphics::createRenderTarget()
 bool Graphics::beginFrame(const unsigned int targetWidth, const unsigned int targetHeight)
 {
 	// Handle window being minimized or screen locked
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "swapChain_->Present(0, DXGI_PRESENT_TEST)";
+#endif
 	if (swapChainOccluded_ && swapChain_->Present(0, DXGI_PRESENT_TEST) == DXGI_STATUS_OCCLUDED)
 	{
 		::Sleep(10);
@@ -243,10 +265,14 @@ void Graphics::endFrame()
 	infoManager_.set();
 #endif
 #if (UNCAPPED_FRAMERATE)
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "swapChain_->Present(0u, 0u)";
+#endif
 	if (FAILED(hresult = swapChain_->Present(0u, 0u)))
 #else
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "swapChain_->Present(1u, 0u)";
+#endif
 	if (FAILED(hresult = swapChain_->Present(1u, 0u)))
 #endif
 	{
@@ -267,9 +293,13 @@ void Graphics::clearBuffer(const ImVec4& clearColor) const
 void Graphics::clearBuffer(const float red, const float green, const float blue, const float alpha) const
 {
 	const float clearColorWithAlpha[4] = { red * alpha, green * alpha, blue * alpha, alpha };
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "deviceContext_->ClearRenderTargetView";
+#endif
 	deviceContext_->ClearRenderTargetView(renderTargetView_.Get(), clearColorWithAlpha);
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "deviceContext_->ClearDepthStencilView";
+#endif
 	deviceContext_->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
@@ -277,7 +307,9 @@ void Graphics::clearBuffer(const float red, const float green, const float blue,
 // ReSharper disable once CppMemberFunctionMayBeConst
 void Graphics::draw_indexed(const UINT count) noexcept(!IS_DEBUG)
 {
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "deviceContext_->DrawIndexed( " << count << ", 0u, 0u)";
+#endif
 	GFX_THROW_INFO_ONLY(deviceContext_->DrawIndexed(count, 0u, 0u));
 }
 
@@ -293,7 +325,9 @@ DirectX::XMMATRIX Graphics::getProjection() const noexcept
 
 void Graphics::shutdown()
 {
+#ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "ImGui_ImplDX11_Shutdown()";
+#endif
 	ImGui_ImplDX11_Shutdown();
 }
 

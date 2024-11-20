@@ -1,4 +1,4 @@
-#include "TransformConstantBuffer.h"
+#include "TransformConstantBuffer.hpp"
 
 TransformConstantBuffer::TransformConstantBuffer(Graphics& graphics, const Drawable& parent)
 	:

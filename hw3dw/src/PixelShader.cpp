@@ -1,8 +1,8 @@
-#include "PixelShader.h"
+#include "PixelShader.hpp"
 
 #include <d3dcompiler.h>
 
-#include "GraphicsThrowMacros.h"
+#include "GraphicsThrowMacros.hpp"
 
 PixelShader::PixelShader(Graphics& graphics, const std::wstring& path)
 {

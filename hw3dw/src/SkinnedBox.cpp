@@ -1,15 +1,15 @@
-#include "SkinnedBox.h"
+#include "SkinnedBox.hpp"
 
-#include "AtumMath.h"
-#include "BindableIncludes.h"
-#include "Cube.h"
+#include "AtumMath.hpp"
+#include "BindableIncludes.hpp"
+#include "Cube.hpp"
 
 SkinnedBox::SkinnedBox(Graphics& graphics,
-	std::mt19937& rng,
-	std::uniform_real_distribution<float>& distanceDistribution,									// rdist
-	std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,				// adist
-	std::uniform_real_distribution<float>& rotationOfDrawableDistribution,						// ddist
-	std::uniform_real_distribution<float>& sphericalCoordinateMovementOfDrawableDistribution	// odist
+                       std::mt19937& rng,
+                       std::uniform_real_distribution<float>& distanceDistribution,									// rdist
+                       std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,				// adist
+                       std::uniform_real_distribution<float>& rotationOfDrawableDistribution,						// ddist
+                       std::uniform_real_distribution<float>& sphericalCoordinateMovementOfDrawableDistribution	// odist
 )
 	: DrawableStaticStorage(),
 	radiusDistanceFromCenter_(distanceDistribution(rng)),

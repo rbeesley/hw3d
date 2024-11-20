@@ -1,9 +1,9 @@
-#include "VertexShader.h"
-#include "Logging.h"
+#include "VertexShader.hpp"
+#include "Logging.hpp"
 
 #include <d3dcompiler.h>
 
-#include "GraphicsThrowMacros.h"
+#include "GraphicsThrowMacros.hpp"
 
 VertexShader::VertexShader(Graphics& graphics, const std::wstring& path)
 {

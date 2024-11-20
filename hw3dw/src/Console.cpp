@@ -1,8 +1,8 @@
-#include "Console.h"
+#include "Console.hpp"
 
 #include <thread>
 
-#include "Logging.h"
+#include "Logging.hpp"
 
 Console::console_class Console::console_class::s_console_class_;
 Console::ConsoleState Console::s_consoleState_{};
@@ -28,13 +28,16 @@ HINSTANCE Console::console_class::get_instance() noexcept
 	return s_console_class_.instance_handle_;
 }
 
-Console::Console(const LPCWSTR name) noexcept
+HWND Console::appWindowHandle_;
+
+Console::Console(const HWND appWindowHandle, const LPCWSTR name) noexcept
 	: consoleWindowHandle_(nullptr)
 #if CONSOLE_SHUTDOWN_EVENT
 	, shutdownEvent_(nullptr)
 #endif
 {
 	PLOGD << "Instantiate Console";
+	appWindowHandle_ = appWindowHandle;
 
 	PLOGV << "Attach or Create Console";
 	if (AttachConsole(ATTACH_PARENT_PROCESS) == false)
@@ -71,7 +74,7 @@ Console::Console(const LPCWSTR name) noexcept
 
 	PLOGV << "Enable Console Window Handlers";
 	// Enable Ctrl Handler
-	SetConsoleCtrlHandler(ctrlHandler, TRUE);
+	if (SetConsoleCtrlHandler(ctrlHandler, TRUE)) { PLOGV << "Success"; } else { PLOGV << "Failuer"; }
 
 	// Enable mouse input
 	PLOGV << "Enable Console mouse input";
@@ -91,6 +94,7 @@ Console::Console(const LPCWSTR name) noexcept
 	Logging::initializeConsoleLogger(LOG_LEVEL_CONSOLE);
 
 #if CONSOLE_SHUTDOWN_EVENT
+	PLOGV << "Enable Console Shutdown Event";
 	// Create a manual-reset event to block the shell
 	shutdownEvent_ = CreateEvent(nullptr, TRUE, FALSE, nullptr);
 	if (shutdownEvent_ == nullptr)
@@ -210,6 +214,7 @@ void Console::blockInput() noexcept
 	while (true) {
 		DWORD result = WaitForMultipleObjects(2, handles, FALSE, INFINITE);
 		if (result == WAIT_OBJECT_0 + 1) {
+			PLOGW << "Shutdown Event";
 			break;
 			// shutdownEvent_ is signaled
 		} if (result == WAIT_OBJECT_0) {
@@ -267,32 +272,34 @@ BOOL Console::ctrlHandler(const DWORD ctrl_type) noexcept
 	switch (ctrl_type)
 	{
 	case CTRL_C_EVENT:
-		PLOGV << "Ctrl-C event";
+		PLOGW << "Ctrl-C event";
 		Beep(750, 300);
 		return TRUE;
 
-	case CTRL_CLOSE_EVENT:
-		PLOGV << "Ctrl-Close event";
-		Beep(600, 200);
-		return TRUE;
-
 	case CTRL_BREAK_EVENT:
-		PLOGV << "Ctrl-Break event";
+		PLOGW << "Ctrl-Break event";
 		Beep(900, 200);
 		return TRUE;
 
+	case CTRL_CLOSE_EVENT:
+		PLOGW << "Ctrl-Close event";
+		Beep(600, 200);
+		if (appWindowHandle_ != nullptr) { PostMessage(appWindowHandle_, WM_CLOSE, 0, 0); }
+		Sleep(5000);
+		return TRUE;
+
 	case CTRL_LOGOFF_EVENT:
-		PLOGV << "Ctrl-Logoff event";
+		PLOGW << "Ctrl-Logoff event";
 		Beep(1000, 200);
 		return TRUE;
 
 	case CTRL_SHUTDOWN_EVENT:
-		PLOGV << "Ctrl-Shutdown event";
+		PLOGW << "Ctrl-Shutdown event";
 		Beep(750, 500);
 		return TRUE;
 
 	default:
-		PLOGV << " Unknown CtrlHandler event";
+		PLOGW << " Unknown CtrlHandler event: 0x" << std::hex << ctrl_type;
 		return FALSE;
 	}
 }

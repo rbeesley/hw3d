@@ -2,19 +2,19 @@
 #include <DirectXMath.h>
 #include <random>
 
-#include "App.h"
+#include "App.hpp"
 
-#include "AppThrowMacros.h"
-#include "AtumMath.h"
-#include "AtumException.h"
-#include "Box.h"
-#include "GDIPlusManager.h"
-#include "Logging.h"
-#include "Melon.h"
-#include "Pyramid.h"
-#include "Sheet.h"
-#include "SkinnedBox.h"
-#include "Surface.h"
+#include "AppThrowMacros.hpp"
+#include "AtumMath.hpp"
+#include "AtumException.hpp"
+#include "Box.hpp"
+#include "GDIPlusManager.hpp"
+#include "Logging.hpp"
+#include "Melon.hpp"
+#include "Pyramid.hpp"
+#include "Sheet.hpp"
+#include "SkinnedBox.hpp"
+#include "Surface.hpp"
 #include "backends/imgui_impl_dx11.h"
 #include "backends/imgui_impl_win32.h"
 
@@ -49,7 +49,7 @@ App::App()
 	graphics_ = window_->get_graphics();
 
 #if (IS_DEBUG)
-	console_ = std::make_unique<Console>(TEXT("Debug Console"));
+	console_ = std::make_unique<Console>(window_->getHandle(), TEXT("Debug Console"));
 	if (g_allowConsoleLogging)
 	{
 		auto exe_path = []
@@ -114,30 +114,40 @@ int App::initialize()
 			switch (drawableTypeDistribution_(rng_))
 			{
 			case 0:
+#ifdef LOG_GRAPHICS_CALLS
 				LOGV << "Drawable <Pyramid>     #" << ++count;
+#endif
 				return std::make_unique<Pyramid>(
 					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
 					sphericalCoordinateMovementOfDrawableDistribution_
 				);
 			case 1:
+#ifdef LOG_GRAPHICS_CALLS
 				LOGV << "Drawable <Box>         #" << ++count;
+#endif
 				return std::make_unique<Box>(
 					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
 					sphericalCoordinateMovementOfDrawableDistribution_, zAxisDistortionDistribution_
 				);
 			case 2:
+#ifdef LOG_GRAPHICS_CALLS
 				LOGV << "Drawable <Melon>       #" << ++count;
+#endif
 				return std::make_unique<Melon>(
 					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
 					sphericalCoordinateMovementOfDrawableDistribution_, latitudeDistribution_, longitudeDistribution_
 				);
 			case 3:
+#ifdef LOG_GRAPHICS_CALLS
 				LOGV << "Drawable <Sheet>       #" << ++count;
+#endif
 				return std::make_unique<Sheet>(
 					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_, sphericalCoordinateMovementOfDrawableDistribution_
 				);
 			case 4:
+#ifdef LOG_GRAPHICS_CALLS
 				LOGV << "Drawable <SkinnedBox> #" << ++count;
+#endif
 				return std::make_unique<SkinnedBox>(
 					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
 					sphericalCoordinateMovementOfDrawableDistribution_
@@ -201,7 +211,7 @@ int App::run()
 	const ImGuiIO& imGuiIO = ImGui::GetIO();
 
 	PLOGI << "Starting Message Pump and Render Loop";
-	constexpr bool done = false;
+	bool done = false;
 	while (!done)
 	{
 		//PLOGI << " *** Run loop ***";
@@ -224,12 +234,15 @@ int App::run()
 			{
 				if (exitCode.value() == WM_QUIT)
 				{
-					return 0;
+					done = true;
+					continue;
 				}
 			}
 		}
 
+#ifdef LOG_GRAPHICS_CALLS
 		PLOGV << "Window->getGraphics().beginFrame()";
+#endif
 		{
 			if (auto [width, height] = window_->getTargetDimensions(); !graphics_->beginFrame(width, height))
 			{
@@ -243,11 +256,17 @@ int App::run()
 
 		// Start the Dear ImGui frame
 		PLOGD << "Start the Dear ImGui frame";
+#ifdef LOG_GRAPHICS_CALLS
 		PLOGV << "ImGui_ImplDX11_NewFrame()";
+#endif
 		ImGui_ImplDX11_NewFrame();
+#ifdef LOG_GRAPHICS_CALLS
 		PLOGV << "ImGui_ImplWin32_NewFrame()";
+#endif
 		ImGui_ImplWin32_NewFrame();
+#ifdef LOG_GRAPHICS_CALLS
 		PLOGV << "ImGui::NewFrame()";
+#endif
 		ImGui::NewFrame();
 
 		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
@@ -290,14 +309,21 @@ int App::run()
 			ImGui::End();
 		}
 
+#ifdef LOG_GRAPHICS_CALLS
 		PLOGV << "ImGui::Render();";
+#endif
 		ImGui::Render();
+#ifdef LOG_GRAPHICS_CALLS
 		PLOGV << "renderFrame(clear_color);";
+#endif
 		renderFrame(clearColor);
 
+#ifdef LOG_GRAPHICS_CALLS
 		PLOGV << "Graphics.endFrame();";
+#endif
 		graphics_->endFrame();
 	}
+	return 0;
 }
 
 App::~App()
