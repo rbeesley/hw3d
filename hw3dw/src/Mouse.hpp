@@ -3,7 +3,6 @@
 #include <queue>
 #include <utility>
 
-#define MOUSE_
 #include "AtumWindows.hpp"
 
 class Mouse
@@ -69,47 +68,27 @@ public:
 			x2IsPressed_(parent.x2IsPressed_)
 		{}
 
-		[[nodiscard]] EventType get_type() const noexcept
-		{
-			return eventType_;
-		}
-
-		[[nodiscard]] std::pair<int, int> get_pos() const noexcept
-		{
-			return { x_, y_ };
-		}
-
-		[[nodiscard]] int get_pos_x() const noexcept
-		{
-			return x_;
-		}
-
-		[[nodiscard]] int get_pos_y() const noexcept
-		{
-			return y_;
-		}
-
-		[[nodiscard]] bool is_left_pressed() const noexcept
+		[[nodiscard]] bool isLeftPressed() const noexcept
 		{
 			return leftIsPressed_;
 		}
 
-		[[nodiscard]] bool is_middle_pressed() const noexcept
+		[[nodiscard]] bool isMiddlePressed() const noexcept
 		{
 			return middleIsPressed_;
 		}
 
-		[[nodiscard]] bool is_right_pressed() const noexcept
+		[[nodiscard]] bool isRightPressed() const noexcept
 		{
 			return rightIsPressed_;
 		}
 
-		[[nodiscard]] bool is_x1_pressed() const noexcept
+		[[nodiscard]] bool isX1Pressed() const noexcept
 		{
 			return x1IsPressed_;
 		}
 
-		[[nodiscard]] bool is_x2_pressed() const noexcept
+		[[nodiscard]] bool isX2Pressed() const noexcept
 		{
 			return x2IsPressed_;
 		}
@@ -123,6 +102,7 @@ private:
 
 public:
 	struct Position { int x, y; };
+	LRESULT handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM l_param) noexcept;
 	[[nodiscard]] std::pair<int, int> getPos() const noexcept;
 	[[nodiscard]] Position pos() const noexcept;
 	[[nodiscard]] int getPosX() const noexcept;

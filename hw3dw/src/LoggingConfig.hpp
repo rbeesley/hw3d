@@ -20,8 +20,8 @@
 #define LOG_LEVEL_DEBUG_OUTPUT plog::verbose
 #endif
 
-/* Log the Window Messages - Window.cpp */
-#define LOG_WINDOW_MESSAGES
+/* Log the Window Messages - App.cpp */
+//#define LOG_WINDOW_MESSAGES
 //#define LOG_WINDOW_MOUSE_MESSAGES
 //#define LOG_WINDOW_MOVEMENT_MESSAGES
 

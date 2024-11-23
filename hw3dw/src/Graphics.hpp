@@ -18,10 +18,10 @@ public:
 	protected:
 		static std::string toNarrow(const wchar_t* s, char fallback = '?', const std::locale& loc = std::locale()) noexcept;
 	};
-	class HresultException : public GraphicsException
+	class HResultException : public GraphicsException
 	{
 	public:
-		HresultException(int line, const char* file, HRESULT hresult, const std::vector<std::string>& infoMessages = {}) noexcept;
+		HResultException(int line, const char* file, HRESULT hresult, const std::vector<std::string>& infoMessages = {}) noexcept;
 		const char* what() const noexcept override;
 		const char* getType() const noexcept override;
 		HRESULT getErrorCode() const noexcept;
@@ -42,9 +42,9 @@ public:
 	private:
 		std::string infoMessage_;
 	};
-	class DeviceRemovedException final : public HresultException
+	class DeviceRemovedException final : public HResultException
 	{
-		using HresultException::HresultException;
+		using HResultException::HResultException;
 	public:
 		const char* getType() const noexcept override;
 	};
@@ -57,12 +57,13 @@ public:
 	Graphics(const Graphics&&) = delete;
 	Graphics& operator=(const Graphics&&) = delete;
 
+	LRESULT handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	void createRenderTarget();
 	bool beginFrame(unsigned int targetWidth, unsigned int targetHeight);
 	void endFrame();
 	void clearBuffer(const ImVec4& clearColor) const;
 	void clearBuffer(float red, float green, float blue, float alpha = 1.0) const;
-	void draw_indexed(UINT count) noexcept(!IS_DEBUG);
+	void drawIndexed(UINT count) noexcept(!IS_DEBUG);
 	void setProjection(DirectX::FXMMATRIX& projection) noexcept;
 	DirectX::XMMATRIX getProjection() const noexcept;
 	static void shutdown();

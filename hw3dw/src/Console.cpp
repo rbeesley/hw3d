@@ -4,30 +4,34 @@
 
 #include "Logging.hpp"
 
-Console::console_class Console::console_class::s_console_class_;
-Console::ConsoleState Console::s_consoleState_{};
+Console::ConsoleClass Console::ConsoleClass::consoleClass_;
+Console::ConsoleState Console::consoleState_{};
 
-Console::console_class::console_class() noexcept
-	: instance_handle_(GetModuleHandle(nullptr))
+Console::ConsoleClass::ConsoleClass() noexcept
+	: instanceHandle_(GetModuleHandle(nullptr))
 {
 	PLOGD << "Instantiate Console Class";
 }
 
-Console::console_class::~console_class() noexcept
+Console::ConsoleClass::~ConsoleClass() noexcept
 {
 	PLOGD << "Destroy Console Class";
 }
 
-LPCWSTR Console::console_class::get_name() noexcept
+LPCWSTR Console::ConsoleClass::getName() noexcept
 {
-	return s_console_class_name_;
+	return consoleClassName_;
 }
 
-HINSTANCE Console::console_class::get_instance() noexcept
+HINSTANCE Console::ConsoleClass::getInstance() noexcept
 {
-	return s_console_class_.instance_handle_;
+	return consoleClass_.instanceHandle_;
 }
 
+
+extern bool g_allowConsoleLogging;
+
+bool Console::freeConsole_ = true;
 HWND Console::appWindowHandle_;
 
 Console::Console(const HWND appWindowHandle, const LPCWSTR name) noexcept
@@ -40,8 +44,9 @@ Console::Console(const HWND appWindowHandle, const LPCWSTR name) noexcept
 	appWindowHandle_ = appWindowHandle;
 
 	PLOGV << "Attach or Create Console";
-	if (AttachConsole(ATTACH_PARENT_PROCESS) == false)
+	if (!AttachConsole(ATTACH_PARENT_PROCESS))
 	{
+		PLOGV << "Creating Console";
 		AllocConsole();
 	}
 	consoleWindowHandle_ = GetConsoleWindow();
@@ -72,10 +77,6 @@ Console::Console(const HWND appWindowHandle, const LPCWSTR name) noexcept
 	const auto menu = GetSystemMenu(consoleWindowHandle_, FALSE);
 	EnableMenuItem(menu, SC_CLOSE, MF_GRAYED);
 
-	PLOGV << "Enable Console Window Handlers";
-	// Enable Ctrl Handler
-	if (SetConsoleCtrlHandler(ctrlHandler, TRUE)) { PLOGV << "Success"; } else { PLOGV << "Failuer"; }
-
 	// Enable mouse input
 	PLOGV << "Enable Console mouse input";
 	const HANDLE input = GetStdHandle(STD_INPUT_HANDLE);
@@ -86,6 +87,11 @@ Console::Console(const HWND appWindowHandle, const LPCWSTR name) noexcept
 	mode |= ENABLE_EXTENDED_FLAGS; // Ensure extended flags are enabled
 	mode |= ENABLE_MOUSE_INPUT | ENABLE_QUICK_EDIT_MODE; // Enable mouse and quick edit modes
 	SetConsoleMode(input, mode);
+
+	PLOGV << "Enable Console Window Ctrl Handler";
+	// Enable Ctrl Handler
+	if (SetConsoleCtrlHandler(ctrlHandler, TRUE)) { PLOGV << "Success"; }
+	else { PLOGV << "Failure"; }
 
 	PLOGV << "Show the Console Window";
 	ShowWindow(GetConsoleWindow(), SW_SHOW);
@@ -117,12 +123,12 @@ HWND Console::getHandle() const noexcept {
 
 void Console::saveState()
 {
-	saveConsoleState(s_consoleState_);
+	saveConsoleState(consoleState_);
 }
 
 void Console::restoreState()
 {
-	restoreConsoleState(s_consoleState_);
+	restoreConsoleState(consoleState_);
 }
 
 void Console::saveConsoleState(ConsoleState& state)
@@ -149,24 +155,24 @@ void Console::saveConsoleState(ConsoleState& state)
 void Console::restoreConsoleState(const ConsoleState& state)
 {
 	{
-		ConsoleState current_state;
+		ConsoleState currentState;
 		PLOGV << "Current Console State -";
 
-		// Save console title
+		// Get current console title
 		std::vector<wchar_t> buffer(MAX_PATH);
 		GetConsoleTitle(buffer.data(), static_cast<DWORD>(buffer.size()));
-		current_state.title.assign(buffer.data());
+		currentState.title.assign(buffer.data());
 
-		// Save console mode
-		GetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), &current_state.mode);
+		// Get current console mode
+		GetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), &currentState.mode);
 
-		// Save system menu and close button state
+		// Get current system menu and close button state
 		const auto flags = GetMenuState(GetSystemMenu(GetConsoleWindow(), FALSE), SC_CLOSE, MF_BYCOMMAND);
-		current_state.closeButton = flags & (MF_DISABLED | MF_GRAYED);
+		currentState.closeButton = flags & (MF_DISABLED | MF_GRAYED);
 
-		PLOGV << "         Title: " << current_state.title;
-		PLOGV << "          Mode: " << current_state.mode;
-		PLOGV << "  Close Button: " << current_state.closeButton;
+		PLOGV << "         Title: " << currentState.title;
+		PLOGV << "          Mode: " << currentState.mode;
+		PLOGV << "  Close Button: " << currentState.closeButton;
 	}
 
 	// Restore console title
@@ -236,22 +242,17 @@ void Console::blockInput() noexcept
 void Console::shutdown() const
 {
 	PLOGI << "Shutdown Console";
-	//const HANDLE input = GetStdHandle(STD_INPUT_HANDLE);
-
-	PLOGI << "Restore Console State";
-	restoreState();
-
-	Logging::shutdownConsoleLogger();
-
-	FreeConsole();
 
 #if CONSOLE_SHUTDOWN_EVENT
 	// Signal the shutdown event
 	if (shutdownEvent_)
 	{
+		PLOGI << "Signal the Console Shutdown Event";
 		SetEvent(shutdownEvent_);
 	}
 #endif
+
+	Logging::shutdownConsoleLogger();
 }
 
 Console::~Console() noexcept
@@ -264,6 +265,14 @@ Console::~Console() noexcept
 		shutdownEvent_ = nullptr;
 	}
 #endif
+
+	PLOGI << "Restore Console State";
+	restoreState();
+
+	if (freeConsole_)
+	{
+		FreeConsole();
+	}
 }
 
 BOOL Console::ctrlHandler(const DWORD ctrl_type) noexcept
@@ -284,8 +293,9 @@ BOOL Console::ctrlHandler(const DWORD ctrl_type) noexcept
 	case CTRL_CLOSE_EVENT:
 		PLOGW << "Ctrl-Close event";
 		Beep(600, 200);
-		if (appWindowHandle_ != nullptr) { PostMessage(appWindowHandle_, WM_CLOSE, 0, 0); }
-		Sleep(5000);
+		freeConsole_ = false;
+		if (appWindowHandle_ != nullptr) { SendMessage(appWindowHandle_, WM_APP_CONSOLE_CLOSE, 0, 0); }
+		Sleep(INFINITE); // Block this thread from processing further so that the App can close gracefully
 		return TRUE;
 
 	case CTRL_LOGOFF_EVENT:

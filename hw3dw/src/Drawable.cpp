@@ -15,7 +15,7 @@ void Drawable::draw(Graphics& graphics) const noexcept(!IS_DEBUG)
 	{
 		bindable->bind(graphics);
 	}
-	graphics.draw_indexed(indexBuffer_->getCount());
+	graphics.drawIndexed(indexBuffer_->getCount());
 }
 
 static std::string cleanTypeName(const std::string& typeName) {

@@ -1,5 +1,5 @@
 #pragma once
-#define GDI_PLUS_MANAGER_
+
 #include "AtumWindows.hpp"
 #include <memory>
 
