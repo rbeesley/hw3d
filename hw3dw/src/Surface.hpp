@@ -19,7 +19,7 @@
 *	along with The Chili DirectX Framework.  If not, see <http://www.gnu.org/licenses/>.  *
 ******************************************************************************************/
 #pragma once
-#define SURFACE_
+
 #include "AtumWindows.hpp"
 #include "AtumException.hpp"
 #include <string>

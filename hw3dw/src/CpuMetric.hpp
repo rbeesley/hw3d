@@ -1,5 +1,4 @@
 #pragma once
-#define CPU_METRIC_
 #include "AtumWindows.hpp"
 
 class CpuMetric

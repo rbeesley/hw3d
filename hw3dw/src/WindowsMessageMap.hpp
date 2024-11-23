@@ -2,7 +2,6 @@
 #include <string>
 #include <unordered_map>
 
-#define WINDOWS_MESSAGE_MAP_
 #include "AtumWindows.hpp"
 
 class WindowsMessageMap

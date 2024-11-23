@@ -31,8 +31,10 @@ public:
 
 	[[nodiscard]] int initialize();
 	int run();
+	static LRESULT CALLBACK handleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 
 private:
+	static std::optional<unsigned int> processMessages();
 	void renderFrame(const ImVec4& clearColor);
 
 private:
@@ -42,10 +44,8 @@ private:
 	FpsMetric fps_{};
 	CpuMetric cpu_{};
 #endif
-	std::shared_ptr<Graphics> graphics_;
-	std::shared_ptr<Mouse> mouse_;
-	std::shared_ptr<Keyboard> keyboard_;
 	Timer timer_;
 	std::unique_ptr<GdiPlusManager> gdiManager_;
 	std::vector<std::unique_ptr<Drawable>> drawables_;
+	bool stop_;
 };

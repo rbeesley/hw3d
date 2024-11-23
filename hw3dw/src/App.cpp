@@ -18,6 +18,11 @@
 #include "backends/imgui_impl_dx11.h"
 #include "backends/imgui_impl_win32.h"
 
+#if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in LoggingConfig.hpp
+#include "WindowsMessageMap.hpp"
+const static class WindowsMessageMap windowsMessageMap;
+#endif
+
 extern bool g_allowConsoleLogging;
 
 constexpr size_t NUMBER_OF_DRAWABLES = 180;
@@ -42,23 +47,32 @@ const char* App::AppException::getType() const noexcept
 
 App::App()
 	: window_(std::make_unique<Window>(WIDTH, HEIGHT, TEXT("Atum D3D Window")))
+	, stop_(false)
+{
+	PLOGI << "Constructing App";
+	if (!window_->getHandle())
+	{
+		throw APP_EXCEPT("Failed to create Window");
+	}
+
+	gdiManager_ = GdiPlusManager::initialize();
+}
+
+int App::initialize()
 {
 	PLOGI << "Initializing App";
-	mouse_ = window_->get_mouse();
-	keyboard_ = window_->get_keyboard();
-	graphics_ = window_->get_graphics();
-
 #if (IS_DEBUG)
-	console_ = std::make_unique<Console>(window_->getHandle(), TEXT("Debug Console"));
 	if (g_allowConsoleLogging)
 	{
+		console_ = std::make_unique<Console>(window_->getHandle(), TEXT("Debug Console"));
+
 		auto exe_path = []
-		{
-			TCHAR buffer[MAX_PATH] = {0};
-			GetModuleFileName(nullptr, buffer, MAX_PATH);
-			const std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
-			return std::wstring(buffer).substr(0, pos);
-		};
+			{
+				TCHAR buffer[MAX_PATH] = { 0 };
+				GetModuleFileName(nullptr, buffer, MAX_PATH);
+				const std::wstring::size_type pos = std::wstring(buffer).find_last_of(L"\\/");
+				return std::wstring(buffer).substr(0, pos);
+			};
 
 		// Check Logging
 		// This is the earliest this can be done if utilizing the console logger.
@@ -78,23 +92,13 @@ App::App()
 		{
 			throw APP_EXCEPT("Failed to create Debug Console");
 		}
-
-		// Initialize the FPS Counter and CPU Counter
-		fps_.initialize();
-		cpu_.initialize();
 	}
+
+	// Initialize the FPS Counter and CPU Counter
+	fps_.initialize();
+	cpu_.initialize();
 #endif
 
-	if (!window_->getHandle())
-	{
-		throw APP_EXCEPT("Failed to create Window");
-	}
-
-	gdiManager_ = GdiPlusManager::initialize();
-}
-
-int App::initialize()
-{
 	const auto rng_seed = std::random_device{}();
 	PLOGI << "mt19937 rng seed: " << rng_seed;
 
@@ -172,35 +176,58 @@ int App::initialize()
 	drawables_.reserve(NUMBER_OF_DRAWABLES);
 
 	PLOGD << "Populating pool of drawables";
-	std::generate_n(std::back_inserter(drawables_), NUMBER_OF_DRAWABLES, DrawableFactory(*graphics_, rng_seed));
-#else
+	if (auto graphics = Window::getGraphicsWeakPtr().lock())
 	{
-		PLOGD << "Draw a SkinnedBox";
-		std::mt19937 rng{ rng_seed };
-		std::uniform_real_distribution<float> distance_distribution{ 0.0f, 0.0f };
-		//std::uniform_real_distribution<float> spherical_coordinate_position_distribution{ 0.0f, PI * 2.0f };
-		std::uniform_real_distribution<float> spherical_coordinate_position_distribution{ 0.0f, 0.0f };
-		std::uniform_real_distribution<float> rotation_of_drawable_distribution{ 0.0f, PI * 0.5f };
-		//std::uniform_real_distribution<float> rotation_of_drawable_distribution{ 0.0f, 0.0f };
-		//std::uniform_real_distribution<float> spherical_coordinate_movement_of_drawable_distribution{ 0.0f, PI * 0.08f };
-		std::uniform_real_distribution<float> spherical_coordinate_movement_of_drawable_distribution{ 0.0f, 0.0f };
-		drawables_.emplace_back(
-			std::make_unique<SkinnedBox>(
-				Window->get_graphics(), rng, distance_distribution, spherical_coordinate_position_distribution, rotation_of_drawable_distribution,
-				spherical_coordinate_movement_of_drawable_distribution
-			));
-	}
+		std::generate_n(std::back_inserter(drawables_), NUMBER_OF_DRAWABLES, DrawableFactory(*graphics, rng_seed));
+#else
+		{
+			PLOGD << "Draw a SkinnedBox";
+			std::mt19937 rng{ rng_seed };
+			std::uniform_real_distribution<float> distance_distribution{ 0.0f, 0.0f };
+			//std::uniform_real_distribution<float> spherical_coordinate_position_distribution{ 0.0f, PI * 2.0f };
+			std::uniform_real_distribution<float> spherical_coordinate_position_distribution{ 0.0f, 0.0f };
+			std::uniform_real_distribution<float> rotation_of_drawable_distribution{ 0.0f, PI * 0.5f };
+			//std::uniform_real_distribution<float> rotation_of_drawable_distribution{ 0.0f, 0.0f };
+			//std::uniform_real_distribution<float> spherical_coordinate_movement_of_drawable_distribution{ 0.0f, PI * 0.08f };
+			std::uniform_real_distribution<float> spherical_coordinate_movement_of_drawable_distribution{ 0.0f, 0.0f };
+			drawables_.emplace_back(
+				std::make_unique<SkinnedBox>(
+					Window->getGraphics(), rng, distance_distribution, spherical_coordinate_position_distribution, rotation_of_drawable_distribution,
+					spherical_coordinate_movement_of_drawable_distribution
+				));
+		}
 #endif
 
-	PLOGD << "Set graphics projection";
-	graphics_->setProjection(
-		DirectX::XMMatrixPerspectiveLH(
-			1.0f,
-			aspectRatio,
-			0.5f,
-			40.0f));
 
+		PLOGD << "Set graphics projection";
+		graphics->setProjection(
+			DirectX::XMMatrixPerspectiveLH(
+				1.0f,
+				aspectRatio,
+				0.5f,
+				40.0f));
+	}
 	return 0;
+}
+
+std::optional<unsigned int> App::processMessages()
+{
+	MSG msg;
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	{
+#ifdef LOG_WINDOW_MESSAGES
+		PLOGV << windowsMessageMap(msg.message, msg.lParam, msg.wParam).c_str();
+#endif
+		if (msg.message == WM_QUIT)
+		{
+			return msg.message;
+		}
+
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	return {};
 }
 
 int App::run()
@@ -211,12 +238,11 @@ int App::run()
 	const ImGuiIO& imGuiIO = ImGui::GetIO();
 
 	PLOGI << "Starting Message Pump and Render Loop";
-	bool done = false;
-	while (!done)
+	while (!stop_)
 	{
 		//PLOGI << " *** Run loop ***";
 
-		#if (IS_DEBUG)
+#if (IS_DEBUG)
 		auto static composeFpsCpuWindowTitle = [](const int fps, const double cpuPercentage) {
 			wchar_t buffer[50];
 			std::swprintf(buffer, 50, L"fps: %d / cpu: %00.2f%%", fps, cpuPercentage);
@@ -230,21 +256,23 @@ int App::run()
 
 		// Process pending messages
 		{
-			if (const std::optional exitCode(window_->processMessages()); exitCode.has_value())
+			if (const std::optional exitCode(processMessages()); exitCode.has_value())
 			{
 				if (exitCode.value() == WM_QUIT)
 				{
-					done = true;
+					stop_ = true;
 					continue;
 				}
 			}
 		}
 
 #ifdef LOG_GRAPHICS_CALLS
-		PLOGV << "Window->getGraphics().beginFrame()";
+		PLOGV << "graphics.beginFrame()";
 #endif
 		{
-			if (auto [width, height] = window_->getTargetDimensions(); !graphics_->beginFrame(width, height))
+			const auto [width, height] = Window::getTargetDimensions();
+			const auto graphics = Window::getGraphicsWeakPtr().lock();
+			if (!graphics->beginFrame(width, height))
 			{
 				if (width > 0 || height > 0)
 				{
@@ -318,50 +346,223 @@ int App::run()
 #endif
 		renderFrame(clearColor);
 
+		if (const auto graphics = Window::getGraphicsWeakPtr().lock()) {
 #ifdef LOG_GRAPHICS_CALLS
-		PLOGV << "Graphics.endFrame();";
+			PLOGV << "graphics->endFrame();";
 #endif
-		graphics_->endFrame();
+			graphics->endFrame();
+		}
 	}
 	return 0;
+}
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
+{
+#ifdef LOG_WINDOW_MESSAGES
+	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
+#endif
+#ifdef LOG_WINDOW_MOUSE_MESSAGES
+	if (msg >= WM_MOUSEFIRST && msg <= WM_MOUSELAST)
+	{
+		PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
+	}
+#endif
+#ifdef LOG_GRAPHICS_MESSAGES
+	PLOGV << "ImGui_ImplWin32_WndProcHandler";
+#endif
+	{
+		const auto graphics = Window::getGraphicsWeakPtr().lock();
+		if (graphics && ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+		{
+			return true;
+		}
+	}
+
+	switch (msg)
+	{
+		/* Window */
+	case WM_CREATE:
+	case WM_COMMAND:
+	case WM_CLOSE:
+	case WM_KILLFOCUS:
+	case WM_SHOWWINDOW:
+	case WM_MOVE:
+	case WM_SIZE:
+	case WM_ENTERSIZEMOVE:
+	case WM_EXITSIZEMOVE:
+	case WM_GETMINMAXINFO:
+	case WM_SYSCOMMAND:
+	case WM_DESTROY:
+#ifdef IMGUI_DOCKING
+	case WM_DPICHANGED:
+		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DpiEnableScaleViewports)
+		{
+			const int dpi = HIWORD(wParam);
+			PLOGI << "WM_DPICHANGED to " << dpi << "(" << static_cast<float>(dpi) / 96.0f * 100.0f << ")";
+			const RECT* suggested_rect = reinterpret_cast<RECT*>(lParam);
+			Window::SetWindowPos(windowHandle_, nullptr, suggested_rect->left, suggested_rect->top, suggested_rect->right - suggested_rect->left, suggested_rect->bottom - suggested_rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
+		}
+		break;
+#endif
+		return Window::handleMsg(hwnd, msg, wParam, lParam);
+
+		/* Keyboard */
+	case WM_KEYDOWN:
+	case WM_SYSKEYDOWN:
+	case WM_KEYUP:
+	case WM_SYSKEYUP:
+	case WM_CHAR:
+		// Dear ImGui, a member of Graphics, gets the first opportunity to handle keyboard messages
+		if (const auto graphics = Window::getGraphicsWeakPtr().lock()) {
+			if (graphics->handleMsg(hwnd, msg, wParam, lParam))
+			{
+				return 0;
+			}
+		}
+		// If Dear ImGui didn't process the keyboard message, Keyboard processes it.
+		if (const auto keyboard = Window::getKeyboardWeakPtr().lock()) {
+			keyboard->handleMsg(hwnd, msg, wParam, lParam);
+		}
+		break;
+
+		/* Mouse */
+		// WM_MOUSEMOVE is dependent on both the Window and the Mouse, so it is handled entirely in the App class
+	case WM_MOUSEMOVE:
+		// Dear ImGui, a member of Graphics, gets the first opportunity to handle Mouse messages
+		if (const auto graphics = Window::getGraphicsWeakPtr().lock()) {
+			if (graphics->handleMsg(hwnd, msg, wParam, lParam))
+			{
+				return 0;
+			}
+		}
+		// If Dear ImGui didn't process the keyboard message, Keyboard processes it.
+		if (const auto window = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA)))  // NOLINT(performance-no-int-to-ptr)
+		if (auto mouse = Window::getMouseWeakPtr().lock())
+		{
+			const auto [x, y] = MAKEPOINTS(lParam);
+			const auto [width, height] = window->getDimensions();
+			// mouse is inside client region
+			if (x >= 0 && x < width && y >= 0 && y < height)
+			{
+				// but internal state is still outside client region
+				if (!mouse->isInWindow())
+				{
+					// fix the state
+					mouse->onMouseEnter(x, y);
+					SetCapture(hwnd);
+				}
+				else
+				{
+					mouse->onMouseMove(x, y);
+				}
+			}
+			// mouse is outside client region and internal state places it inside client region
+			else if (mouse->isInWindow())
+			{
+				// because a button is being held down we want to keep track of the mouse position outside the client region boundaries
+				if (mouse->isLeftPressed() || mouse->isRightPressed() || mouse->isMiddlePressed() || mouse->isX1Pressed() || mouse->isX2Pressed())
+				{
+					mouse->onMouseMove(x, y);
+				}
+				// but no buttons ARE being held down
+				else
+				{
+					// fix the state
+					ReleaseCapture();
+					mouse->onMouseLeave();
+				}
+			}
+		}
+		break;
+		// All other mouse events can be handled by the Mouse itself
+	case WM_LBUTTONDOWN:
+	case WM_RBUTTONDOWN:
+	case WM_MBUTTONDOWN:
+	case WM_XBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONUP:
+	case WM_XBUTTONUP:
+	case WM_MOUSEWHEEL:
+	case WM_MOUSEHWHEEL:
+		// Dear ImGui, a member of Graphics, gets the first opportunity to handle Mouse messages
+		if (const auto graphics = Window::getGraphicsWeakPtr().lock()) {
+			if (graphics->handleMsg(hwnd, msg, wParam, lParam))
+			{
+				return 0;
+			}
+		}
+		// If Dear ImGui didn't process the keyboard message, Keyboard processes it.
+		if (auto mouse = Window::getMouseWeakPtr().lock())
+		{
+			mouse->handleMsg(hwnd, msg, wParam, lParam);
+		}
+		break;
+
+		/* App custom */
+	case WM_APP:
+		PLOGW << "Received WM_APP message";
+		break;
+	case WM_APP_CLOSE:
+		PLOGW << "Received WM_APP_CLOSE message";
+		break;
+	case WM_APP_CONSOLE_CLOSE:
+		PLOGW << "Handling WM_APP_CONSOLE_CLOSE message";
+		::PostQuitMessage(0);
+		break;
+	case WM_APP_WINDOW_CLOSE:
+		PLOGW << "Received WM_APP_WINDOW_CLOSE message";
+		break;
+	default:
+		break;
+	}
+	return DefWindowProc(hwnd, msg, wParam, lParam);
 }
 
 App::~App()
 {
 	gdiManager_->shutdown();
+	window_.reset();
 #if (IS_DEBUG)
 	console_->shutdown();
 #endif
+	PLOGI << "App destroyed";
 }
 
 void App::renderFrame(const ImVec4& clearColor)
 {
 	const auto dt = timer_.mark();
-
-	PLOGD << "Fetch Dear ImGui IO";
-	const ImGuiIO& imGuiIO = ImGui::GetIO(); (void)imGuiIO;
-
-	PLOGD << "Clear the buffer";
-	graphics_->clearBuffer(clearColor);
-
-	PLOGD << "Draw all drawables";
-	for (const auto& drawable : drawables_)
+	const auto graphics = Window::getGraphicsWeakPtr().lock();
+	const auto keyboard = Window::getKeyboardWeakPtr().lock();
+	if (graphics && keyboard)
 	{
-		drawable->update(keyboard_->isKeyPressed(VK_SPACE) ? 0.0f : dt);
-		drawable->draw(*graphics_);
-	}
+		PLOGD << "Fetch Dear ImGui IO";
+		const ImGuiIO& imGuiIO = ImGui::GetIO(); (void)imGuiIO;
 
-	PLOGV << "ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData())";
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+		PLOGD << "Clear the buffer";
+		graphics->clearBuffer(clearColor);
+
+
+		PLOGD << "Draw all drawables";
+		for (const auto& drawable : drawables_)
+		{
+			drawable->update(keyboard->isKeyPressed(VK_SPACE) ? 0.0f : dt);
+			drawable->draw(*graphics);
+		}
+
+		PLOGV << "ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData())";
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 #ifdef IMGUI_DOCKING
-	// Update and Render additional Platform Windows
-	if (im_gui_io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		PLOGV << "ImGui::UpdatePlatformWindows()";
-		ImGui::UpdatePlatformWindows();
-		PLOGV << "ImGui::RenderPlatformWindowsDefault()";
-		ImGui::RenderPlatformWindowsDefault();
-	}
+		// Update and Render additional Platform Windows
+		if (im_gui_io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			PLOGV << "ImGui::UpdatePlatformWindows()";
+			ImGui::UpdatePlatformWindows();
+			PLOGV << "ImGui::RenderPlatformWindowsDefault()";
+			ImGui::RenderPlatformWindowsDefault();
+		}
 #endif
+	}
 }

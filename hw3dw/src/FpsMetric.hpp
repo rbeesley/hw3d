@@ -1,6 +1,6 @@
 #pragma once
 #pragma comment(lib, "winmm.lib")
-#define FPS_METRIC_
+
 #include "AtumWindows.hpp"
 
 class FpsMetric

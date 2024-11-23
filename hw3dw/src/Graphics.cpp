@@ -6,6 +6,11 @@
 
 #include "Logging.hpp"
 
+#if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in LoggingConfig.h
+#include "WindowsMessageMap.hpp"
+const static WindowsMessageMap windowsMessageMap;
+#endif
+
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <functional>
@@ -60,7 +65,7 @@ Graphics::Graphics(HWND parent, int width, int height) :
 	swapCreateFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-	D3D_FEATURE_LEVEL feature_level;
+	D3D_FEATURE_LEVEL featureLevel;
 	constexpr D3D_FEATURE_LEVEL featureLevelsArray[2] = {
 		D3D_FEATURE_LEVEL_11_0,
 		D3D_FEATURE_LEVEL_10_0,
@@ -83,7 +88,7 @@ Graphics::Graphics(HWND parent, int width, int height) :
 		&swapChainDesc,
 		swapChain_.GetAddressOf(),
 		device_.GetAddressOf(),
-		&feature_level,
+		&featureLevel,
 		deviceContext_.GetAddressOf()
 	));
 
@@ -179,6 +184,42 @@ Graphics::Graphics(HWND parent, int width, int height) :
 	PLOGV << "ImGui_ImplDX11_Init";
 #endif
 	ImGui_ImplDX11_Init(device_.Get(), deviceContext_.Get());
+}
+
+LRESULT Graphics::handleMsg([[maybe_unused]] HWND window, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
+{
+#ifdef LOG_WINDOW_MESSAGES
+	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
+#endif
+	switch(msg)
+	{
+	case WM_KEYDOWN:
+	case WM_SYSKEYDOWN:
+		if (const auto& io = ImGui::GetIO(); io.WantCaptureKeyboard)
+		{
+			return 1;
+		}
+		break;
+	case WM_MOUSEMOVE:
+	case WM_LBUTTONDOWN:
+	case WM_RBUTTONDOWN:
+	case WM_MBUTTONDOWN:
+	case WM_XBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONUP:
+	case WM_XBUTTONUP:
+	case WM_MOUSEWHEEL:
+	case WM_MOUSEHWHEEL:
+		if (const auto& io = ImGui::GetIO(); io.WantCaptureMouse)
+		{
+			return 1;
+		}
+		break;
+	default:
+		break;
+	}
+	return 0;
 }
 
 void Graphics::createRenderTarget()
@@ -305,7 +346,7 @@ void Graphics::clearBuffer(const float red, const float green, const float blue,
 
 
 // ReSharper disable once CppMemberFunctionMayBeConst
-void Graphics::draw_indexed(const UINT count) noexcept(!IS_DEBUG)
+void Graphics::drawIndexed(const UINT count) noexcept(!IS_DEBUG)
 {
 #ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "deviceContext_->DrawIndexed( " << count << ", 0u, 0u)";
@@ -341,7 +382,7 @@ std::string Graphics::GraphicsException::toNarrow(const wchar_t* s, const char f
 	return out.str();
 }
 
-Graphics::HresultException::HresultException(const int line, const char* file, const HRESULT hresult, const std::vector<std::string>& infoMessages) noexcept
+Graphics::HResultException::HResultException(const int line, const char* file, const HRESULT hresult, const std::vector<std::string>& infoMessages) noexcept
 	:
 	GraphicsException(line, file),
 	hresult_(hresult)
@@ -354,7 +395,7 @@ Graphics::HresultException::HresultException(const int line, const char* file, c
 	}
 }
 
-const char* Graphics::HresultException::what() const noexcept
+const char* Graphics::HResultException::what() const noexcept
 {
 	std::ostringstream out;
 	out << "[Error Code] 0x" << std::hex << std::uppercase << getErrorCode()
@@ -370,17 +411,17 @@ const char* Graphics::HresultException::what() const noexcept
 	return whatBuffer_.c_str();
 }
 
-const char* Graphics::HresultException::getType() const noexcept
+const char* Graphics::HResultException::getType() const noexcept
 {
 	return "Atum Graphics Exception";
 }
 
-HRESULT Graphics::HresultException::getErrorCode() const noexcept
+HRESULT Graphics::HResultException::getErrorCode() const noexcept
 {
 	return hresult_;
 }
 
-std::string Graphics::HresultException::getErrorString() const noexcept
+std::string Graphics::HResultException::getErrorString() const noexcept
 {
 #ifdef _UNICODE
 	return toNarrow(DXGetErrorString(hresult_));
@@ -389,7 +430,7 @@ std::string Graphics::HresultException::getErrorString() const noexcept
 #endif
 }
 
-std::string Graphics::HresultException::getErrorDescription() const noexcept
+std::string Graphics::HResultException::getErrorDescription() const noexcept
 {
 #ifdef _UNICODE
 	WCHAR buffer[512];
@@ -402,7 +443,7 @@ std::string Graphics::HresultException::getErrorDescription() const noexcept
 #endif
 }
 
-std::string Graphics::HresultException::getErrorInfo() const noexcept
+std::string Graphics::HResultException::getErrorInfo() const noexcept
 {
 	return infoMessage_;
 }

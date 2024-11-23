@@ -11,7 +11,7 @@
 
 #pragma comment(lib, "dxguid.lib")
 
-#define GFX_THROW_NOINFO(hrcall) if( FAILED(hresult = (hrcall))) throw Graphics::HresultException(__LINE__, __FILE__, hresult)
+#define GFX_THROW_NOINFO(hrcall) if( FAILED(hresult = (hrcall))) throw Graphics::HResultException(__LINE__, __FILE__, hresult)
 
 DxgiInfoManager::DxgiInfoManager()
 {

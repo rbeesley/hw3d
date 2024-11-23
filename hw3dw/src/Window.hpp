@@ -4,8 +4,6 @@
 #include <memory>
 
 #include "AtumException.hpp"
-
-#define WINDOW_
 #include "AtumWindows.hpp"
 
 #include "Keyboard.hpp"
@@ -40,10 +38,10 @@ public:
 		HRESULT result_;
 	};
 public:
-	class HresultException : public Exception
+	class HResultException : public Exception
 	{
 	public:
-		HresultException(int line, const char* file, HRESULT hresult) noexcept;
+		HResultException(int line, const char* file, HRESULT hresult) noexcept;
 		const char* what() const noexcept override;
 		const char* getType() const noexcept override;
 		HRESULT getErrorCode() const noexcept;
@@ -61,14 +59,15 @@ public:
 public:
 	struct WindowDimensions
 	{
-		unsigned int width;
-		unsigned int height;
+		SHORT width;
+		SHORT height;
+	};
+	struct WindowPosition
+	{
+		int x;
+		int y;
 	};
 
-	void createWindow(LPCWSTR name);
-	void configureImGui();
-	static void initializeStaticMembers();
-	static void shutdownStaticMembers();
 	explicit Window(int width, int height, LPCWSTR name);
 	~Window();
 
@@ -77,32 +76,39 @@ public:
 	Window(const Window&&) = delete;
 	Window& operator=(const Window&&) = delete;
 
+	void createWindow(LPCWSTR name);
+	void configureImGui();
+	static void initializeStaticMembers();
+	static void shutdownStaticMembers();
+
 	[[nodiscard]] static HWND getHandle();
-	static std::optional<unsigned int> processMessages();
-	std::shared_ptr<Mouse> get_mouse();
-	std::shared_ptr<Keyboard> get_keyboard();
-	std::shared_ptr<Graphics> get_graphics();
-	static void setTitle(const std::wstring& title);
-	static void setTargetDimensions(unsigned int width, unsigned int height);
+	static HWND setActive(HWND window);
+	WindowDimensions getDimensions() const;
+	static WindowPosition getPosition();
+	static void setPosition(int x, int y);
 	static WindowDimensions getTargetDimensions();
+	static void setTargetDimensions(unsigned int width, unsigned int height);
+	static void setTitle(const std::wstring& title);
+	static std::weak_ptr<Mouse> getMouseWeakPtr() noexcept;
+	static std::weak_ptr<Keyboard> getKeyboardWeakPtr() noexcept;
+	static std::weak_ptr<Graphics> getGraphicsWeakPtr() noexcept;
+	static LRESULT CALLBACK handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 private:
 	static LRESULT CALLBACK handleMsgSetup(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	static LRESULT CALLBACK handleMsgThunk(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-	static HWND setActive(HWND window);
-	static LRESULT CALLBACK handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 public:
 private:
 	static std::shared_ptr<Mouse> mouse_;
 	static std::shared_ptr<Keyboard> keyboard_;
-	std::shared_ptr<Graphics> graphics_;
+	static std::shared_ptr<Graphics> graphics_;
 	inline static int x_{};
 	inline static int y_{};
-	int width_{};
-	int height_{};
+	SHORT width_{};
+	SHORT height_{};
 	static bool inSizeMove_;
 	static bool minimized_;
-	static unsigned int targetWidth_;
-	static unsigned int targetHheight_;
+	static SHORT targetWidth_;
+	static SHORT targetHheight_;
 	std::unique_ptr<WindowClass> windowClass_;
 	static inline HWND windowHandle_;
 };
