@@ -4,6 +4,11 @@
 
 #include "Logging.hpp"
 
+#if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in LoggingConfig.h
+#include "WindowsMessageMap.hpp"
+const static WindowsMessageMap windowsMessageMap;
+#endif
+
 #if defined(LOG_MOUSE_MESSAGES) // defined in LoggingConfig.h
 #include <format>
 #include "VirtualKeyMap.h"
@@ -40,6 +45,107 @@ bool Mouse::isEmpty() const noexcept
 void Mouse::clear() noexcept
 {
 	eventBuffer_ = std::queue<Event>();
+}
+
+LRESULT Mouse::handleMsg([[maybe_unused]] HWND window, const UINT msg, const WPARAM wParam, LPARAM l_param) noexcept
+{
+#ifdef LOG_WINDOW_MESSAGES
+	PLOGV << windowsMessageMap(msg, l_param, wParam).c_str();
+#endif
+	switch (msg)
+	{
+	case WM_LBUTTONDOWN:
+	case WM_RBUTTONDOWN:
+	case WM_MBUTTONDOWN:
+	case WM_XBUTTONDOWN:
+	{
+		const auto [x, y] = MAKEPOINTS(l_param);
+		switch (msg)
+		{
+		case WM_LBUTTONDOWN:
+			onLeftPressed(x, y);
+			break;
+		case WM_RBUTTONDOWN:
+			onRightPressed(x, y);
+			break;
+		case WM_MBUTTONDOWN:
+			onMiddlePressed(x, y);
+			break;
+		case WM_XBUTTONDOWN:
+			switch GET_XBUTTON_WPARAM(wParam)
+			{
+			case XBUTTON1:
+				onX1Pressed(x, y);
+				break;
+			case XBUTTON2:
+				onX2Pressed(x, y);
+				break;
+			default:
+				break;
+			}
+			break;
+		default:
+			break;
+		}
+		break;
+	}
+	case WM_LBUTTONUP:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONUP:
+	case WM_XBUTTONUP:
+	{
+		const auto [x, y] = MAKEPOINTS(l_param);
+		switch (msg)
+		{
+		case WM_LBUTTONUP:
+			onLeftReleased(x, y);
+			break;
+		case WM_RBUTTONUP:
+			onRightReleased(x, y);
+			break;
+		case WM_MBUTTONUP:
+			onMiddleReleased(x, y);
+			break;
+		case WM_XBUTTONUP:
+			switch GET_XBUTTON_WPARAM(wParam)
+			{
+			case XBUTTON1:
+				onX1Released(x, y);
+				break;
+			case XBUTTON2:
+				onX2Released(x, y);
+				break;
+			default:
+				break;
+			}
+			break;
+		default:
+			break;
+		}
+		break;
+	}
+	case WM_MOUSEWHEEL:
+	case WM_MOUSEHWHEEL:
+	{
+		const auto [x, y] = MAKEPOINTS(l_param);
+		const int wheel_delta = GET_WHEEL_DELTA_WPARAM(wParam);
+		switch (msg)
+		{
+		case WM_MOUSEWHEEL: // Vertical mouse scroll wheel
+			onVWheelDelta(x, y, wheel_delta);
+			break;
+		case WM_MOUSEHWHEEL: // Horizontal mouse scroll wheel
+			onHWheelDelta(x, y, wheel_delta);
+			break;
+		default:
+			break;
+		}
+		break;
+	}
+	default:
+		break;
+	}
+	return 0;
 }
 
 std::pair<int, int> Mouse::getPos() const noexcept

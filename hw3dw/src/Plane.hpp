@@ -14,14 +14,14 @@ public:
 	}
 
 	template<class V>
-	static IndexedTriangleList<V> makeTessellated(const int divisionsX, const int divisionsY, std::function<void(std::vector<V>&)> setAttributes = nullptr)
+	static IndexedTriangleList<V> makeTessellated(const size_t divisionsX, const size_t divisionsY, std::function<void(std::vector<V>&)> setAttributes = nullptr)
 	{
 		namespace dx = DirectX;
 		assert(divisionsX >= 1);
 		assert(divisionsY >= 1);
 
-		const int numberVerticesX = divisionsX + 1;
-		const int numberVerticesY = divisionsY + 1;
+		const size_t numberVerticesX = divisionsX + 1;
+		const size_t numberVerticesY = divisionsY + 1;
 		std::vector<V> vertices(numberVerticesX * numberVerticesY);
 		{
 			constexpr float height = 2.0f;
@@ -32,10 +32,10 @@ public:
 			const float divisionSizeY = height / static_cast<float>(divisionsY);
 			const auto bottomLeft = dx::XMVectorSet(-sideX, -sideY, 0.0f, 0.0f);
 
-			for (int y = 0, i = 0; y < numberVerticesY; y++)
+			for (size_t y = 0, i = 0; y < numberVerticesY; y++)
 			{
 				const float yPos = static_cast<float>(y) * divisionSizeY;
-				for (int x = 0; x < numberVerticesX; x++, i++)
+				for (size_t x = 0; x < numberVerticesX; x++, i++)
 				{
 					const auto vertex = dx::XMVectorAdd(
 						bottomLeft,

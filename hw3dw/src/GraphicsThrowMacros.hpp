@@ -4,15 +4,15 @@
 
 // Get the resulting error message and log the exception, no info manager
 // Has a dependency that HRESULT hresult; is allocated and assigned a value
-#define GFX_EXCEPT_NOINFO(hresult) Graphics::HresultException(__LINE__, __FILE__, (hresult))
+#define GFX_EXCEPT_NOINFO(hresult) Graphics::HResultException(__LINE__, __FILE__, (hresult))
 // Wrap graphics call with error check, no info manager
 // Has a dependency that HRESULT hresult; is allocated
-#define GFX_THROW_NOINFO(hresultCall) if( FAILED(hresult = (hresultCall)) ) { throw Graphics::HresultException(__LINE__, __FILE__, hresult); }
+#define GFX_THROW_NOINFO(hresultCall) if( FAILED(hresult = (hresultCall)) ) { throw Graphics::HResultException(__LINE__, __FILE__, hresult); }
 
 #if (IS_DEBUG)
 // Get the resulting error message and log the exception
 // Has a dependency that HRESULT hresult; is allocated and assigned a value
-#define GFX_EXCEPT(hresult) Graphics::HresultException(__LINE__, __FILE__, (hresult), infoManager_.getMessages())
+#define GFX_EXCEPT(hresult) Graphics::HResultException(__LINE__, __FILE__, (hresult), infoManager_.getMessages())
 // Wrap graphics call with error check
 // Has a dependency that HRESULT hresult; is allocated
 #define GFX_THROW_INFO(hresultCall) infoManager_.set(); if( FAILED(hresult = (hresultCall)) ) { throw GFX_EXCEPT(hresult); }
@@ -24,10 +24,10 @@
 #else
 // Get the resulting error message and log the exception
 // Has a dependency that HRESULT hresult; is allocated and assigned a value
-#define GFX_EXCEPT(hresult) Graphics::HresultException(__LINE__, __FILE__, (hresult))
+#define GFX_EXCEPT(hresult) Graphics::HResultException(__LINE__, __FILE__, (hresult))
 // Wrap graphics call with error check
 // Has a dependency that HRESULT hresult; is allocated
-#define GFX_THROW_INFO(hresultCall) if( FAILED(hresult = (hresultCall)) ) { throw Graphics::HresultException(__LINE__, __FILE__, (hresult)); }
+#define GFX_THROW_INFO(hresultCall) if( FAILED(hresult = (hresultCall)) ) { throw Graphics::HResultException(__LINE__, __FILE__, (hresult)); }
 // Get the error for a device removed and log the exception
 // Has a dependency that HRESULT hresult; is allocated and assigned a value
 #define GFX_DEVICE_REMOVED_EXCEPTION(hresult) Graphics::DeviceRemovedException(__LINE__, __FILE__, (hresult))

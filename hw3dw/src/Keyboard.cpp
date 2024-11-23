@@ -4,12 +4,19 @@
 
 #include "Logging.hpp"
 
+#if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in LoggingConfig.h
+#include "WindowsMessageMap.hpp"
+const static WindowsMessageMap windowsMessageMap;
+#endif
+
 #if defined(LOG_KEYBOARD_MESSAGES) || defined(LOG_KEYBOARD_CHARS)  // defined in LoggingConfig.h
 #include <format>
 #include "VirtualKeyMap.h"
 
-const static class VirtualKeyMap virtualKeyMap;
+const static VirtualKeyMap virtualKeyMap;
 #endif
+
+bool Keyboard::autorepeatEnabled_ = false;
 
 bool Keyboard::isKeyPressed(const unsigned char keyCode) const noexcept
 {
@@ -35,6 +42,34 @@ bool Keyboard::isKeyEmpty() const noexcept
 void Keyboard::clearEventBuffer() noexcept
 {
 	eventBuffer_ = std::queue<Event>();
+}
+
+LRESULT Keyboard::handleMsg([[maybe_unused]] HWND window, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
+{
+#ifdef LOG_WINDOW_MESSAGES
+	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
+#endif
+	switch (msg)
+	{
+	case WM_KEYDOWN:
+	case WM_SYSKEYDOWN:
+		// Filter keyboard autorepeat
+		if (!(lParam & 0x40000000 /* previous key state */) || isAutorepeatEnabled())
+		{
+			onKeyPressed(static_cast<unsigned char>(wParam));
+		}
+		break;
+	case WM_KEYUP:
+	case WM_SYSKEYUP:
+		onKeyReleased(static_cast<unsigned char>(wParam));
+		break;
+	case WM_CHAR:
+		onChar(static_cast<unsigned char>(wParam));
+		break;
+	default:
+		break;
+	}
+	return 0;
 }
 
 bool Keyboard::isCharEmpty() const noexcept
@@ -63,7 +98,7 @@ void Keyboard::disableAutorepeat() noexcept
 	autorepeatEnabled_ = false;
 }
 
-bool Keyboard::isAutorepeatEnabled() const noexcept
+bool Keyboard::isAutorepeatEnabled() noexcept
 {
 	return autorepeatEnabled_;
 }

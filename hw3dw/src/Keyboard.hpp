@@ -4,7 +4,6 @@
 #include <optional>
 #include <queue>
 
-#define KEYBOARD_
 #include "AtumWindows.hpp"
 
 class Keyboard
@@ -68,6 +67,7 @@ private:
 	[[nodiscard]] bool isKeyEmpty() const noexcept;
 	void clearEventBuffer() noexcept;
 public:
+	LRESULT handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	[[nodiscard]] bool isKeyPressed(unsigned char keyCode) const noexcept;
 	void onKeyPressed(unsigned char keyCode) noexcept;
 	void onKeyReleased(unsigned char keyCode) noexcept;
@@ -86,12 +86,12 @@ public:
 public:
 	void enableAutorepeat() noexcept;
 	void disableAutorepeat() noexcept;
-	[[nodiscard]] bool isAutorepeatEnabled() const noexcept;
+	[[nodiscard]] bool isAutorepeatEnabled() noexcept;
 
 private:
 	static constexpr unsigned int NUMBER_OF_KEYS = 256u;
 	static constexpr unsigned int BUFFER_SIZE = 16u;
-	bool autorepeatEnabled_ = false;
+	static bool autorepeatEnabled_;
 	std::bitset<NUMBER_OF_KEYS> keyState_;
 	std::queue<Event> eventBuffer_;
 	std::queue<char> charBuffer_;

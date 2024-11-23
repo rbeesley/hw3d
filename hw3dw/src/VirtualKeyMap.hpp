@@ -2,7 +2,6 @@
 #include <string>
 #include <unordered_map>
 
-#define VIRTUAL_KEY_MAP_
 #include "AtumWindows.hpp"
 
 class VirtualKeyMap

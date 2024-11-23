@@ -90,7 +90,7 @@ int APIENTRY WinMain(
 		const int result = app.run();
 		PLOGI << "Closing App";
 
-		return result;
+		return 0;
 	}
 
 	//BUGBUG : Should be using MessageBox and adjusting text based on target encoding. Currently assuming ASCII to match output of Exception.what().
