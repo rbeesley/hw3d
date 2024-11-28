@@ -270,8 +270,8 @@ int App::run()
 		PLOGV << "graphics.beginFrame()";
 #endif
 		{
-			const auto [width, height] = Window::getTargetDimensions();
-			const auto graphics = Window::getGraphicsWeakPtr().lock();
+			const auto [width, height] = window_->getTargetDimensions();
+			const auto graphics = window_->getGraphicsWeakPtr().lock();
 			if (!graphics->beginFrame(width, height))
 			{
 				if (width > 0 || height > 0)
@@ -299,8 +299,10 @@ int App::run()
 
 		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 		if (showDemoWindow)
+		{
 			PLOGD << "Show the big demo window";
 			ImGui::ShowDemoWindow(&showDemoWindow);
+		}
 
 		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
 		{
@@ -338,15 +340,11 @@ int App::run()
 		}
 
 #ifdef LOG_GRAPHICS_CALLS
-		PLOGV << "ImGui::Render();";
-#endif
-		ImGui::Render();
-#ifdef LOG_GRAPHICS_CALLS
 		PLOGV << "renderFrame(clear_color);";
 #endif
 		renderFrame(clearColor);
 
-		if (const auto graphics = Window::getGraphicsWeakPtr().lock()) {
+		if (const auto graphics = window_->getGraphicsWeakPtr().lock()) {
 #ifdef LOG_GRAPHICS_CALLS
 			PLOGV << "graphics->endFrame();";
 #endif
@@ -396,14 +394,6 @@ LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, con
 	case WM_DESTROY:
 #ifdef IMGUI_DOCKING
 	case WM_DPICHANGED:
-		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DpiEnableScaleViewports)
-		{
-			const int dpi = HIWORD(wParam);
-			PLOGI << "WM_DPICHANGED to " << dpi << "(" << static_cast<float>(dpi) / 96.0f * 100.0f << ")";
-			const RECT* suggested_rect = reinterpret_cast<RECT*>(lParam);
-			Window::SetWindowPos(windowHandle_, nullptr, suggested_rect->left, suggested_rect->top, suggested_rect->right - suggested_rect->left, suggested_rect->bottom - suggested_rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
-		}
-		break;
 #endif
 		return Window::handleMsg(hwnd, msg, wParam, lParam);
 
@@ -533,30 +523,33 @@ App::~App()
 void App::renderFrame(const ImVec4& clearColor)
 {
 	const auto dt = timer_.mark();
-	const auto graphics = Window::getGraphicsWeakPtr().lock();
-	const auto keyboard = Window::getKeyboardWeakPtr().lock();
-	if (graphics && keyboard)
-	{
-		PLOGD << "Fetch Dear ImGui IO";
-		const ImGuiIO& imGuiIO = ImGui::GetIO(); (void)imGuiIO;
 
+	if (const auto graphics = window_->getGraphicsWeakPtr().lock())
+	{
 		PLOGD << "Clear the buffer";
 		graphics->clearBuffer(clearColor);
-
 
 		PLOGD << "Draw all drawables";
 		for (const auto& drawable : drawables_)
 		{
+			const auto keyboard = window_->getKeyboardWeakPtr().lock();
 			drawable->update(keyboard->isKeyPressed(VK_SPACE) ? 0.0f : dt);
 			drawable->draw(*graphics);
 		}
+
+#ifdef LOG_GRAPHICS_CALLS
+		PLOGV << "ImGui::Render();";
+#endif
+		ImGui::Render();
 
 		PLOGV << "ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData())";
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
 #ifdef IMGUI_DOCKING
+		PLOGD << "Fetch Dear ImGui IO for Docking";
+
 		// Update and Render additional Platform Windows
-		if (im_gui_io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		if (const ImGuiIO& imGuiIO = ImGui::GetIO(); imGuiIO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			PLOGV << "ImGui::UpdatePlatformWindows()";
 			ImGui::UpdatePlatformWindows();

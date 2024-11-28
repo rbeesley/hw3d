@@ -10,6 +10,8 @@
 #include "Mouse.hpp"
 #include "Graphics.hpp"
 
+#define IMGUI_DOCKING
+
 class Window
 {
 private:

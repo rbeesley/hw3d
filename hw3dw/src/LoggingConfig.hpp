@@ -1,7 +1,7 @@
 #pragma once
 
 /* Quick override to turn on Verbose logging for all sinks - WinMain.cpp */
-//#define LOG_LEVEL_FULL
+#define LOG_LEVEL_FULL
 
 #if !defined(LOG_LEVEL_FULL)
 //plog::none	// Effectively turns off logging
@@ -21,9 +21,9 @@
 #endif
 
 /* Log the Window Messages - App.cpp */
-//#define LOG_WINDOW_MESSAGES
+#define LOG_WINDOW_MESSAGES
 //#define LOG_WINDOW_MOUSE_MESSAGES
-//#define LOG_WINDOW_MOVEMENT_MESSAGES
+#define LOG_WINDOW_MOVEMENT_MESSAGES
 
 /* Log the Keyboard Messages and/or Characters - Keyboard.cpp */
 //#define LOG_KEYBOARD_MESSAGES
@@ -33,4 +33,4 @@
 //#define LOG_MOUSE_MESSAGES
 
 /* Log the Graphics calls - App.cpp, Drawable.cpp, DrawableStaticStorage.hpp, Graphics.cpp, Window.cpp  */
-//#define LOG_GRAPHICS_CALLS
+#define LOG_GRAPHICS_CALLS

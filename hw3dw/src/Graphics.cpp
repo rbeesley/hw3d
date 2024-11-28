@@ -16,7 +16,7 @@ const static WindowsMessageMap windowsMessageMap;
 #include <functional>
 #include <sstream>
 
-#define UNCAPPED_FRAMERATE TRUE
+#define UNCAPPED_FRAMERATE FALSE
 
 namespace wrl = Microsoft::WRL;
 namespace dx = DirectX;
@@ -186,17 +186,22 @@ Graphics::Graphics(HWND parent, int width, int height) :
 	ImGui_ImplDX11_Init(device_.Get(), deviceContext_.Get());
 }
 
-LRESULT Graphics::handleMsg([[maybe_unused]] HWND window, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
+LRESULT Graphics::handleMsg([[maybe_unused]] HWND window, const UINT msg, [[maybe_unused]] const WPARAM wParam, [[maybe_unused]] const LPARAM lParam) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES
 	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
 #endif
+
+	// This is where Dear ImGui gets the first opportunity to handle keyboard messages
+	const auto& io = ImGui::GetIO();
+
 	switch(msg)
 	{
 	case WM_KEYDOWN:
 	case WM_SYSKEYDOWN:
-		if (const auto& io = ImGui::GetIO(); io.WantCaptureKeyboard)
+		if (io.WantCaptureKeyboard)
 		{
+			// If it wants to capture the keyboard, then we want to cancel further processing in App
 			return 1;
 		}
 		break;
@@ -211,8 +216,9 @@ LRESULT Graphics::handleMsg([[maybe_unused]] HWND window, const UINT msg, const 
 	case WM_XBUTTONUP:
 	case WM_MOUSEWHEEL:
 	case WM_MOUSEHWHEEL:
-		if (const auto& io = ImGui::GetIO(); io.WantCaptureMouse)
+		if (io.WantCaptureMouse)
 		{
+			// If it wants to capture the mouse, then we want to cancel further processing in App
 			return 1;
 		}
 		break;
@@ -224,6 +230,7 @@ LRESULT Graphics::handleMsg([[maybe_unused]] HWND window, const UINT msg, const 
 
 void Graphics::createRenderTarget()
 {
+// ImGui::CreateRenderTarget()
 	HRESULT hresult;
 
 #ifdef __clang__
@@ -245,6 +252,7 @@ void Graphics::createRenderTarget()
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
+// end
 }
 
 bool Graphics::beginFrame(const unsigned int targetWidth, const unsigned int targetHeight)
@@ -268,20 +276,29 @@ bool Graphics::beginFrame(const unsigned int targetWidth, const unsigned int tar
 		{
 			deviceContext_->OMSetRenderTargets(0, 0, 0);
 
+// ImGui::CleanupRenderTarget()
 			// Release all outstanding references to the swap chain's buffers
+			//Microsoft::WRL::ComPtr <ID3D11Debug> D3D11Debug;
+			Microsoft::WRL::ComPtr<ID3D11Debug> D3D11Debug;
+			device_->QueryInterface(IID_PPV_ARGS(&D3D11Debug));
+			D3D11Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 			renderTargetView_->Release();
+			renderTargetView_.Reset();
+// end
 
 			HRESULT hresult;
 			// Preserve the existing buffer count and format
 			// Automatically choose the width and height to match the client area rect for HWNDs.
-			GFX_THROW_INFO(swapChain_->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0));
+			GFX_THROW_INFO(swapChain_->ResizeBuffers(0, targetWidth, targetHeight, DXGI_FORMAT_UNKNOWN, 0));
 
+// ImGui::CreateRenderTarget()
 			// Get buffer and create a render-target-view.
 			ID3D11Texture2D* buffer;
 			GFX_THROW_INFO(swapChain_->GetBuffer(0, IID_PPV_ARGS(&buffer)));
 
 			GFX_THROW_INFO(device_->CreateRenderTargetView(buffer, nullptr, renderTargetView_.GetAddressOf()));
 			buffer->Release();
+// end
 
 			deviceContext_->OMSetRenderTargets(1, renderTargetView_.GetAddressOf(), nullptr);
 
@@ -344,12 +361,11 @@ void Graphics::clearBuffer(const float red, const float green, const float blue,
 	deviceContext_->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
-
 // ReSharper disable once CppMemberFunctionMayBeConst
 void Graphics::drawIndexed(const UINT count) noexcept(!IS_DEBUG)
 {
 #ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "deviceContext_->DrawIndexed( " << count << ", 0u, 0u)";
+	//PLOGV << "deviceContext_->DrawIndexed( " << count << ", 0u, 0u)";
 #endif
 	GFX_THROW_INFO_ONLY(deviceContext_->DrawIndexed(count, 0u, 0u));
 }
