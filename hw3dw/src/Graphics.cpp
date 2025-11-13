@@ -16,7 +16,7 @@ const static WindowsMessageMap windowsMessageMap;
 #include <functional>
 #include <sstream>
 
-#define UNCAPPED_FRAMERATE TRUE
+#define UNCAPPED_FRAMERATE FALSE
 
 namespace wrl = Microsoft::WRL;
 namespace dx = DirectX;
@@ -57,7 +57,7 @@ Graphics::Graphics(HWND parent, int width, int height) :
 	swapChainDesc.SampleDesc.Count = 1;
 	swapChainDesc.SampleDesc.Quality = 0;
 	swapChainDesc.Windowed = TRUE;
-	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
 	UINT swapCreateFlags = 0u;
 #if (IS_DEBUG)
@@ -186,17 +186,22 @@ Graphics::Graphics(HWND parent, int width, int height) :
 	ImGui_ImplDX11_Init(device_.Get(), deviceContext_.Get());
 }
 
-LRESULT Graphics::handleMsg([[maybe_unused]] HWND window, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
+LRESULT Graphics::handleMsg([[maybe_unused]] HWND window, const UINT msg, [[maybe_unused]] const WPARAM wParam, [[maybe_unused]] const LPARAM lParam) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES
 	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
 #endif
+
+	// This is where Dear ImGui gets the first opportunity to handle keyboard messages
+	const auto& io = ImGui::GetIO();
+
 	switch(msg)
 	{
 	case WM_KEYDOWN:
-	case WM_SYSKEYDOWN:
+			// If Dear ImGui wants to capture the keyboard, then we want to cancel further processing in App
 		if (const auto& io = ImGui::GetIO(); io.WantCaptureKeyboard)
 		{
+			// If it wants to capture the keyboard, then we want to cancel further processing in App
 			return 1;
 		}
 		break;
@@ -210,9 +215,10 @@ LRESULT Graphics::handleMsg([[maybe_unused]] HWND window, const UINT msg, const 
 	case WM_MBUTTONUP:
 	case WM_XBUTTONUP:
 	case WM_MOUSEWHEEL:
-	case WM_MOUSEHWHEEL:
+			// If Dear ImGui wants to capture the mouse, then we want to cancel further processing in App
 		if (const auto& io = ImGui::GetIO(); io.WantCaptureMouse)
 		{
+			// If it wants to capture the mouse, then we want to cancel further processing in App
 			return 1;
 		}
 		break;
@@ -221,6 +227,7 @@ LRESULT Graphics::handleMsg([[maybe_unused]] HWND window, const UINT msg, const 
 	}
 	return 0;
 }
+// ImGui::CreateRenderTarget()
 
 void Graphics::createRenderTarget()
 {
@@ -242,6 +249,7 @@ void Graphics::createRenderTarget()
 	PLOGV << "device_->CreateRenderTargetView(backBuffer.Get(), nullptr, renderTargetView_.GetAddressOf())";
 #endif
 	GFX_THROW_INFO(device_->CreateRenderTargetView(backBuffer.Get(), nullptr, renderTargetView_.GetAddressOf()));
+// end
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
@@ -265,19 +273,27 @@ bool Graphics::beginFrame(const unsigned int targetWidth, const unsigned int tar
 	{
 
 		if (swapChain_)
+// ImGui::CleanupRenderTarget()
 		{
-			deviceContext_->OMSetRenderTargets(0, 0, 0);
-
-			// Release all outstanding references to the swap chain's buffers
+			Microsoft::WRL::ComPtr<ID3D11Debug> D3D11Debug;
+			device_->QueryInterface(IID_PPV_ARGS(&D3D11Debug));
+			D3D11Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+			//Microsoft::WRL::ComPtr <ID3D11Debug> D3D11Debug;
+			renderTargetView_.Reset();
 			renderTargetView_->Release();
+// end
 
 			HRESULT hresult;
 			// Preserve the existing buffer count and format
 			// Automatically choose the width and height to match the client area rect for HWNDs.
+// ImGui::CreateRenderTarget()
+			// BUGBUG : Is this supposed to be targetWidth and targetHeight or 0 and 0?
+			// GFX_THROW_INFO(swapChain_->ResizeBuffers(0, targetWidth, targetHeight, DXGI_FORMAT_UNKNOWN, 0));
 			GFX_THROW_INFO(swapChain_->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN, 0));
 
 			// Get buffer and create a render-target-view.
 			ID3D11Texture2D* buffer;
+// end
 			GFX_THROW_INFO(swapChain_->GetBuffer(0, IID_PPV_ARGS(&buffer)));
 
 			GFX_THROW_INFO(device_->CreateRenderTargetView(buffer, nullptr, renderTargetView_.GetAddressOf()));
@@ -324,6 +340,9 @@ void Graphics::endFrame()
 		throw GFX_EXCEPT(hresult);
 	}
 	swapChainOccluded_ = (hresult == DXGI_STATUS_OCCLUDED);
+
+	// Rebind render target view after Present for flip-model swap chains
+	deviceContext_->OMSetRenderTargets(1, renderTargetView_.GetAddressOf(), depthStencilView_.Get());
 }
 
 void Graphics::clearBuffer(const ImVec4& clearColor) const
@@ -344,7 +363,6 @@ void Graphics::clearBuffer(const float red, const float green, const float blue,
 	deviceContext_->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
-
 // ReSharper disable once CppMemberFunctionMayBeConst
 void Graphics::drawIndexed(const UINT count) noexcept(!IS_DEBUG)
 {
@@ -364,12 +382,25 @@ DirectX::XMMATRIX Graphics::getProjection() const noexcept
 	return projection_;
 }
 
-void Graphics::shutdown()
+void Graphics::shutdown() const
 {
 #ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "ImGui_ImplDX11_Shutdown()";
 #endif
 	ImGui_ImplDX11_Shutdown();
+#if (IS_DEBUG)
+	deviceContext_->ClearState();
+	deviceContext_->Flush();
+	Microsoft::WRL::ComPtr<ID3D11Debug> debug;
+	if (SUCCEEDED(device_->QueryInterface(__uuidof(ID3D11Debug), &debug))) {
+		debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
+	}
+
+	//for (auto message : infoManager_.getMessages())
+	//{
+	//	PLOGI << message;
+	//}
+#endif
 }
 
 // Graphics Exception

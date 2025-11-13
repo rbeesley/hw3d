@@ -96,9 +96,6 @@
     <ClCompile Include="src\Pyramid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\GDIPlusManager.hpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\GDIPlusManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -393,6 +390,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\AppThrowMacros.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\GDIPlusManager.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\AppConfig.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

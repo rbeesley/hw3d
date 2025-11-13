@@ -3,6 +3,7 @@
 #include <random>
 
 #include "App.hpp"
+#include "AppConfig.hpp"
 
 #include "AppThrowMacros.hpp"
 #include "AtumMath.hpp"
@@ -76,7 +77,7 @@ int App::initialize()
 
 		// Check Logging
 		// This is the earliest this can be done if utilizing the console logger.
-		PLOGN << "CWD: " << exe_path();
+		PLOGN << "PWD: " << exe_path();
 		PLOGN << "";
 		PLOGN << "This is a NONE message";
 		PLOGF << "This is a FATAL message";
@@ -166,7 +167,7 @@ int App::initialize()
 			std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, PI * 2.0f };				// adist
 			std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, PI * 0.5f };						// ddist
 			std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, PI * 0.08f };	// odist
-			std::uniform_real_distribution<float> distanceDistribution_{ 6.0f, 20.0f };									// rdist
+			std::uniform_real_distribution<float> distanceDistribution_{ 6.0f, 20.0f };										// rdist
 			std::uniform_real_distribution<float> zAxisDistortionDistribution_{ 0.4f, 3.0f };								// bdist
 			std::uniform_int_distribution<int> latitudeDistribution_{ 5, 20 };												// latdist
 			std::uniform_int_distribution<int> longitudeDistribution_{ 10, 40 };											// longdist
@@ -179,26 +180,6 @@ int App::initialize()
 	if (auto graphics = Window::getGraphicsWeakPtr().lock())
 	{
 		std::generate_n(std::back_inserter(drawables_), NUMBER_OF_DRAWABLES, DrawableFactory(*graphics, rng_seed));
-#else
-		{
-			PLOGD << "Draw a SkinnedBox";
-			std::mt19937 rng{ rng_seed };
-			std::uniform_real_distribution<float> distance_distribution{ 0.0f, 0.0f };
-			//std::uniform_real_distribution<float> spherical_coordinate_position_distribution{ 0.0f, PI * 2.0f };
-			std::uniform_real_distribution<float> spherical_coordinate_position_distribution{ 0.0f, 0.0f };
-			std::uniform_real_distribution<float> rotation_of_drawable_distribution{ 0.0f, PI * 0.5f };
-			//std::uniform_real_distribution<float> rotation_of_drawable_distribution{ 0.0f, 0.0f };
-			//std::uniform_real_distribution<float> spherical_coordinate_movement_of_drawable_distribution{ 0.0f, PI * 0.08f };
-			std::uniform_real_distribution<float> spherical_coordinate_movement_of_drawable_distribution{ 0.0f, 0.0f };
-			drawables_.emplace_back(
-				std::make_unique<SkinnedBox>(
-					Window->getGraphics(), rng, distance_distribution, spherical_coordinate_position_distribution, rotation_of_drawable_distribution,
-					spherical_coordinate_movement_of_drawable_distribution
-				));
-		}
-#endif
-
-
 		PLOGD << "Set graphics projection";
 		graphics->setProjection(
 			DirectX::XMMatrixPerspectiveLH(
@@ -207,7 +188,32 @@ int App::initialize()
 				0.5f,
 				40.0f));
 	}
-	return 0;
+	return 0; 
+#else
+	PLOGD << "Draw a SkinnedBox";
+	std::shared_ptr<Graphics> graphics_ = Window::getGraphicsWeakPtr().lock();
+	std::mt19937 rng_{ rng_seed };
+	std::uniform_real_distribution<float> distanceDistribution_{ 0.0f, 0.0f };
+	//std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, PI * 2.0f };
+	std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, 0.0f };
+	std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, PI * 0.5f };
+	//std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, 0.0f };
+	//std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, PI * 0.08f };
+	std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, 0.0f };
+	drawables_.emplace_back(
+		std::make_unique<SkinnedBox>(
+			*graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
+			sphericalCoordinateMovementOfDrawableDistribution_
+		));
+
+	PLOGD << "Set graphics projection";
+	graphics_.get()->setProjection(
+		DirectX::XMMatrixPerspectiveLH(
+			1.0f,
+			aspectRatio,
+			0.5f,
+			40.0f));
+#endif
 }
 
 std::optional<unsigned int> App::processMessages()
@@ -237,10 +243,34 @@ int App::run()
 	auto clearColor = ImVec4(0.07f, 0.0f, 0.12f, 1.00f);
 	const ImGuiIO& imGuiIO = ImGui::GetIO();
 
+#if defined(MAX_FPS) && (MAX_FPS > 0)
+	using clock = std::chrono::steady_clock; // Monotonic clock, unaffected by system time changes
+	const std::chrono::seconds interval(MAX_FPS);  // 1 FPS = 1 second per frame
+	auto next_tick = clock::now();
+#endif
+
 	PLOGI << "Starting Message Pump and Render Loop";
 	while (!stop_)
 	{
-		//PLOGI << " *** Run loop ***";
+#if defined(MAX_FPS) && (MAX_FPS > 0)
+		auto now = clock::now();
+		std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		char timeStr[26]; // ctime_s requires a buffer of at least 26 bytes
+		errno_t err = ctime_s(timeStr, sizeof(timeStr), &t);
+		if (err == 0) {
+			PLOGV << "Tick at: " << timeStr; // already includes newline
+		}
+		else {
+			PLOGW << "Failed to format time string";
+		}
+
+		// Schedule next tick
+		next_tick += interval;
+		// Sleep until the next scheduled time
+		std::this_thread::sleep_until(next_tick);
+#endif
+
+		// PLOGI << " *** Run loop ***";
 
 #if (IS_DEBUG)
 		auto static composeFpsCpuWindowTitle = [](const int fps, const double cpuPercentage) {
@@ -299,8 +329,10 @@ int App::run()
 
 		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 		if (showDemoWindow)
+		{
 			PLOGD << "Show the big demo window";
 			ImGui::ShowDemoWindow(&showDemoWindow);
+		}
 
 		// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
 		{
@@ -394,17 +426,7 @@ LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, con
 	case WM_GETMINMAXINFO:
 	case WM_SYSCOMMAND:
 	case WM_DESTROY:
-#ifdef IMGUI_DOCKING
 	case WM_DPICHANGED:
-		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DpiEnableScaleViewports)
-		{
-			const int dpi = HIWORD(wParam);
-			PLOGI << "WM_DPICHANGED to " << dpi << "(" << static_cast<float>(dpi) / 96.0f * 100.0f << ")";
-			const RECT* suggested_rect = reinterpret_cast<RECT*>(lParam);
-			Window::SetWindowPos(windowHandle_, nullptr, suggested_rect->left, suggested_rect->top, suggested_rect->right - suggested_rect->left, suggested_rect->bottom - suggested_rect->top, SWP_NOZORDER | SWP_NOACTIVATE);
-		}
-		break;
-#endif
 		return Window::handleMsg(hwnd, msg, wParam, lParam);
 
 		/* Keyboard */
@@ -436,7 +458,7 @@ LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, con
 				return 0;
 			}
 		}
-		// If Dear ImGui didn't process the keyboard message, Keyboard processes it.
+		// If Dear ImGui didn't process the mouse message, Mouse processes it.
 		if (const auto window = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA)))  // NOLINT(performance-no-int-to-ptr)
 		if (auto mouse = Window::getMouseWeakPtr().lock())
 		{
@@ -493,7 +515,7 @@ LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, con
 				return 0;
 			}
 		}
-		// If Dear ImGui didn't process the keyboard message, Keyboard processes it.
+		// If Dear ImGui didn't process the mouse message, Mouse processes it.
 		if (auto mouse = Window::getMouseWeakPtr().lock())
 		{
 			mouse->handleMsg(hwnd, msg, wParam, lParam);
@@ -556,7 +578,7 @@ void App::renderFrame(const ImVec4& clearColor)
 
 #ifdef IMGUI_DOCKING
 		// Update and Render additional Platform Windows
-		if (im_gui_io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		if (imGuiIO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
 			PLOGV << "ImGui::UpdatePlatformWindows()";
 			ImGui::UpdatePlatformWindows();

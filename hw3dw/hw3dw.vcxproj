@@ -270,6 +270,7 @@
     <ClInclude Include="3rdParty\plog\Util.h" />
     <ClInclude Include="3rdParty\plog\WinApi.h" />
     <ClInclude Include="lib\DXErr\DXErr.h" />
+    <ClInclude Include="src\AppConfig.hpp" />
     <ClInclude Include="src\AppThrowMacros.hpp" />
     <ClInclude Include="src\CpuMetric.hpp" />
     <ClInclude Include="src\FpsMetric.hpp" />

@@ -10,11 +10,14 @@
 #include "Mouse.hpp"
 #include "Graphics.hpp"
 
+#define IMGUI_DOCKING
+
 class Window
 {
 private:
 	// singleton
-	class WindowClass {
+	class WindowClass
+	{
 	public:
 		WindowClass();
 		~WindowClass();
@@ -30,7 +33,8 @@ private:
 		HINSTANCE instanceHandle_;
 	};
 public:
-	class Exception : public AtumException {
+	class Exception : public AtumException
+	{
 		using AtumException::AtumException;
 	public:
 		static std::string translateErrorCode(HRESULT result) noexcept;

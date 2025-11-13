@@ -66,7 +66,7 @@ public:
 	void drawIndexed(UINT count) noexcept(!IS_DEBUG);
 	void setProjection(DirectX::FXMMATRIX& projection) noexcept;
 	DirectX::XMMATRIX getProjection() const noexcept;
-	static void shutdown();
+	void shutdown() const;
 private:
 	HWND parent_;
 	float width_, height_;

@@ -175,19 +175,19 @@ void Window::configureImGui()
 #endif
 	ImGui::CreateContext();
 	PLOGD << "Set Dear ImGui flags";
-	ImGuiIO& im_gui_io = ImGui::GetIO();
-	im_gui_io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	im_gui_io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	ImGuiIO& imGuiIo = ImGui::GetIO(); (void)imGuiIo;
+	imGuiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	imGuiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 #ifdef IMGUI_DOCKING
-	im_gui_io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-	im_gui_io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-	//io.ConfigViewportsNoAutoMerge = true;
-	//io.ConfigViewportsNoTaskBarIcon = true;
-	//io.ConfigViewportsNoDefaultParent = true;
-	//io.ConfigDockingAlwaysTabBar = true;
-	//io.ConfigDockingTransparentPayload = true;
-	//io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;     // FIXME-DPI: Experimental. THIS CURRENTLY DOESN'T WORK AS EXPECTED. DON'T USE IN USER APP!
-	//io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports; // FIXME-DPI: Experimental.
+	imGuiIo.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+	imGuiIo.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+	//imGuiIo.ConfigViewportsNoAutoMerge = true;
+	//imGuiIo.ConfigViewportsNoTaskBarIcon = true;
+	//imGuiIo.ConfigViewportsNoDefaultParent = true;
+	//imGuiIo.ConfigDockingAlwaysTabBar = true;
+	//imGuiIo.ConfigDockingTransparentPayload = true;
+	//imGuiIo.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;     // FIXME-DPI: Experimental. THIS CURRENTLY DOESN'T WORK AS EXPECTED. DON'T USE IN USER APP!
+	//imGuiIo.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports; // FIXME-DPI: Experimental.
 #endif
 
 	// Setup Dear ImGui style
@@ -197,7 +197,7 @@ void Window::configureImGui()
 #ifdef IMGUI_DOCKING
 	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 	ImGuiStyle& style = ImGui::GetStyle();
-	if (im_gui_io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	if (imGuiIo.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
 		style.WindowRounding = 0.0f;
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
@@ -405,7 +405,7 @@ LRESULT Window::handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) n
 		break;
 #ifdef IMGUI_DOCKING
 	case WM_DPICHANGED:
-		if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_DpiEnableScaleViewports)
+		if (ImGuiIO& imGuiIo = ImGui::GetIO(); imGuiIo.ConfigFlags & ImGuiConfigFlags_DpiEnableScaleViewports)
 		{
 			const int dpi = HIWORD(wParam);
 			PLOGI << "WM_DPICHANGED to " << dpi << "(" << static_cast<float>(dpi) / 96.0f * 100.0f << ")";
