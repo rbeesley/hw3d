@@ -263,7 +263,7 @@ bool Graphics::beginFrame(const unsigned int targetWidth, const unsigned int tar
 #endif
 	if (swapChainOccluded_ && swapChain_->Present(0, DXGI_PRESENT_TEST) == DXGI_STATUS_OCCLUDED)
 	{
-		::Sleep(10);
+		//::Sleep(10);
 		return false;
 	}
 	swapChainOccluded_ = false;
@@ -278,7 +278,6 @@ bool Graphics::beginFrame(const unsigned int targetWidth, const unsigned int tar
 			Microsoft::WRL::ComPtr<ID3D11Debug> D3D11Debug;
 			device_->QueryInterface(IID_PPV_ARGS(&D3D11Debug));
 			D3D11Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
-			//Microsoft::WRL::ComPtr <ID3D11Debug> D3D11Debug;
 			renderTargetView_.Reset();
 			renderTargetView_->Release();
 // end
@@ -370,6 +369,16 @@ void Graphics::drawIndexed(const UINT count) noexcept(!IS_DEBUG)
 	PLOGV << "deviceContext_->DrawIndexed( " << count << ", 0u, 0u)";
 #endif
 	GFX_THROW_INFO_ONLY(deviceContext_->DrawIndexed(count, 0u, 0u));
+}
+
+void Graphics::setCamera(std::unique_ptr<Camera> camera) noexcept
+{
+	activeCamera_ = std::move(camera);
+}
+
+Camera* Graphics::getCamera() const noexcept
+{
+	return activeCamera_.get();
 }
 
 void Graphics::setProjection(DirectX::FXMMATRIX& projection) noexcept

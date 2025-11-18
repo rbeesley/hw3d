@@ -1,6 +1,6 @@
 cbuffer cbuff
 {
-	matrix transform;
+	matrix wvp;
 };
 
 struct vs_out
@@ -12,7 +12,7 @@ struct vs_out
 vs_out main(float3 pos : POSITION, float2 tex : TEXCOORD)
 {
 	vs_out vs_out;
-	vs_out.pos = mul(float4(pos, 1.0f), transform);
+	vs_out.pos = mul(float4(pos, 1.0f), wvp);
 	vs_out.tex = tex;
 	return vs_out;
 }

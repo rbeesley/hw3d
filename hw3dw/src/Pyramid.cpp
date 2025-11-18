@@ -5,7 +5,7 @@
 Pyramid::Pyramid(Graphics& graphics,
                  std::mt19937& rng,
                  std::uniform_real_distribution<float>& distanceDistribution,								// rdist
-                 std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,				// adist
+                 std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,			// adist
                  std::uniform_real_distribution<float>& rotationOfDrawableDistribution,						// ddist
                  std::uniform_real_distribution<float>& sphericalCoordinateMovementOfDrawableDistribution	// odist
 )
@@ -54,7 +54,7 @@ Pyramid::Pyramid(Graphics& graphics,
 			for (size_t i = 0; i < vertices.size() && i < colors.size(); ++i) {
 				vertices[i].color = colors[i];
 			}
-			};
+		};
 
 		// Create the model with vertices, indices, and the lambda
 		auto model = Cone::makeTessellated<Vertex>(4, setColors);

@@ -33,7 +33,7 @@ constexpr size_t NUMBER_OF_DRAWABLES = 180;
 constexpr int WIDTH = 1280;
 constexpr int HEIGHT = 720;
 
-constexpr float aspectRatio = static_cast<float>(HEIGHT) / static_cast<float>(WIDTH);
+constexpr float aspectRatio = static_cast<float>(WIDTH) / static_cast<float>(HEIGHT);
 
 App::AppException::AppException(const int line, const char* file, const std::string& msg) noexcept
 	: Exception(line, file)
@@ -56,7 +56,7 @@ App::App()
 		throw APP_EXCEPT("Failed to create Window");
 	}
 
-	gdiManager_ = GdiPlusManager::initialize();
+	gdiManager_ = std::make_unique<GdiPlusManager>();
 }
 
 int App::initialize()
@@ -99,11 +99,42 @@ int App::initialize()
 	fps_.initialize();
 	cpu_.initialize();
 #endif
+	graphics_ = Window::getGraphicsWeakPtr();
+	mouse_ = Window::getMouseWeakPtr();
+	keyboard_ = Window::getKeyboardWeakPtr();
+
+	PLOGD << "Set the camera view";
+	if (const auto graphics = graphics_.lock())
+	{
+		graphics->setCamera(std::make_unique<Camera>(DirectX::XM_PIDIV4, aspectRatio, 0.5f, 40.0f));
+		graphics->getCamera()->setPosition({ 0.0f, 0.0f, 0.0f });
+		graphics->getCamera()->setTarget({ 0.0f, 0.0f, 5.0f });
+		graphics->getCamera()->setFOV(DirectX::XM_PIDIV4); // Zoom
+	}
 
 	const auto rng_seed = std::random_device{}();
 	PLOGI << "mt19937 rng seed: " << rng_seed;
 
-#if true // if set to false, don't use the factory and draw a single drawable
+#define PROTOTYPE_DRAWABLE false // if set to true, don't use the factory and draw a single drawable
+#if (PROTOTYPE_DRAWABLE)
+	PLOGD << "Draw a Prototype Drawable";
+	std::mt19937 rng_{ rng_seed };
+	std::uniform_real_distribution<float> distanceDistribution_{ 0.0f, 0.0f };
+	//std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, PI * 2.0f };
+	std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, 0.0f };
+	std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, PI * 0.5f };
+	//std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, 0.0f };
+	//std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, PI * 0.08f };
+	std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, 0.0f };
+	if (auto graphics = graphics_.lock())
+	{
+		drawables_.emplace_back(
+			std::make_unique<SkinnedBox>(
+				*graphics, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
+				sphericalCoordinateMovementOfDrawableDistribution_
+			));
+	}
+#else
 	class DrawableFactory
 	{
 	public:
@@ -177,43 +208,12 @@ int App::initialize()
 	drawables_.reserve(NUMBER_OF_DRAWABLES);
 
 	PLOGD << "Populating pool of drawables";
-	if (auto graphics = Window::getGraphicsWeakPtr().lock())
+	if (const auto graphics = graphics_.lock())
 	{
 		std::generate_n(std::back_inserter(drawables_), NUMBER_OF_DRAWABLES, DrawableFactory(*graphics, rng_seed));
-		PLOGD << "Set graphics projection";
-		graphics->setProjection(
-			DirectX::XMMatrixPerspectiveLH(
-				1.0f,
-				aspectRatio,
-				0.5f,
-				40.0f));
 	}
-	return 0; 
-#else
-	PLOGD << "Draw a SkinnedBox";
-	std::shared_ptr<Graphics> graphics_ = Window::getGraphicsWeakPtr().lock();
-	std::mt19937 rng_{ rng_seed };
-	std::uniform_real_distribution<float> distanceDistribution_{ 0.0f, 0.0f };
-	//std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, PI * 2.0f };
-	std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, 0.0f };
-	std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, PI * 0.5f };
-	//std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, 0.0f };
-	//std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, PI * 0.08f };
-	std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, 0.0f };
-	drawables_.emplace_back(
-		std::make_unique<SkinnedBox>(
-			*graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
-			sphericalCoordinateMovementOfDrawableDistribution_
-		));
-
-	PLOGD << "Set graphics projection";
-	graphics_.get()->setProjection(
-		DirectX::XMMatrixPerspectiveLH(
-			1.0f,
-			aspectRatio,
-			0.5f,
-			40.0f));
 #endif
+	return 0;
 }
 
 std::optional<unsigned int> App::processMessages()
@@ -301,14 +301,16 @@ int App::run()
 #endif
 		{
 			const auto [width, height] = Window::getTargetDimensions();
-			const auto graphics = Window::getGraphicsWeakPtr().lock();
-			if (!graphics->beginFrame(width, height))
+			if (const auto graphics = graphics_.lock())
 			{
-				if (width > 0 || height > 0)
+				if (!graphics->beginFrame(width, height))
 				{
-					window_->setTargetDimensions(0, 0);
+					if (width > 0 || height > 0)
+					{
+						window_->setTargetDimensions(0, 0);
+					}
+					continue;
 				}
-				continue;
 			}
 		}
 
@@ -378,7 +380,7 @@ int App::run()
 #endif
 		renderFrame(clearColor);
 
-		if (const auto graphics = Window::getGraphicsWeakPtr().lock()) {
+		if (const auto graphics = graphics_.lock()) {
 #ifdef LOG_GRAPHICS_CALLS
 			PLOGV << "graphics->endFrame();";
 #endif
@@ -404,10 +406,11 @@ LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, con
 	PLOGV << "ImGui_ImplWin32_WndProcHandler";
 #endif
 	{
-		const auto graphics = Window::getGraphicsWeakPtr().lock();
-		if (graphics && ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
-		{
-			return true;
+		if (const auto graphics = Window::getGraphicsWeakPtr().lock()) {
+			if (graphics && ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
+			{
+				return true;
+			}
 		}
 	}
 
@@ -460,39 +463,41 @@ LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, con
 		}
 		// If Dear ImGui didn't process the mouse message, Mouse processes it.
 		if (const auto window = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA)))  // NOLINT(performance-no-int-to-ptr)
-		if (auto mouse = Window::getMouseWeakPtr().lock())
 		{
-			const auto [x, y] = MAKEPOINTS(lParam);
-			const auto [width, height] = window->getDimensions();
-			// mouse is inside client region
-			if (x >= 0 && x < width && y >= 0 && y < height)
+			if (auto mouse = Window::getMouseWeakPtr().lock())
 			{
-				// but internal state is still outside client region
-				if (!mouse->isInWindow())
+				const auto [x, y] = MAKEPOINTS(lParam);
+				const auto [width, height] = window->getDimensions();
+				// mouse is inside client region
+				if (x >= 0 && x < width && y >= 0 && y < height)
 				{
-					// fix the state
-					mouse->onMouseEnter(x, y);
-					SetCapture(hwnd);
+					// but internal state is still outside client region
+					if (!mouse->isInWindow())
+					{
+						// fix the state
+						mouse->onMouseEnter(x, y);
+						SetCapture(hwnd);
+					}
+					else
+					{
+						mouse->onMouseMove(x, y);
+					}
 				}
-				else
+				// mouse is outside client region and internal state places it inside client region
+				else if (mouse->isInWindow())
 				{
-					mouse->onMouseMove(x, y);
-				}
-			}
-			// mouse is outside client region and internal state places it inside client region
-			else if (mouse->isInWindow())
-			{
-				// because a button is being held down we want to keep track of the mouse position outside the client region boundaries
-				if (mouse->isLeftPressed() || mouse->isRightPressed() || mouse->isMiddlePressed() || mouse->isX1Pressed() || mouse->isX2Pressed())
-				{
-					mouse->onMouseMove(x, y);
-				}
-				// but no buttons ARE being held down
-				else
-				{
-					// fix the state
-					ReleaseCapture();
-					mouse->onMouseLeave();
+					// because a button is being held down we want to keep track of the mouse position outside the client region boundaries
+					if (mouse->isLeftPressed() || mouse->isRightPressed() || mouse->isMiddlePressed() || mouse->isX1Pressed() || mouse->isX2Pressed())
+					{
+						mouse->onMouseMove(x, y);
+					}
+					// but no buttons ARE being held down
+					else
+					{
+						// fix the state
+						ReleaseCapture();
+						mouse->onMouseLeave();
+					}
 				}
 			}
 		}
@@ -516,7 +521,7 @@ LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, con
 			}
 		}
 		// If Dear ImGui didn't process the mouse message, Mouse processes it.
-		if (auto mouse = Window::getMouseWeakPtr().lock())
+		if (const auto mouse = Window::getMouseWeakPtr().lock())
 		{
 			mouse->handleMsg(hwnd, msg, wParam, lParam);
 		}
@@ -544,7 +549,6 @@ LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, con
 
 App::~App()
 {
-	gdiManager_->shutdown();
 	window_.reset();
 #if (IS_DEBUG)
 	console_->shutdown();
@@ -555,8 +559,8 @@ App::~App()
 void App::renderFrame(const ImVec4& clearColor)
 {
 	const auto dt = timer_.mark();
-	const auto graphics = Window::getGraphicsWeakPtr().lock();
-	const auto keyboard = Window::getKeyboardWeakPtr().lock();
+	const auto graphics = graphics_.lock();
+	const auto keyboard = keyboard_.lock();
 	if (graphics && keyboard)
 	{
 		PLOGD << "Fetch Dear ImGui IO";
@@ -565,6 +569,23 @@ void App::renderFrame(const ImVec4& clearColor)
 		PLOGD << "Clear the buffer";
 		graphics->clearBuffer(clearColor);
 
+#define CAMERA_ZOOM false
+#if (CAMERA_ZOOM)
+		static float timeAccumulator = 0.0f;
+		timeAccumulator += dt;
+
+		// Zoom oscillates between - 10 and -10 over 5 seconds
+		float zoomAmplitude = 16.0f; // range of movement
+		float zoomBase = -8.0f;     // center position
+		float zoomSpeed = DirectX::XM_2PI / 5.0f; // full cycle every 5 seconds
+
+		float zoomZ = zoomBase + std::sin(timeAccumulator * zoomSpeed) * (zoomAmplitude / 2.0f);
+
+		auto camera = graphics->getCamera();
+		DirectX::XMFLOAT3 pos = camera->getPosition();
+		pos.z = zoomZ;
+		camera->setPosition(pos);
+#endif
 
 		PLOGD << "Draw all drawables";
 		for (const auto& drawable : drawables_)

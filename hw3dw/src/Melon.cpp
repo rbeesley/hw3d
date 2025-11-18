@@ -5,8 +5,8 @@
 
 Melon::Melon(Graphics& graphics,
              std::mt19937& rng,
-             std::uniform_real_distribution<float>& distanceDistribution,									// rdist
-             std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,				// adist
+             std::uniform_real_distribution<float>& distanceDistribution,								// rdist
+             std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,			// adist
              std::uniform_real_distribution<float>& rotationOfDrawableDistribution,						// ddist
              std::uniform_real_distribution<float>& sphericalCoordinateMovementOfDrawableDistribution,	// odist
              std::uniform_int_distribution<int>& latitudeDistribution,

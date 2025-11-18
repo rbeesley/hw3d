@@ -39,6 +39,9 @@ private:
 
 private:
 	std::unique_ptr<Window> window_;
+	std::weak_ptr<Graphics> graphics_;
+	std::weak_ptr<Mouse> mouse_;
+	std::weak_ptr<Keyboard> keyboard_;
 #if (IS_DEBUG)
 	std::unique_ptr<Console> console_;
 	FpsMetric fps_{};

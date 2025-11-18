@@ -1,5 +1,6 @@
 #pragma once
 #include "AtumException.hpp"
+#include "Camera.hpp"
 #include "DxgiInfoManager.hpp"
 
 #include <d3d11.h>
@@ -64,6 +65,8 @@ public:
 	void clearBuffer(const ImVec4& clearColor) const;
 	void clearBuffer(float red, float green, float blue, float alpha = 1.0) const;
 	void drawIndexed(UINT count) noexcept(!IS_DEBUG);
+	void setCamera(std::unique_ptr<Camera> camera) noexcept;
+	Camera* getCamera() const noexcept;
 	void setProjection(DirectX::FXMMATRIX& projection) noexcept;
 	DirectX::XMMATRIX getProjection() const noexcept;
 	void shutdown() const;
@@ -71,6 +74,7 @@ private:
 	HWND parent_;
 	float width_, height_;
 	bool swapChainOccluded_{};
+	std::unique_ptr<Camera> activeCamera_;
 #if (IS_DEBUG)
 	DxgiInfoManager infoManager_;
 #endif

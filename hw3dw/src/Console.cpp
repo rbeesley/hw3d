@@ -16,6 +16,7 @@ Console::ConsoleClass::ConsoleClass() noexcept
 Console::ConsoleClass::~ConsoleClass() noexcept
 {
 	PLOGD << "Destroy Console Class";
+	PLOGD << "Console Class Destroyed";
 }
 
 LPCWSTR Console::ConsoleClass::getName() noexcept
@@ -273,6 +274,9 @@ Console::~Console() noexcept
 	{
 		FreeConsole();
 	}
+
+	consoleWindowHandle_ = HWND();
+	PLOGD << "Console Destroyed";
 }
 
 BOOL Console::ctrlHandler(const DWORD ctrl_type) noexcept

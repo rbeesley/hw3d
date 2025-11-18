@@ -1,6 +1,5 @@
-#include "GDIPlusManager.hpp"
-#include <gdiplus.h>
 
+#include "GdiPlusManager.hpp"
 #include "Logging.hpp"
 
 namespace Gdiplus
@@ -9,28 +8,30 @@ namespace Gdiplus
     using std::max;
 }
 
-ULONG_PTR GdiPlusManager::token_ = {};
-
 GdiPlusManager::GdiPlusManager()
 {
     PLOGI << "Instantiate GDI Plus Manager";
+
+    Gdiplus::GdiplusStartupInput input;
+    Gdiplus::Status status = Gdiplus::GdiplusStartup(&token_, &input, nullptr);
+
+    if (status != Gdiplus::Ok)
+    {
+        PLOGE << "Failed to initialize GDI+";
+        throw std::runtime_error("GDI+ initialization failed");
+    }
+
+    PLOGI << "GDI Plus Manager Initialized";
 }
 
 GdiPlusManager::~GdiPlusManager()
 {
     PLOGI << "Destroy GDI Plus Manager";
-}
 
-std::unique_ptr<GdiPlusManager> GdiPlusManager::initialize()
-{
-    PLOGI << "Initialize GDI Plus Manager";
-    const Gdiplus::GdiplusStartupInput input;
-    GdiplusStartup(&token_, &input, nullptr);
-    return std::make_unique<GdiPlusManager>();
-}
-
-void GdiPlusManager::shutdown()
-{
-    PLOGI << "Shutdown GDI Plus Manager";
-    Gdiplus::GdiplusShutdown(token_);
+    if (token_ != 0)
+    {
+        Gdiplus::GdiplusShutdown(token_);
+        token_ = 0;
+        PLOGI << "GDI Plus Manager Shutdown Complete";
+    }
 }
