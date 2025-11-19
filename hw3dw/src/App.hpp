@@ -22,26 +22,28 @@ public:
 	};
 
 public:
-	App();
+	App(HINSTANCE hInstance, bool allowConsoleLogging);
 	~App();
+
 	App(const App&) = delete;
 	App& operator=(const App&) = delete;
 	App(const App&&) = delete;
 	App& operator=(const App&&) = delete;
 
-	[[nodiscard]] int initialize();
 	int run();
-	static LRESULT CALLBACK handleMsg(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+	static LRESULT handleMsg(const HWND hWnd, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept;
+	LRESULT CALLBACK handleMsgImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 
 private:
 	static std::optional<unsigned int> processMessages();
 	void renderFrame(const ImVec4& clearColor);
+	void populateDrawables();
 
 private:
 	std::unique_ptr<Window> window_;
-	std::weak_ptr<Graphics> graphics_;
-	std::weak_ptr<Mouse> mouse_;
-	std::weak_ptr<Keyboard> keyboard_;
+	Graphics* graphics_;
+	Mouse* mouse_;
+	Keyboard* keyboard_;
 #if (IS_DEBUG)
 	std::unique_ptr<Console> console_;
 	FpsMetric fps_{};

@@ -16,47 +16,34 @@
 const static class WindowsMessageMap windowsMessageMap;
 #endif
 
-// Definition of static member variables
-SHORT Window::targetWidth_ = 0;
-SHORT Window::targetHheight_ = 0;
-bool Window::inSizeMove_ = false;
-bool Window::minimized_ = false;
-
 Window::WindowClass::WindowClass()
 	: instanceHandle_(GetModuleHandle(nullptr))
 {
 	PLOGV << "Instantiate Window Class";
 
-	WNDCLASSEX wcex = {
-		.style = CS_OWNDC,
-		.lpfnWndProc = handleMsgSetup,
-		.cbClsExtra = 0,
-		.cbWndExtra = 0,
-		.hInstance = getInstance(),
-		.hIcon = static_cast<HICON>(LoadImage(instanceHandle_, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, ::GetSystemMetrics(SM_CXICON), ::GetSystemMetrics(SM_CYICON), 0)),
-		.hCursor = nullptr,
-		.hbrBackground = nullptr,
-		.lpszMenuName = nullptr,
-		.lpszClassName = getName(),
-		.hIconSm = static_cast<HICON>(LoadImage(instanceHandle_, MAKEINTRESOURCE(IDI_ICON1), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0))
-	};
-	wcex.cbSize = sizeof(wcex);
+	WNDCLASSEX wcex = { sizeof(WNDCLASSEX) };
+	wcex.style = CS_OWNDC;
+	wcex.lpfnWndProc = handleMsgSetup;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = instanceHandle_;
+	wcex.hIcon = LoadIcon(instanceHandle_, MAKEINTRESOURCE(IDI_ICON1));
+	wcex.hCursor = nullptr;
+	wcex.hbrBackground = nullptr;
+	wcex.lpszMenuName = nullptr;
+	wcex.lpszClassName = windowClassName;
+	wcex.hIconSm = LoadIcon(instanceHandle_, MAKEINTRESOURCE(IDI_ICON1));
 
 	RegisterClassEx(&wcex);
-}
-
-void Window::WindowClass::shutdown() const noexcept
-{
-	PLOGD << "Shutdown Window Class";
-	UnregisterClass(windowClassName, getInstance());
 }
 
 Window::WindowClass::~WindowClass()
 {
 	PLOGV << "Destroy Window Class";
+	UnregisterClass(windowClassName, instanceHandle_);
 }
 
-LPCWSTR Window::WindowClass::getName() noexcept
+LPCWSTR Window::WindowClass::getName() const noexcept
 {
 	return windowClassName;
 }
@@ -66,37 +53,32 @@ HINSTANCE Window::WindowClass::getInstance() const noexcept
 	return instanceHandle_;
 }
 
-// Define the static members
-std::shared_ptr<Mouse> Window::mouse_ = nullptr;
-std::shared_ptr<Keyboard> Window::keyboard_ = nullptr;
-std::shared_ptr<Graphics> Window::graphics_ = nullptr;
-
-Window::Window(const int width, const int height, const LPCWSTR name)
+Window::Window(const unsigned int width, const unsigned int height, const LPCWSTR name)
 	: width_(width)
 	, height_(height)
 	, windowClass_(std::make_unique<WindowClass>()) {
 	PLOGI << "Initialize Window";
 
-	initializeStaticMembers();
+	mouse_ = std::make_unique<Mouse>();
+	keyboard_ = std::make_unique<Keyboard>();
 
 	createWindow(name);
-
 	configureImGui();
 
 	// Create the graphics object
 	PLOGD << "Create the DirectX graphics object";
 #ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "graphics_ = std::make_shared<Graphics>(windowHandle_, width_, height_);";
+	PLOGV << "graphics_ = std::make_unique<Graphics>(windowHandle_, width_, height_);";
 #endif
-	graphics_ = std::make_shared<Graphics>(windowHandle_, width_, height_);
+	graphics_ = std::make_unique<Graphics>(windowHandle_, width_, height_);
 
 	// Check for an error
-	if (nullptr == graphics_)
+	if (!graphics_)
 	{
 		throw ATUM_WND_LAST_EXCEPT();
 	}
 
-	if(targetWidth_ == width_ && targetHheight_ == height_)
+	if(targetWidth_ == width_ && targetHeight_ == height_)
 	{
 		setTargetDimensions(0, 0);
 	}
@@ -105,43 +87,33 @@ Window::Window(const int width, const int height, const LPCWSTR name)
 Window::~Window()
 {
 	PLOGD << "Destroy Window";
-#ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "graphics_->shutdown();";
-#endif
-	graphics_->shutdown();
-#ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "ImGui_ImplWin32_Shutdown();";
-#endif
-	ImGui_ImplWin32_Shutdown();
-	windowClass_->shutdown();	PLOGV << "ImGui::DestroyContext()";
-	ImGui::DestroyContext();
 	DestroyWindow(windowHandle_);
-	shutdownStaticMembers();
+}
+
+LRESULT Window::forwardMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
+{
+	return handleMsgImpl(hWnd, msg, wParam, lParam);
 }
 
 void Window::createWindow(const LPCWSTR name)
 {
 	// ReSharper disable once CppInitializedValueIsAlwaysRewritten
-	RECT windowRect{};
-	windowRect.left = 100;
-	windowRect.top = 100;
-	windowRect.right = width_ + windowRect.left;
-	windowRect.bottom = height_ + windowRect.top;
+	RECT rect = { 100, 100, 100 + width_, 100 + height_ };
 
-	if (!AdjustWindowRect(&windowRect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE))
+	if (!AdjustWindowRect(&rect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU, FALSE))
 	{
 		throw ATUM_WND_LAST_EXCEPT();
 	}
 
 	windowHandle_ = CreateWindowEx(
 		0,
-		WindowClass::getName(),
+		windowClass_->getName(),
 		name,
 		WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
-		windowRect.right - windowRect.left,
-		windowRect.bottom - windowRect.top,
+		rect.right - rect.left,
+		rect.bottom - rect.top,
 		nullptr,
 		nullptr,
 		windowClass_->getInstance(),
@@ -149,7 +121,7 @@ void Window::createWindow(const LPCWSTR name)
 	);
 
 	// Check for an error
-	if (nullptr == windowHandle_)
+	if (!windowHandle_)
 	{
 		throw ATUM_WND_LAST_EXCEPT();
 	}
@@ -211,24 +183,12 @@ void Window::configureImGui()
 	ImGui_ImplWin32_Init(windowHandle_);
 }
 
-void Window::initializeStaticMembers()
-{
-	mouse_ = std::make_shared<Mouse>();
-	keyboard_ = std::make_shared<Keyboard>();
-}
+HWND Window::getHandle() const noexcept { return windowHandle_; }
+Graphics& Window::getGraphics() const noexcept { return *graphics_; }
+Mouse& Window::getMouse() const noexcept { return *mouse_; }
+Keyboard& Window::getKeyboard() const noexcept { return *keyboard_; }
 
-void Window::shutdownStaticMembers()
-{
-	mouse_.reset();
-	keyboard_.reset();
-}
-
-HWND Window::getHandle()
-{
-	return windowHandle_;
-}
-
-HWND Window::setActive(const HWND window)
+HWND Window::setActive(const HWND window) const
 {
 	if (mouse_->isInWindow())
 	{
@@ -246,7 +206,7 @@ Window::WindowDimensions Window::getDimensions() const
 	return { width_, height_ };
 }
 
-Window::WindowPosition Window::getPosition()
+Window::WindowPosition Window::getPosition() const
 {
 	return { x_, y_ };
 }
@@ -260,9 +220,9 @@ void Window::setPosition(const int x, const int y)
 Window::WindowDimensions Window::getTargetDimensions()
 {
 #ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "getTargetDimensions() : width: " << targetWidth_ << ", height: " << targetHheight_ << "";
+	PLOGV << "getTargetDimensions() : width: " << targetWidth_ << ", height: " << targetHeight_ << "";
 #endif
-	return { targetWidth_, targetHheight_ };
+	return { targetWidth_, targetHeight_ };
 }
 
 void Window::setTargetDimensions(const unsigned int width, const unsigned int height)
@@ -271,10 +231,10 @@ void Window::setTargetDimensions(const unsigned int width, const unsigned int he
 	PLOGV << "setTargetDimensions(width: " << width << ", height: " << height << ");";
 #endif
 	targetWidth_ = width;
-	targetHheight_ = height;
+	targetHeight_ = height;
 }
 
-void Window::setTitle(const std::wstring& title)
+void Window::setTitle(const std::wstring& title) const
 {
 	if (!SetWindowText(windowHandle_, title.c_str()))
 	{
@@ -282,31 +242,59 @@ void Window::setTitle(const std::wstring& title)
 	}
 }
 
-std::weak_ptr<Mouse> Window::getMouseWeakPtr() noexcept
+LRESULT CALLBACK Window::handleMsgSetup(const HWND hWnd, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
 {
-	return mouse_;
+#ifdef LOG_WINDOW_MESSAGES // defined in LoggingConfig.h
+	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
+#endif
+
+	if (msg == WM_NCCREATE)
+	{
+		const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);  // NOLINT(performance-no-int-to-ptr)
+		Window* const pWnd = static_cast<Window*>(pCreate->lpCreateParams);
+
+		// Store pointer in GWLP_USERDATA
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWnd));
+
+		// Switch WndProc to thunk
+		SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::handleMsgThunk));
+
+		// Forward WM_NCCREATE to instance handler
+		return pWnd->handleMsgImpl(hWnd, msg, wParam, lParam);
+	}
+	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
-std::weak_ptr<Keyboard> Window::getKeyboardWeakPtr() noexcept
+LRESULT CALLBACK Window::handleMsgThunk(const HWND hWnd, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
 {
-	return keyboard_;
+#ifdef LOG_WINDOW_MESSAGES // defined in LoggingConfig.h
+	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
+#endif
+	// Retrieve Window* from GWLP_USERDATA
+	Window* pWnd = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+	if (!pWnd)
+	{
+		return DefWindowProc(hWnd, msg, wParam, lParam);
+	}
+
+	// Forward to Window's own handler for now
+	return pWnd->handleMsgImpl(hWnd, msg, wParam, lParam);
 }
 
-std::weak_ptr<Graphics> Window::getGraphicsWeakPtr() noexcept
-{
-	return graphics_;
-}
-
-LRESULT Window::handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT Window::handleMsgImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES
 	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
 #endif
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
+		return true;
+
 	switch (msg)
 	{
 	case WM_CREATE:
 		RECT rect;
-		GetWindowRect(window, &rect);
+		GetWindowRect(hWnd, &rect);
 		setPosition(rect.left, rect.top);
 		break;
 	case WM_COMMAND:
@@ -318,7 +306,7 @@ LRESULT Window::handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) n
 		{
 		case 0:
 		default:
-			return DefWindowProc(window, msg, wParam, lParam);
+			return DefWindowProc(hWnd, msg, wParam, lParam);
 		}
 	}
 	case WM_CLOSE:
@@ -332,7 +320,7 @@ LRESULT Window::handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) n
 		if (wParam == TRUE) // The window is being shown
 		{
 			RECT rect;
-			GetWindowRect(window, &rect);
+			GetWindowRect(hWnd, &rect);
 			setPosition(rect.left, rect.top);
 		}
 		break;
@@ -341,20 +329,16 @@ LRESULT Window::handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) n
 		const int x_pos = static_cast<short>(LOWORD(lParam)); // Horizontal position
 		const int y_pos = static_cast<short>(HIWORD(lParam)); // Vertical position
 
-		// Calculate how far the window has moved
-		if (const auto mouse = getMouseWeakPtr().lock())
-		{
-			auto [x, y] = getPosition();
-			const int x_delta = x_pos - x;
-			const int y_delta = y_pos - y;
+		auto [x, y] = getPosition();
+		const int x_delta = x_pos - x;
+		const int y_delta = y_pos - y;
 
 #ifdef LOG_WINDOW_MOVEMENT_MESSAGES
-			PLOGD << "Window moved: " << x_delta << ", " << y_delta;
+		PLOGD << "Window moved: " << x_delta << ", " << y_delta;
 #endif
 
-			// Update the mouse position so that the elements in the window which are dependent on the mouse position, are updated to appear stationary
-			mouse->onMouseMove(mouse->pos().x - x_delta, mouse->pos().y - y_delta);
-		}
+		// Update the mouse position so that the elements in the window which are dependent on the mouse position, are updated to appear stationary
+		mouse_->onMouseMove(mouse_->pos().x - x_delta, mouse_->pos().y - y_delta);
 
 		// Store the new position for future calculations
 		setPosition(x_pos, y_pos);
@@ -417,38 +401,7 @@ LRESULT Window::handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) n
 	default:
 		break;
 	}
-	return DefWindowProc(window, msg, wParam, lParam);
-}
-
-LRESULT CALLBACK Window::handleMsgSetup(const HWND window, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
-{
-#ifdef LOG_WINDOW_MESSAGES // defined in LoggingConfig.h
-	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
-#endif
-
-	if (msg == WM_NCCREATE)
-	{
-		const CREATESTRUCTW* const p_create = reinterpret_cast<CREATESTRUCTW*>(lParam);  // NOLINT(performance-no-int-to-ptr)
-		Window* const p_wnd = static_cast<Window*>(p_create->lpCreateParams);
-		SetWindowLongPtr(window, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(p_wnd));
-		SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&Window::handleMsgThunk));
-		return handleMsg(window, msg, wParam, lParam);
-	}
-	return DefWindowProc(window, msg, wParam, lParam);
-}
-
-LRESULT CALLBACK Window::handleMsgThunk(const HWND window, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
-{
-#ifdef LOG_WINDOW_MESSAGES // defined in LoggingConfig.h
-	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
-#endif
-	if (msg == WM_CREATE)
-	{
-		auto result = handleMsg(window, msg, wParam, lParam);
-		SetWindowLongPtr(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&App::handleMsg));
-		return result;
-	}
-	return handleMsg(window, msg, wParam, lParam);
+	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
 Window::HResultException::HResultException(const int line, const char* file, const HRESULT hresult) noexcept

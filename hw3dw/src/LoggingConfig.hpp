@@ -21,7 +21,7 @@
 #endif
 
 /* Log the Window Messages - App.cpp */
-//#define LOG_WINDOW_MESSAGES
+#define LOG_WINDOW_MESSAGES
 //#define LOG_WINDOW_MOUSE_MESSAGES
 //#define LOG_WINDOW_MOVEMENT_MESSAGES
 

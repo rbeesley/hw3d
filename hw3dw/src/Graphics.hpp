@@ -53,7 +53,7 @@ public:
 	explicit Graphics(HWND parent, int width, int height);
 
 	Graphics() = delete;
-	~Graphics() = default;
+	~Graphics();
 	Graphics& operator=(const Graphics&) = delete;
 	Graphics(const Graphics&&) = delete;
 	Graphics& operator=(const Graphics&&) = delete;
@@ -69,7 +69,6 @@ public:
 	Camera* getCamera() const noexcept;
 	void setProjection(DirectX::FXMMATRIX& projection) noexcept;
 	DirectX::XMMATRIX getProjection() const noexcept;
-	void shutdown() const;
 private:
 	HWND parent_;
 	float width_, height_;

@@ -1,5 +1,4 @@
 #include "FpsMetric.hpp"
-#include <mmsystem.h>
 
 void FpsMetric::initialize()
 {
@@ -17,7 +16,7 @@ void FpsMetric::frame()
 		fps_ = count_;
 		count_ = 0;
 
-		startTime_ = startTime_ + 1000;
+		startTime_ = timeGetTime();
 	}
 }
 

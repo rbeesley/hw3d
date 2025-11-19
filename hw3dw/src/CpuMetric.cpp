@@ -1,10 +1,8 @@
 #include "CpuMetric.hpp"
-#include <mmsystem.h>
 
 #pragma comment(lib, "winmm.lib")
 
 // Mostly based on code found in this stackoverflow post: https://stackoverflow.com/a/64166
-// CPU percentage matches Task Manager and Process Explorer measurements, but is significantly more than System Informer
 
 void CpuMetric::initialize() {
 	SYSTEM_INFO systemInfo;
@@ -46,7 +44,7 @@ void CpuMetric::frame()
 		lastCpu_ = now;
 		lastUserCpu_ = user;
 		lastSysCpu_ = sys;
-		startTime_ = startTime_ + 1000;
+		startTime_ = timeGetTime();
 	}
 }
 

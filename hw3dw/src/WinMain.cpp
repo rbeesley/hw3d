@@ -48,11 +48,9 @@ int APIENTRY WinMain(
 
 		// Initialize logging
 		Logging::initialize(LOG_LEVEL_DEFAULT);
-
-		// Set up Debug Output Logger
 		Logging::initializeDebugOutputLogger(LOG_LEVEL_DEBUG_OUTPUT);
 
-		// Split the command line into individual arguments
+		// Detect parent process for console logging
 		std::wstring commandLine(lpCommandLine, lpCommandLine + strlen(lpCommandLine));
 		std::vector<std::wstring> args = splitCommandLine(&commandLine[0]);
 
@@ -79,20 +77,12 @@ int APIENTRY WinMain(
 		}
 #endif
 
-		App app;
-		if (const int result = app.initialize() < 0)
-		{
-			return result;
-		}
-
-		// Start Window Message Pump
+		App app(hInstance, g_allowConsoleLogging);
 		PLOGI << "Running App";
-		const int result = app.run();
+		return app.run();
+
 		PLOGI << "Closing App";
-
-		return 0;
 	}
-
 	//BUGBUG : Should be using MessageBox and adjusting text based on target encoding. Currently assuming ASCII to match output of Exception.what().
 	catch (const AtumException& e) {
 		PLOGF << e.getType() << ":" << "\n" << e.what();

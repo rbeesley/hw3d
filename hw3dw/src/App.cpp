@@ -4,8 +4,8 @@
 
 #include "App.hpp"
 #include "AppConfig.hpp"
-
 #include "AppThrowMacros.hpp"
+
 #include "AtumMath.hpp"
 #include "AtumException.hpp"
 #include "Box.hpp"
@@ -46,21 +46,19 @@ const char* App::AppException::getType() const noexcept
 	return "Atum Application Exception";
 }
 
-App::App()
+App::App(HINSTANCE hInstance, bool allowConsoleLogging)
 	: window_(std::make_unique<Window>(WIDTH, HEIGHT, TEXT("Atum D3D Window")))
 	, stop_(false)
 {
 	PLOGI << "Constructing App";
+
 	if (!window_->getHandle())
 	{
 		throw APP_EXCEPT("Failed to create Window");
 	}
 
 	gdiManager_ = std::make_unique<GdiPlusManager>();
-}
 
-int App::initialize()
-{
 	PLOGI << "Initializing App";
 #if (IS_DEBUG)
 	if (g_allowConsoleLogging)
@@ -99,19 +97,49 @@ int App::initialize()
 	fps_.initialize();
 	cpu_.initialize();
 #endif
-	graphics_ = Window::getGraphicsWeakPtr();
-	mouse_ = Window::getMouseWeakPtr();
-	keyboard_ = Window::getKeyboardWeakPtr();
+	graphics_ = &window_->getGraphics();
 
 	PLOGD << "Set the camera view";
-	if (const auto graphics = graphics_.lock())
-	{
-		graphics->setCamera(std::make_unique<Camera>(DirectX::XM_PIDIV4, aspectRatio, 0.5f, 40.0f));
-		graphics->getCamera()->setPosition({ 0.0f, 0.0f, 0.0f });
-		graphics->getCamera()->setTarget({ 0.0f, 0.0f, 5.0f });
-		graphics->getCamera()->setFOV(DirectX::XM_PIDIV4); // Zoom
-	}
+	graphics_->setCamera(std::make_unique<Camera>(DirectX::XM_PIDIV4, aspectRatio, 0.5f, 40.0f));
+	graphics_->getCamera()->setPosition({ 0.0f, 0.0f, 0.0f });
+	graphics_->getCamera()->setTarget({ 0.0f, 0.0f, 5.0f });
+	graphics_->getCamera()->setFOV(DirectX::XM_PIDIV4); // Zoom
 
+	populateDrawables();
+}
+
+App::~App()
+{
+#ifdef IMGUI_DOCKING
+	// Disable platform windows before shutdown
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags &= ~ImGuiConfigFlags_ViewportsEnable;
+#endif
+
+#ifdef LOG_GRAPHICS_CALLS
+	PLOGV << "ImGui_ImplDX11_Shutdown()";
+#endif
+	ImGui_ImplDX11_Shutdown();
+
+#ifdef LOG_GRAPHICS_CALLS
+	PLOGV << "ImGui_ImplWin32_Shutdown();";
+#endif
+	ImGui_ImplWin32_Shutdown();
+
+#ifdef LOG_GRAPHICS_CALLS
+	PLOGV << "ImGui::DestroyContext()";
+#endif
+	ImGui::DestroyContext();
+
+	window_.reset();
+#if (IS_DEBUG)
+	console_->shutdown();
+#endif
+	PLOGI << "App destroyed";
+}
+
+void App::populateDrawables()
+{
 	const auto rng_seed = std::random_device{}();
 	PLOGI << "mt19937 rng seed: " << rng_seed;
 
@@ -126,14 +154,11 @@ int App::initialize()
 	//std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, 0.0f };
 	//std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, PI * 0.08f };
 	std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, 0.0f };
-	if (auto graphics = graphics_.lock())
-	{
-		drawables_.emplace_back(
-			std::make_unique<SkinnedBox>(
-				*graphics, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
-				sphericalCoordinateMovementOfDrawableDistribution_
-			));
-	}
+	drawables_.emplace_back(
+		std::make_unique<SkinnedBox>(
+			*graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
+			sphericalCoordinateMovementOfDrawableDistribution_
+		));
 #else
 	class DrawableFactory
 	{
@@ -198,7 +223,7 @@ int App::initialize()
 			std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, PI * 2.0f };				// adist
 			std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, PI * 0.5f };						// ddist
 			std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, PI * 0.08f };	// odist
-			std::uniform_real_distribution<float> distanceDistribution_{ 6.0f, 20.0f };										// rdist
+			std::uniform_real_distribution<float> distanceDistribution_{ 6.0f, 20.0f };									// rdist
 			std::uniform_real_distribution<float> zAxisDistortionDistribution_{ 0.4f, 3.0f };								// bdist
 			std::uniform_int_distribution<int> latitudeDistribution_{ 5, 20 };												// latdist
 			std::uniform_int_distribution<int> longitudeDistribution_{ 10, 40 };											// longdist
@@ -208,32 +233,8 @@ int App::initialize()
 	drawables_.reserve(NUMBER_OF_DRAWABLES);
 
 	PLOGD << "Populating pool of drawables";
-	if (const auto graphics = graphics_.lock())
-	{
-		std::generate_n(std::back_inserter(drawables_), NUMBER_OF_DRAWABLES, DrawableFactory(*graphics, rng_seed));
-	}
+	std::generate_n(std::back_inserter(drawables_), NUMBER_OF_DRAWABLES, DrawableFactory(*graphics_, rng_seed));
 #endif
-	return 0;
-}
-
-std::optional<unsigned int> App::processMessages()
-{
-	MSG msg;
-	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-	{
-#ifdef LOG_WINDOW_MESSAGES
-		PLOGV << windowsMessageMap(msg.message, msg.lParam, msg.wParam).c_str();
-#endif
-		if (msg.message == WM_QUIT)
-		{
-			return msg.message;
-		}
-
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-
-	return {};
 }
 
 int App::run()
@@ -241,7 +242,7 @@ int App::run()
 	bool showDemoWindow = true;
 	bool showAnotherWindow = false;
 	auto clearColor = ImVec4(0.07f, 0.0f, 0.12f, 1.00f);
-	const ImGuiIO& imGuiIO = ImGui::GetIO();
+	const ImGuiIO& io = ImGui::GetIO();
 
 #if defined(MAX_FPS) && (MAX_FPS > 0)
 	using clock = std::chrono::steady_clock; // Monotonic clock, unaffected by system time changes
@@ -252,6 +253,18 @@ int App::run()
 	PLOGI << "Starting Message Pump and Render Loop";
 	while (!stop_)
 	{
+		// PLOGI << " *** Run loop ***";
+
+		// Process pending messages
+		if (const std::optional exitCode(processMessages()); exitCode.has_value())
+		{
+			if (exitCode.value() == WM_QUIT)
+			{
+				stop_ = true;
+				continue;
+			}
+		}
+
 #if defined(MAX_FPS) && (MAX_FPS > 0)
 		auto now = clock::now();
 		std::time_t t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -270,8 +283,6 @@ int App::run()
 		std::this_thread::sleep_until(next_tick);
 #endif
 
-		// PLOGI << " *** Run loop ***";
-
 #if (IS_DEBUG)
 		auto static composeFpsCpuWindowTitle = [](const int fps, const double cpuPercentage) {
 			wchar_t buffer[50];
@@ -284,36 +295,18 @@ int App::run()
 		window_->setTitle(composeFpsCpuWindowTitle(fps_.getFps(), cpu_.getCpuPercentage()));
 #endif
 
-		// Process pending messages
-		{
-			if (const std::optional exitCode(processMessages()); exitCode.has_value())
-			{
-				if (exitCode.value() == WM_QUIT)
-				{
-					stop_ = true;
-					continue;
-				}
-			}
-		}
-
 #ifdef LOG_GRAPHICS_CALLS
 		PLOGV << "graphics.beginFrame()";
 #endif
+		const auto [width, height] = window_->getTargetDimensions();
+		if (!graphics_->beginFrame(width, height))
 		{
-			const auto [width, height] = Window::getTargetDimensions();
-			if (const auto graphics = graphics_.lock())
+			if (width > 0 || height > 0)
 			{
-				if (!graphics->beginFrame(width, height))
-				{
-					if (width > 0 || height > 0)
-					{
-						window_->setTargetDimensions(0, 0);
-					}
-					continue;
-				}
+				window_->setTargetDimensions(0, 0);
 			}
+			continue;
 		}
-
 		// Start the Dear ImGui frame
 		PLOGD << "Start the Dear ImGui frame";
 #ifdef LOG_GRAPHICS_CALLS
@@ -356,7 +349,7 @@ int App::run()
 			ImGui::SameLine();
 			ImGui::Text("counter = %d", counter);
 
-			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / imGuiIO.Framerate, imGuiIO.Framerate);
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
 			ImGui::End();
 		}
 
@@ -375,23 +368,108 @@ int App::run()
 		PLOGV << "ImGui::Render();";
 #endif
 		ImGui::Render();
+
 #ifdef LOG_GRAPHICS_CALLS
 		PLOGV << "renderFrame(clear_color);";
 #endif
 		renderFrame(clearColor);
 
-		if (const auto graphics = graphics_.lock()) {
 #ifdef LOG_GRAPHICS_CALLS
-			PLOGV << "graphics->endFrame();";
+		PLOGV << "graphics->endFrame();";
 #endif
-			graphics->endFrame();
-		}
+		graphics_->endFrame();
 	}
 	return 0;
 }
 
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
-LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
+void App::renderFrame(const ImVec4& clearColor)
+{
+	const auto dt = timer_.mark();
+	PLOGD << "Fetch Dear ImGui IO";
+	const ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+	PLOGD << "Clear the buffer";
+	graphics_->clearBuffer(clearColor);
+
+#define CAMERA_ZOOM false
+#if (CAMERA_ZOOM)
+	static float timeAccumulator = 0.0f;
+	timeAccumulator += dt;
+
+	// Zoom oscillates between - 10 and -10 over 5 seconds
+	float zoomAmplitude = 16.0f; // range of movement
+	float zoomBase = -8.0f;     // center position
+	float zoomSpeed = DirectX::XM_2PI / 5.0f; // full cycle every 5 seconds
+
+	float zoomZ = zoomBase + std::sin(timeAccumulator * zoomSpeed) * (zoomAmplitude / 2.0f);
+
+	auto camera = graphics_->getCamera();
+	DirectX::XMFLOAT3 pos = camera->getPosition();
+	pos.z = zoomZ;
+	camera->setPosition(pos);
+#endif
+
+	PLOGD << "Draw all drawables";
+	for (const auto& drawable : drawables_)
+	{
+		//drawable->update(keyboard->isKeyPressed(VK_SPACE) ? 0.0f : dt);
+		drawable->update(dt);
+		drawable->draw(*graphics_);
+	}
+
+	PLOGV << "ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData())";
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+#ifdef IMGUI_DOCKING
+	// Update and Render additional Platform Windows
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		PLOGV << "ImGui::UpdatePlatformWindows()";
+		ImGui::UpdatePlatformWindows();
+		PLOGV << "ImGui::RenderPlatformWindowsDefault()";
+		ImGui::RenderPlatformWindowsDefault();
+	}
+#endif
+}
+
+std::optional<unsigned int> App::processMessages()
+{
+	MSG msg;
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	{
+#ifdef LOG_WINDOW_MESSAGES
+		PLOGV << windowsMessageMap(msg.message, msg.lParam, msg.wParam).c_str();
+#endif
+		if (msg.message == WM_QUIT)
+		{
+			return msg.message;
+		}
+
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	return {};
+}
+
+LRESULT App::handleMsg(const HWND hWnd, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
+{
+	if (msg == WM_NCCREATE) {
+		CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
+		App* app = static_cast<App*>(cs->lpCreateParams);
+		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(app));
+	}
+
+	App* app = reinterpret_cast<App*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+	if (app) {
+		return app->handleMsgImpl(hWnd, msg, wParam, lParam);
+	}
+
+	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+LRESULT App::handleMsgImpl(const HWND hWnd, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES
 	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
@@ -405,13 +483,9 @@ LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, con
 #ifdef LOG_GRAPHICS_MESSAGES
 	PLOGV << "ImGui_ImplWin32_WndProcHandler";
 #endif
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
 	{
-		if (const auto graphics = Window::getGraphicsWeakPtr().lock()) {
-			if (graphics && ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))
-			{
-				return true;
-			}
-		}
+		return true;
 	}
 
 	switch (msg)
@@ -430,7 +504,7 @@ LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, con
 	case WM_SYSCOMMAND:
 	case WM_DESTROY:
 	case WM_DPICHANGED:
-		return Window::handleMsg(hwnd, msg, wParam, lParam);
+		return window_->forwardMsg(hWnd, msg, wParam, lParam);
 
 		/* Keyboard */
 	case WM_KEYDOWN:
@@ -439,67 +513,58 @@ LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, con
 	case WM_SYSKEYUP:
 	case WM_CHAR:
 		// Dear ImGui, a member of Graphics, gets the first opportunity to handle keyboard messages
-		if (const auto graphics = Window::getGraphicsWeakPtr().lock()) {
-			if (graphics->handleMsg(hwnd, msg, wParam, lParam))
-			{
-				return 0;
-			}
+		if (graphics_->handleMsg(hWnd, msg, wParam, lParam))
+		{
+			return 0;
 		}
 		// If Dear ImGui didn't process the keyboard message, Keyboard processes it.
-		if (const auto keyboard = Window::getKeyboardWeakPtr().lock()) {
-			keyboard->handleMsg(hwnd, msg, wParam, lParam);
-		}
+		keyboard_->handleMsg(hWnd, msg, wParam, lParam);
 		break;
 
 		/* Mouse */
 		// WM_MOUSEMOVE is dependent on both the Window and the Mouse, so it is handled entirely in the App class
 	case WM_MOUSEMOVE:
 		// Dear ImGui, a member of Graphics, gets the first opportunity to handle Mouse messages
-		if (const auto graphics = Window::getGraphicsWeakPtr().lock()) {
-			if (graphics->handleMsg(hwnd, msg, wParam, lParam))
-			{
-				return 0;
-			}
+		if (graphics_->handleMsg(hWnd, msg, wParam, lParam))
+		{
+			return 0;
 		}
 		// If Dear ImGui didn't process the mouse message, Mouse processes it.
-		if (const auto window = reinterpret_cast<Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA)))  // NOLINT(performance-no-int-to-ptr)
+		if (const auto window = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA)))  // NOLINT(performance-no-int-to-ptr)
 		{
-			if (auto mouse = Window::getMouseWeakPtr().lock())
-			{
 				const auto [x, y] = MAKEPOINTS(lParam);
 				const auto [width, height] = window->getDimensions();
 				// mouse is inside client region
 				if (x >= 0 && x < width && y >= 0 && y < height)
 				{
 					// but internal state is still outside client region
-					if (!mouse->isInWindow())
+					if (!mouse_->isInWindow())
 					{
 						// fix the state
-						mouse->onMouseEnter(x, y);
-						SetCapture(hwnd);
+						mouse_->onMouseEnter(x, y);
+						SetCapture(hWnd);
 					}
 					else
 					{
-						mouse->onMouseMove(x, y);
+						mouse_->onMouseMove(x, y);
 					}
 				}
 				// mouse is outside client region and internal state places it inside client region
-				else if (mouse->isInWindow())
+				else if (mouse_->isInWindow())
 				{
 					// because a button is being held down we want to keep track of the mouse position outside the client region boundaries
-					if (mouse->isLeftPressed() || mouse->isRightPressed() || mouse->isMiddlePressed() || mouse->isX1Pressed() || mouse->isX2Pressed())
+					if (mouse_->isLeftPressed() || mouse_->isRightPressed() || mouse_->isMiddlePressed() || mouse_->isX1Pressed() || mouse_->isX2Pressed())
 					{
-						mouse->onMouseMove(x, y);
+						mouse_->onMouseMove(x, y);
 					}
 					// but no buttons ARE being held down
 					else
 					{
 						// fix the state
 						ReleaseCapture();
-						mouse->onMouseLeave();
+						mouse_->onMouseLeave();
 					}
 				}
-			}
 		}
 		break;
 		// All other mouse events can be handled by the Mouse itself
@@ -514,17 +579,12 @@ LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, con
 	case WM_MOUSEWHEEL:
 	case WM_MOUSEHWHEEL:
 		// Dear ImGui, a member of Graphics, gets the first opportunity to handle Mouse messages
-		if (const auto graphics = Window::getGraphicsWeakPtr().lock()) {
-			if (graphics->handleMsg(hwnd, msg, wParam, lParam))
-			{
-				return 0;
-			}
+		if (graphics_->handleMsg(hWnd, msg, wParam, lParam))
+		{
+			return 0;
 		}
 		// If Dear ImGui didn't process the mouse message, Mouse processes it.
-		if (const auto mouse = Window::getMouseWeakPtr().lock())
-		{
-			mouse->handleMsg(hwnd, msg, wParam, lParam);
-		}
+		mouse_->handleMsg(hWnd, msg, wParam, lParam);
 		break;
 
 		/* App custom */
@@ -544,68 +604,5 @@ LRESULT App::handleMsg(const HWND hwnd, const UINT msg, const WPARAM wParam, con
 	default:
 		break;
 	}
-	return DefWindowProc(hwnd, msg, wParam, lParam);
-}
-
-App::~App()
-{
-	window_.reset();
-#if (IS_DEBUG)
-	console_->shutdown();
-#endif
-	PLOGI << "App destroyed";
-}
-
-void App::renderFrame(const ImVec4& clearColor)
-{
-	const auto dt = timer_.mark();
-	const auto graphics = graphics_.lock();
-	const auto keyboard = keyboard_.lock();
-	if (graphics && keyboard)
-	{
-		PLOGD << "Fetch Dear ImGui IO";
-		const ImGuiIO& imGuiIO = ImGui::GetIO(); (void)imGuiIO;
-
-		PLOGD << "Clear the buffer";
-		graphics->clearBuffer(clearColor);
-
-#define CAMERA_ZOOM false
-#if (CAMERA_ZOOM)
-		static float timeAccumulator = 0.0f;
-		timeAccumulator += dt;
-
-		// Zoom oscillates between - 10 and -10 over 5 seconds
-		float zoomAmplitude = 16.0f; // range of movement
-		float zoomBase = -8.0f;     // center position
-		float zoomSpeed = DirectX::XM_2PI / 5.0f; // full cycle every 5 seconds
-
-		float zoomZ = zoomBase + std::sin(timeAccumulator * zoomSpeed) * (zoomAmplitude / 2.0f);
-
-		auto camera = graphics->getCamera();
-		DirectX::XMFLOAT3 pos = camera->getPosition();
-		pos.z = zoomZ;
-		camera->setPosition(pos);
-#endif
-
-		PLOGD << "Draw all drawables";
-		for (const auto& drawable : drawables_)
-		{
-			drawable->update(keyboard->isKeyPressed(VK_SPACE) ? 0.0f : dt);
-			drawable->draw(*graphics);
-		}
-
-		PLOGV << "ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData())";
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-
-#ifdef IMGUI_DOCKING
-		// Update and Render additional Platform Windows
-		if (imGuiIO.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-		{
-			PLOGV << "ImGui::UpdatePlatformWindows()";
-			ImGui::UpdatePlatformWindows();
-			PLOGV << "ImGui::RenderPlatformWindowsDefault()";
-			ImGui::RenderPlatformWindowsDefault();
-		}
-#endif
-	}
+	return DefWindowProc(hWnd, msg, wParam, lParam);
 }

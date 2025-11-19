@@ -1,6 +1,6 @@
 #pragma once
 #include <optional>
-#include <sstream>
+#include <string>
 #include <memory>
 
 #include "AtumException.hpp"
@@ -14,25 +14,45 @@
 
 class Window
 {
-private:
-	// singleton
-	class WindowClass
-	{
-	public:
-		WindowClass();
-		~WindowClass();
-		WindowClass(const WindowClass&) = delete;
-		WindowClass& operator=(const WindowClass&) = delete;
-		WindowClass(const WindowClass&&) = delete;
-		WindowClass& operator=(const WindowClass&&) = delete;
-		void shutdown() const noexcept;
-		static LPCWSTR getName() noexcept;
-		HINSTANCE getInstance() const noexcept;
-	private:
-		static constexpr LPCWSTR windowClassName = L"Atum.D3D";
-		HINSTANCE instanceHandle_;
-	};
 public:
+	explicit Window(unsigned int width, unsigned int height, LPCWSTR name);
+	~Window();
+
+	Window(const Window&) = delete;
+	Window& operator=(const Window&) = delete;
+	Window(const Window&&) = delete;
+	Window& operator=(const Window&&) = delete;
+
+	LRESULT forwardMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+
+	[[nodiscard]] HWND getHandle() const noexcept;
+	Graphics& getGraphics() const noexcept;
+	Mouse& getMouse() const noexcept;
+	Keyboard& getKeyboard() const noexcept;
+
+	void setTitle(const std::wstring& title) const;
+	void createWindow(LPCWSTR name);
+	void configureImGui();
+
+	struct WindowDimensions
+	{
+		LONG width;
+		LONG height;
+	};
+
+	struct WindowPosition
+	{
+		int x;
+		int y;
+	};
+
+	HWND setActive(HWND window) const;
+	WindowDimensions getDimensions() const;
+	WindowPosition getPosition() const;
+	void setPosition(int x, int y);
+	WindowDimensions getTargetDimensions();
+	void setTargetDimensions(unsigned int width, unsigned int height);
+
 	class Exception : public AtumException
 	{
 		using AtumException::AtumException;
@@ -41,7 +61,7 @@ public:
 	private:
 		HRESULT result_;
 	};
-public:
+
 	class HResultException : public Exception
 	{
 	public:
@@ -53,6 +73,7 @@ public:
 	private:
 		HRESULT hresult_;
 	};
+
 	class NoGfxException : public Exception
 	{
 	public:
@@ -60,59 +81,41 @@ public:
 		const char* getType() const noexcept override;
 
 	};
-public:
-	struct WindowDimensions
-	{
-		SHORT width;
-		SHORT height;
-	};
-	struct WindowPosition
-	{
-		int x;
-		int y;
-	};
 
-	explicit Window(int width, int height, LPCWSTR name);
-	~Window();
-
-	Window(const Window&) = delete;
-	Window& operator=(const Window&) = delete;
-	Window(const Window&&) = delete;
-	Window& operator=(const Window&&) = delete;
-
-	void createWindow(LPCWSTR name);
-	void configureImGui();
-	static void initializeStaticMembers();
-	static void shutdownStaticMembers();
-
-	[[nodiscard]] static HWND getHandle();
-	static HWND setActive(HWND window);
-	WindowDimensions getDimensions() const;
-	static WindowPosition getPosition();
-	static void setPosition(int x, int y);
-	static WindowDimensions getTargetDimensions();
-	static void setTargetDimensions(unsigned int width, unsigned int height);
-	static void setTitle(const std::wstring& title);
-	static std::weak_ptr<Mouse> getMouseWeakPtr() noexcept;
-	static std::weak_ptr<Keyboard> getKeyboardWeakPtr() noexcept;
-	static std::weak_ptr<Graphics> getGraphicsWeakPtr() noexcept;
-	static LRESULT CALLBACK handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 private:
-	static LRESULT CALLBACK handleMsgSetup(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-	static LRESULT CALLBACK handleMsgThunk(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-public:
-private:
-	static std::shared_ptr<Mouse> mouse_;
-	static std::shared_ptr<Keyboard> keyboard_;
-	static std::shared_ptr<Graphics> graphics_;
-	inline static int x_{};
-	inline static int y_{};
-	SHORT width_{};
-	SHORT height_{};
-	static bool inSizeMove_;
-	static bool minimized_;
-	static SHORT targetWidth_;
-	static SHORT targetHheight_;
+	// singleton
+	class WindowClass
+	{
+	public:
+		WindowClass();
+		~WindowClass();
+		WindowClass(const WindowClass&) = delete;
+		WindowClass& operator=(const WindowClass&) = delete;
+		WindowClass(const WindowClass&&) = delete;
+		WindowClass& operator=(const WindowClass&&) = delete;
+		LPCWSTR getName() const noexcept;
+		HINSTANCE getInstance() const noexcept;
+	private:
+		static constexpr LPCWSTR windowClassName = L"Atum.D3D";
+		HINSTANCE instanceHandle_;
+	};
+
+	static LRESULT CALLBACK handleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+	static LRESULT CALLBACK handleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+	LRESULT CALLBACK handleMsgImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+
+	HWND windowHandle_;
+	LONG width_;
+	LONG height_;
 	std::unique_ptr<WindowClass> windowClass_;
-	static inline HWND windowHandle_;
+	std::unique_ptr<Graphics> graphics_;
+	std::unique_ptr<Mouse> mouse_;
+	std::unique_ptr<Keyboard> keyboard_;
+
+	int x_;
+	int y_;
+	bool inSizeMove_;
+	bool minimized_;
+	LONG targetWidth_ = 0;
+	LONG targetHeight_ = 0;
 };

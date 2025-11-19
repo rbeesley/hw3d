@@ -391,15 +391,11 @@ DirectX::XMMATRIX Graphics::getProjection() const noexcept
 	return projection_;
 }
 
-void Graphics::shutdown() const
+Graphics::~Graphics()
 {
-#ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "ImGui_ImplDX11_Shutdown()";
-#endif
-	ImGui_ImplDX11_Shutdown();
-#if (IS_DEBUG)
 	deviceContext_->ClearState();
 	deviceContext_->Flush();
+#if (IS_DEBUG)
 	Microsoft::WRL::ComPtr<ID3D11Debug> debug;
 	if (SUCCEEDED(device_->QueryInterface(__uuidof(ID3D11Debug), &debug))) {
 		debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
