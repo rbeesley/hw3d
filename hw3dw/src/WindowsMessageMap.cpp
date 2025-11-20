@@ -11,6 +11,7 @@
 WindowsMessageMap::WindowsMessageMap()
 	:
 	map_({
+		{ 0x0,"WM_NULL" },
 		{ 0x1,"WM_CREATE" },
 		{ 0x2,"WM_DESTROY" },
 		{ 0x3,"WM_MOVE" },
@@ -100,6 +101,7 @@ WindowsMessageMap::WindowsMessageMap()
 		{ 0x93,"WM_UAHINITMENU" },
 		{ 0x94,"WM_UAHMEASUREMENUITEM" },
 		{ 0x95,"WM_UAHNCPAINTMEUNPOPUP" },
+		{ 0x96,"WM_UAHUPDATE" },
 
 #if ALLMOUSEMESSAGES
 		{ 0xA0,"WM_NCMOUSEMOVE" },
@@ -193,8 +195,8 @@ WindowsMessageMap::WindowsMessageMap()
 		{ 0xFE,"WM_REFLECT" },
 
 		{ 0xFF,"WM_INPUT" },
+		//{0x100,"WM_KEYFIRST"},
 		{0x100,"WM_KEYDOWN"},
-		{0x100,"WM_KEYFIRST"},
 		{0x101,"WM_KEYUP"},
 		{0x102,"WM_CHAR"},
 		{0x103,"WM_DEADCHAR"},
@@ -202,7 +204,8 @@ WindowsMessageMap::WindowsMessageMap()
 		{0x105,"WM_SYSKEYUP"},
 		{0x106,"WM_SYSCHAR"},
 		{0x107,"WM_SYSDEADCHAR"},
-		{0x109,"WM_UNICHAR / WM_KEYLAST"},
+		{0x109,"WM_UNICHAR"},
+		//{0x109,"WM_KEYLAST"},
 		{0x109,"WM_WNT_CONVERTREQUESTEX"},
 		{0x10A,"WM_CONVERTREQUEST"},
 		{0x10B,"WM_CONVERTRESULT"},

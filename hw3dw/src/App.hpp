@@ -1,5 +1,5 @@
 #pragma once
-#include "Box.hpp"
+#include "Drawable.hpp"
 #include "Window.hpp"
 #include "Console.hpp"
 #include "Timer.hpp"
@@ -22,7 +22,8 @@ public:
 	};
 
 public:
-	App(HINSTANCE hInstance, bool allowConsoleLogging);
+	void configureImGui();
+	App(bool allowConsoleLogging);
 	~App();
 
 	App(const App&) = delete;

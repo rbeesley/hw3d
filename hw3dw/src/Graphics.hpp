@@ -7,6 +7,8 @@
 #include <DirectXMath.h>
 #include <locale>
 
+#include "backends/imgui_impl_dx11.h"
+
 struct ImVec4;
 
 class Graphics
@@ -51,10 +53,13 @@ public:
 	};
 public:
 	explicit Graphics(HWND parent, int width, int height);
+	bool initalizeImGuiRenderer();
 
 	Graphics() = delete;
 	~Graphics();
 	Graphics& operator=(const Graphics&) = delete;
+	void renderImGuiPlatform();
+	void shutdownImGuiRenderer();
 	Graphics(const Graphics&&) = delete;
 	Graphics& operator=(const Graphics&&) = delete;
 
@@ -69,6 +74,8 @@ public:
 	Camera* getCamera() const noexcept;
 	void setProjection(DirectX::FXMMATRIX& projection) noexcept;
 	DirectX::XMMATRIX getProjection() const noexcept;
+	ID3D11Device* getDevice() const noexcept;
+	ID3D11DeviceContext* getDeviceContext() const noexcept;
 private:
 	HWND parent_;
 	float width_, height_;

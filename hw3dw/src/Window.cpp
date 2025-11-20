@@ -63,13 +63,7 @@ Window::Window(const unsigned int width, const unsigned int height, const LPCWST
 	keyboard_ = std::make_unique<Keyboard>();
 
 	createWindow(name);
-	configureImGui();
 
-	// Create the graphics object
-	PLOGD << "Create the DirectX graphics object";
-#ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "graphics_ = std::make_unique<Graphics>(windowHandle_, width_, height_);";
-#endif
 	graphics_ = std::make_unique<Graphics>(windowHandle_, width_, height_);
 
 	// Check for an error
@@ -88,6 +82,21 @@ Window::~Window()
 {
 	PLOGD << "Destroy Window";
 	DestroyWindow(windowHandle_);
+}
+
+void Window::updateImGuiPlatform()
+{
+	ImGui::UpdatePlatformWindows();
+}
+
+void Window::shutdownImGuiPlatform()
+{
+	ImGui_ImplWin32_Shutdown();
+}
+
+bool Window::initializeImGuiPlatform() const
+{
+	return ImGui_ImplWin32_Init(windowHandle_);
 }
 
 LRESULT Window::forwardMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
@@ -130,57 +139,6 @@ void Window::createWindow(const LPCWSTR name)
 	PLOGI << "Show the Window";
 	ShowWindow(windowHandle_, SW_SHOWDEFAULT);
 	UpdateWindow(windowHandle_);
-}
-
-void Window::configureImGui()
-{
-	// Configure Dear ImGui
-	PLOGI << "Configure Dear ImGui";
-
-	// Setup Dear ImGui context
-#ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "IMGUI_CHECKVERSION();";
-#endif
-	IMGUI_CHECKVERSION();
-#ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "ImGui::CreateContext();";
-#endif
-	ImGui::CreateContext();
-	PLOGD << "Set Dear ImGui flags";
-	ImGuiIO& imGuiIo = ImGui::GetIO(); (void)imGuiIo;
-	imGuiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	imGuiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-#ifdef IMGUI_DOCKING
-	imGuiIo.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-	imGuiIo.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-	//imGuiIo.ConfigViewportsNoAutoMerge = true;
-	//imGuiIo.ConfigViewportsNoTaskBarIcon = true;
-	//imGuiIo.ConfigViewportsNoDefaultParent = true;
-	//imGuiIo.ConfigDockingAlwaysTabBar = true;
-	//imGuiIo.ConfigDockingTransparentPayload = true;
-	//imGuiIo.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;     // FIXME-DPI: Experimental. THIS CURRENTLY DOESN'T WORK AS EXPECTED. DON'T USE IN USER APP!
-	//imGuiIo.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports; // FIXME-DPI: Experimental.
-#endif
-
-	// Setup Dear ImGui style
-	ImGui::StyleColorsDark();
-	//ImGui::StyleColorsLight();
-
-#ifdef IMGUI_DOCKING
-	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-	ImGuiStyle& style = ImGui::GetStyle();
-	if (imGuiIo.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		style.WindowRounding = 0.0f;
-		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-	}
-#endif
-
-	PLOGI << "Setup Dear ImGui Platform backend";
-#ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "ImGui_ImplWin32_Init()";
-#endif
-	ImGui_ImplWin32_Init(windowHandle_);
 }
 
 HWND Window::getHandle() const noexcept { return windowHandle_; }
@@ -250,7 +208,7 @@ LRESULT CALLBACK Window::handleMsgSetup(const HWND hWnd, const UINT msg, const W
 
 	if (msg == WM_NCCREATE)
 	{
-		const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);  // NOLINT(performance-no-int-to-ptr)
+		const CREATESTRUCTW* pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);  // NOLINT(performance-no-int-to-ptr)
 		Window* const pWnd = static_cast<Window*>(pCreate->lpCreateParams);
 
 		// Store pointer in GWLP_USERDATA

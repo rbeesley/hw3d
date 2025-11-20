@@ -178,12 +178,15 @@ Graphics::Graphics(HWND parent, int width, int height) :
 		.MaxDepth = 1
 	};
 	deviceContext_->RSSetViewports(1u, &viewport);
+}
 
+bool Graphics::initalizeImGuiRenderer()
+{
 	PLOGD << "Setup Dear ImGui Render backend";
 #ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "ImGui_ImplDX11_Init";
 #endif
-	ImGui_ImplDX11_Init(device_.Get(), deviceContext_.Get());
+	return ImGui_ImplDX11_Init(device_.Get(), deviceContext_.Get());
 }
 
 LRESULT Graphics::handleMsg([[maybe_unused]] HWND window, const UINT msg, [[maybe_unused]] const WPARAM wParam, [[maybe_unused]] const LPARAM lParam) noexcept
@@ -391,6 +394,16 @@ DirectX::XMMATRIX Graphics::getProjection() const noexcept
 	return projection_;
 }
 
+ID3D11Device* Graphics::getDevice() const noexcept
+{
+	return device_.Get();
+}
+
+ID3D11DeviceContext* Graphics::getDeviceContext() const noexcept
+{
+	return deviceContext_.Get();
+}
+
 Graphics::~Graphics()
 {
 	deviceContext_->ClearState();
@@ -406,6 +419,16 @@ Graphics::~Graphics()
 	//	PLOGI << message;
 	//}
 #endif
+}
+
+void Graphics::renderImGuiPlatform()
+{
+	ImGui::RenderPlatformWindowsDefault();
+}
+
+void Graphics::shutdownImGuiRenderer()
+{
+	ImGui_ImplDX11_Shutdown();
 }
 
 // Graphics Exception

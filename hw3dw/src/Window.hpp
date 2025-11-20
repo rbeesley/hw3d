@@ -6,17 +6,20 @@
 #include "AtumException.hpp"
 #include "AtumWindows.hpp"
 
-#include "Keyboard.hpp"
-#include "Mouse.hpp"
 #include "Graphics.hpp"
+#include "Mouse.hpp"
+#include "Keyboard.hpp"
 
-#define IMGUI_DOCKING
+#include "backends/imgui_impl_win32.h"
 
 class Window
 {
 public:
 	explicit Window(unsigned int width, unsigned int height, LPCWSTR name);
 	~Window();
+	void updateImGuiPlatform();
+	void shutdownImGuiPlatform();
+	bool initializeImGuiPlatform() const;
 
 	Window(const Window&) = delete;
 	Window& operator=(const Window&) = delete;
@@ -32,7 +35,6 @@ public:
 
 	void setTitle(const std::wstring& title) const;
 	void createWindow(LPCWSTR name);
-	void configureImGui();
 
 	struct WindowDimensions
 	{
@@ -89,10 +91,12 @@ private:
 	public:
 		WindowClass();
 		~WindowClass();
+
 		WindowClass(const WindowClass&) = delete;
 		WindowClass& operator=(const WindowClass&) = delete;
 		WindowClass(const WindowClass&&) = delete;
 		WindowClass& operator=(const WindowClass&&) = delete;
+
 		LPCWSTR getName() const noexcept;
 		HINSTANCE getInstance() const noexcept;
 	private:

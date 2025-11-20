@@ -77,7 +77,7 @@ int APIENTRY WinMain(
 		}
 #endif
 
-		App app(hInstance, g_allowConsoleLogging);
+		App app(g_allowConsoleLogging);
 		PLOGI << "Running App";
 		return app.run();
 

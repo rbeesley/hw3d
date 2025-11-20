@@ -16,8 +16,8 @@
 #include "Sheet.hpp"
 #include "SkinnedBox.hpp"
 #include "Surface.hpp"
-#include "backends/imgui_impl_dx11.h"
-#include "backends/imgui_impl_win32.h"
+
+#define IMGUI_DOCKING
 
 #if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in LoggingConfig.hpp
 #include "WindowsMessageMap.hpp"
@@ -46,7 +46,51 @@ const char* App::AppException::getType() const noexcept
 	return "Atum Application Exception";
 }
 
-App::App(HINSTANCE hInstance, bool allowConsoleLogging)
+void App::configureImGui()
+{
+	// Configure Dear ImGui
+	PLOGI << "Configure Dear ImGui";
+
+	PLOGD << "Set Dear ImGui flags";
+	ImGuiIO& imGuiIo = ImGui::GetIO(); (void)imGuiIo;
+	imGuiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	imGuiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+#ifdef IMGUI_DOCKING
+	imGuiIo.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+	imGuiIo.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+	//imGuiIo.ConfigViewportsNoAutoMerge = true;
+	//imGuiIo.ConfigViewportsNoTaskBarIcon = true;
+	//imGuiIo.ConfigViewportsNoDefaultParent = true;
+	//imGuiIo.ConfigDockingAlwaysTabBar = true;
+	//imGuiIo.ConfigDockingTransparentPayload = true;
+	//imGuiIo.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;     // FIXME-DPI: Experimental. THIS CURRENTLY DOESN'T WORK AS EXPECTED. DON'T USE IN USER APP!
+	//imGuiIo.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports; // FIXME-DPI: Experimental.
+#endif
+
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsLight();
+
+#ifdef IMGUI_DOCKING
+	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+	ImGuiStyle& style = ImGui::GetStyle();
+	if (imGuiIo.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		style.WindowRounding = 0.0f;
+		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+	}
+#endif
+
+	PLOGI << "Setup Dear ImGui Platform backend";
+#ifdef LOG_GRAPHICS_CALLS
+	PLOGV << "ImGui_ImplWin32_Init()";
+#endif
+
+	window_->initializeImGuiPlatform();
+	graphics_->initalizeImGuiRenderer();
+}
+
+App::App(bool allowConsoleLogging)
 	: window_(std::make_unique<Window>(WIDTH, HEIGHT, TEXT("Atum D3D Window")))
 	, stop_(false)
 {
@@ -57,11 +101,12 @@ App::App(HINSTANCE hInstance, bool allowConsoleLogging)
 		throw APP_EXCEPT("Failed to create Window");
 	}
 
-	gdiManager_ = std::make_unique<GdiPlusManager>();
+	graphics_ = &window_->getGraphics();
+	mouse_ = &window_->getMouse();
+	keyboard_ = &window_->getKeyboard();
 
-	PLOGI << "Initializing App";
 #if (IS_DEBUG)
-	if (g_allowConsoleLogging)
+	if (allowConsoleLogging)
 	{
 		console_ = std::make_unique<Console>(window_->getHandle(), TEXT("Debug Console"));
 
@@ -97,7 +142,12 @@ App::App(HINSTANCE hInstance, bool allowConsoleLogging)
 	fps_.initialize();
 	cpu_.initialize();
 #endif
-	graphics_ = &window_->getGraphics();
+
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+
+	configureImGui();
 
 	PLOGD << "Set the camera view";
 	graphics_->setCamera(std::make_unique<Camera>(DirectX::XM_PIDIV4, aspectRatio, 0.5f, 40.0f));
@@ -105,6 +155,7 @@ App::App(HINSTANCE hInstance, bool allowConsoleLogging)
 	graphics_->getCamera()->setTarget({ 0.0f, 0.0f, 5.0f });
 	graphics_->getCamera()->setFOV(DirectX::XM_PIDIV4); // Zoom
 
+	gdiManager_ = std::make_unique<GdiPlusManager>();
 	populateDrawables();
 }
 
@@ -114,17 +165,15 @@ App::~App()
 	// Disable platform windows before shutdown
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags &= ~ImGuiConfigFlags_ViewportsEnable;
+
+	// BUGBUG: It is recommended that this frame is rendered after changing the viewports flag,
+	// but that introduces other complications
+	//window_->updateImGuiPlatform();
+	//graphics_->renderImGuiPlatform();
 #endif
 
-#ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "ImGui_ImplDX11_Shutdown()";
-#endif
-	ImGui_ImplDX11_Shutdown();
-
-#ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "ImGui_ImplWin32_Shutdown();";
-#endif
-	ImGui_ImplWin32_Shutdown();
+	graphics_->shutdownImGuiRenderer();
+	window_->shutdownImGuiPlatform();
 
 #ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "ImGui::DestroyContext()";
@@ -284,15 +333,9 @@ int App::run()
 #endif
 
 #if (IS_DEBUG)
-		auto static composeFpsCpuWindowTitle = [](const int fps, const double cpuPercentage) {
-			wchar_t buffer[50];
-			std::swprintf(buffer, 50, L"fps: %d / cpu: %00.2f%%", fps, cpuPercentage);
-			return std::wstring(buffer);
-			};
-
 		fps_.frame();
 		cpu_.frame();
-		window_->setTitle(composeFpsCpuWindowTitle(fps_.getFps(), cpu_.getCpuPercentage()));
+		window_->setTitle(L"fps: " + std::to_wstring(fps_.getFps()) + L" / cpu: " + std::to_wstring(cpu_.getCpuPercentage()) + L"%");
 #endif
 
 #ifdef LOG_GRAPHICS_CALLS
