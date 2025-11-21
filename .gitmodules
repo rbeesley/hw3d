@@ -1,3 +1,7 @@
-[submodule "hw3d/3rdParty/plog"]
-	path = hw3d/3rdParty/plog
+[submodule "hw3dw/3rdParty/plog"]
+	path = hw3dw/3rdParty/plog
 	url = git@github.com:rbeesley/plog.git
+[submodule "hw3dw/3rdParty/imgui"]
+	path = hw3dw/3rdParty/imgui
+	url = git@github.com:ocornut/imgui.git
+	branch = docking

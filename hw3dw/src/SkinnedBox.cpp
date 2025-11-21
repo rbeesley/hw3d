@@ -1,0 +1,107 @@
+#include "SkinnedBox.hpp"
+
+#include "AtumMath.hpp"
+#include "BindableIncludes.hpp"
+#include "Cube.hpp"
+
+SkinnedBox::SkinnedBox(Graphics& graphics,
+                       std::mt19937& rng,
+                       std::uniform_real_distribution<float>& distanceDistribution,									// rdist
+                       std::uniform_real_distribution<float>& sphericalCoordinatePositionDistribution,				// adist
+                       std::uniform_real_distribution<float>& rotationOfDrawableDistribution,						// ddist
+                       std::uniform_real_distribution<float>& sphericalCoordinateMovementOfDrawableDistribution	// odist
+)
+	: DrawableStaticStorage(),
+	radiusDistanceFromCenter_(distanceDistribution(rng)),
+	theta_(sphericalCoordinatePositionDistribution(rng)),
+	phi_(sphericalCoordinatePositionDistribution(rng)),
+	rho_(sphericalCoordinatePositionDistribution(rng)),
+	droll_(rotationOfDrawableDistribution(rng)),
+	dpitch_(rotationOfDrawableDistribution(rng)),
+	dyaw_(rotationOfDrawableDistribution(rng)),
+	dtheta_(sphericalCoordinateMovementOfDrawableDistribution(rng)),
+	dphi_(sphericalCoordinateMovementOfDrawableDistribution(rng)),
+	drho_(sphericalCoordinateMovementOfDrawableDistribution(rng))
+{
+	namespace dx = DirectX;
+
+	if (!isStaticInitialized())
+	{
+		struct Vertex
+		{
+			dx::XMFLOAT3 pos;
+			struct
+			{
+				float u;
+				float v;
+			} tex;
+		};
+		const auto model = Cube::makeSkinned<Vertex>();
+
+		addStaticBind(std::make_unique<VertexBuffer>(graphics, model.vertices()));
+
+		addStaticBind(std::make_unique<Sampler>(graphics));
+
+		addStaticBind(std::make_unique<Texture>(graphics, Surface::fromFile(L"cube.png")));
+
+		auto vertexShader = std::make_unique<VertexShader>(graphics, L"TextureVS.cso");
+		auto vertexShaderBytecode = vertexShader->getByteCode();
+		addStaticBind(std::move(vertexShader));
+
+		addStaticBind(std::make_unique<PixelShader>(graphics, L"TexturePS.cso"));
+
+		addStaticIndexBuffer(std::make_unique<IndexBuffer>(graphics, model.indices()));
+
+		constexpr D3D11_INPUT_ELEMENT_DESC positionDesc = {
+			.SemanticName = "Position",
+			.SemanticIndex = 0,
+			.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32B32_FLOAT,
+			.InputSlot = 0,
+			.AlignedByteOffset = 0,
+			.InputSlotClass = D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+			.InstanceDataStepRate = 0
+		};
+		constexpr D3D11_INPUT_ELEMENT_DESC texcoordDesc = {
+			.SemanticName = "TexCoord",
+			.SemanticIndex = 0,
+			.Format = DXGI_FORMAT::DXGI_FORMAT_R32G32_FLOAT,
+			.InputSlot = 0,
+			.AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT,
+			.InputSlotClass = D3D11_INPUT_CLASSIFICATION::D3D11_INPUT_PER_VERTEX_DATA,
+			.InstanceDataStepRate = 0
+		};
+		const std::vector inputElementDescs =
+		{
+			positionDesc,
+			texcoordDesc
+		};
+		addStaticBind(std::make_unique<InputLayout>(graphics, inputElementDescs, vertexShaderBytecode));
+
+		addStaticBind(std::make_unique<Topology>(graphics, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST));
+	}
+	else
+	{
+		setIndexBufferFromStaticBinds();
+	}
+	Drawable::addBind(std::make_unique<TransformConstantBuffer>(graphics, *this));
+}
+
+void SkinnedBox::update(const float dt) noexcept
+{
+	roll_ += wrapAngle(droll_ * dt);
+	pitch_ += wrapAngle(dpitch_ * dt);
+	yaw_ += wrapAngle(dyaw_ * dt);
+	theta_ += wrapAngle(dtheta_ * dt);
+	phi_ += wrapAngle(dphi_ * dt);
+	rho_ += wrapAngle(drho_ * dt);
+}
+
+DirectX::XMMATRIX SkinnedBox::getTransformXm() const noexcept
+{
+	return DirectX::XMMatrixRotationRollPitchYaw(pitch_, yaw_, roll_) *
+		DirectX::XMMatrixTranslation(radiusDistanceFromCenter_, 0.0f, 0.0f) *
+		DirectX::XMMatrixRotationRollPitchYaw(theta_, phi_, rho_) *
+		DirectX::XMMatrixTranslation(0.0f, 0.0f, 20.0f);
+	//  DirectX::XMMatrixTranslation(0.0f, 0.0f, 2.0f); // Move to the front of the frame when rendering a single object
+
+}
