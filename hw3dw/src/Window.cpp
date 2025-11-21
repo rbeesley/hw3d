@@ -4,11 +4,9 @@
 
 #include "App.hpp"
 #include "Console.hpp"
-#include "imgui.h"
 #include "Logging.hpp"
 #include "Resources/resource.h"
 #include "WindowsThrowMacros.hpp"
-#include "backends/imgui_impl_win32.h"
 
 #if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in LoggingConfig.h
 #include "WindowsMessageMap.hpp"
@@ -16,43 +14,10 @@
 const static class WindowsMessageMap windowsMessageMap;
 #endif
 
-Window::WindowClass::WindowClass()
-	: instanceHandle_(GetModuleHandle(nullptr))
-{
-	PLOGV << "Instantiate Window Class";
-
-	WNDCLASSEX wcex = { sizeof(WNDCLASSEX) };
-	wcex.style = CS_OWNDC;
-	wcex.lpfnWndProc = handleMsgSetup;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.hInstance = instanceHandle_;
-	wcex.hIcon = LoadIcon(instanceHandle_, MAKEINTRESOURCE(IDI_ICON1));
-	wcex.hCursor = nullptr;
-	wcex.hbrBackground = nullptr;
-	wcex.lpszMenuName = nullptr;
-	wcex.lpszClassName = windowClassName;
-	wcex.hIconSm = LoadIcon(instanceHandle_, MAKEINTRESOURCE(IDI_ICON1));
-
-	RegisterClassEx(&wcex);
-}
-
-Window::WindowClass::~WindowClass()
-{
-	PLOGV << "Destroy Window Class";
-	UnregisterClass(windowClassName, instanceHandle_);
-}
-
-LPCWSTR Window::WindowClass::getName() const noexcept
-{
-	return windowClassName;
-}
-
-HINSTANCE Window::WindowClass::getInstance() const noexcept
-{
-	return instanceHandle_;
-}
-
+// -----------------------------
+// Window Class Implementation
+// -----------------------------
+// Lifecycle
 Window::Window(const unsigned int width, const unsigned int height, const LPCWSTR name)
 	: width_(width)
 	, height_(height)
@@ -84,24 +49,38 @@ Window::~Window()
 	DestroyWindow(windowHandle_);
 }
 
-void Window::updateImGuiPlatform()
-{
-	ImGui::UpdatePlatformWindows();
-}
-
-void Window::shutdownImGuiPlatform()
-{
-	ImGui_ImplWin32_Shutdown();
-}
-
-bool Window::initializeImGuiPlatform() const
-{
-	return ImGui_ImplWin32_Init(windowHandle_);
-}
-
+// Message Handling
 LRESULT Window::forwardMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept
 {
 	return handleMsgImpl(hWnd, msg, wParam, lParam);
+}
+
+// Accessors
+HWND Window::getHandle() const noexcept { return windowHandle_; }
+Graphics& Window::getGraphics() const noexcept { return *graphics_; }
+Mouse& Window::getMouse() const noexcept { return *mouse_; }
+Keyboard& Window::getKeyboard() const noexcept { return *keyboard_; }
+
+// Window Management
+void Window::setTitle(const std::wstring& title) const
+{
+	if (!SetWindowText(windowHandle_, title.c_str()))
+	{
+		throw ATUM_WND_LAST_EXCEPT();
+	}
+}
+
+HWND Window::setActive(const HWND window) const
+{
+	if (mouse_->isInWindow())
+	{
+		if (const HWND active_window = GetActiveWindow(); active_window != window)
+		{
+			return SetActiveWindow(window);
+		}
+	}
+
+	return nullptr;
 }
 
 void Window::createWindow(const LPCWSTR name)
@@ -141,24 +120,7 @@ void Window::createWindow(const LPCWSTR name)
 	UpdateWindow(windowHandle_);
 }
 
-HWND Window::getHandle() const noexcept { return windowHandle_; }
-Graphics& Window::getGraphics() const noexcept { return *graphics_; }
-Mouse& Window::getMouse() const noexcept { return *mouse_; }
-Keyboard& Window::getKeyboard() const noexcept { return *keyboard_; }
-
-HWND Window::setActive(const HWND window) const
-{
-	if (mouse_->isInWindow())
-	{
-		if (const HWND active_window = GetActiveWindow(); active_window != window)
-		{
-			return SetActiveWindow(window);
-		}
-	}
-
-	return nullptr;
-}
-
+// Dimensions and Position
 Window::WindowDimensions Window::getDimensions() const
 {
 	return { width_, height_ };
@@ -192,14 +154,89 @@ void Window::setTargetDimensions(const unsigned int width, const unsigned int he
 	targetHeight_ = height;
 }
 
-void Window::setTitle(const std::wstring& title) const
+// Exception Types
+Window::HResultException::HResultException(const int line, const char* file, const HRESULT hresult) noexcept
+	:
+	Exception(line, file),
+	hresult_(hresult)
 {
-	if (!SetWindowText(windowHandle_, title.c_str()))
-	{
-		throw ATUM_WND_LAST_EXCEPT();
-	}
 }
 
+const char* Window::HResultException::what() const noexcept
+{
+	std::ostringstream out;
+	out << "[Error Code] " << getErrorCode() << "\n"
+		<< "[Description] " << getErrorDescription() << "\n"
+		<< getOriginString();
+	whatBuffer_ = out.str();
+	return whatBuffer_.c_str();
+}
+
+const char* Window::HResultException::getType() const noexcept
+{
+	return "Atum Window Exception";
+}
+
+HRESULT Window::HResultException::getErrorCode() const noexcept
+{
+	return hresult_;
+}
+
+std::string Window::HResultException::getErrorDescription() const noexcept
+{
+	return translateErrorCode(hresult_);
+}
+
+const char* Window::NoGfxException::getType() const noexcept
+{
+	return "Atum Window Exception [No Graphics]";
+}
+
+std::string Window::Exception::translateErrorCode(const HRESULT result) noexcept
+{
+	std::string message = std::system_category().message(result);
+	return message;
+}
+
+// Internal Window Class
+Window::WindowClass::WindowClass()
+	: instanceHandle_(GetModuleHandle(nullptr))
+{
+	PLOGV << "Instantiate Window Class";
+
+	WNDCLASSEX wcex = { sizeof(WNDCLASSEX) };
+	wcex.style = CS_OWNDC;
+	wcex.lpfnWndProc = handleMsgSetup;
+	wcex.cbClsExtra = 0;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = instanceHandle_;
+	wcex.hIcon = LoadIcon(instanceHandle_, MAKEINTRESOURCE(IDI_ICON1));
+	wcex.hCursor = nullptr;
+	wcex.hbrBackground = nullptr;
+	wcex.lpszMenuName = nullptr;
+	wcex.lpszClassName = windowClassName;
+	wcex.hIconSm = LoadIcon(instanceHandle_, MAKEINTRESOURCE(IDI_ICON1));
+
+	RegisterClassEx(&wcex);
+}
+
+Window::WindowClass::~WindowClass()
+{
+	PLOGV << "Destroy Window Class";
+	UnregisterClass(windowClassName, instanceHandle_);
+}
+
+LPCWSTR Window::WindowClass::getName() const noexcept
+{
+	return windowClassName;
+}
+
+HINSTANCE Window::WindowClass::getInstance() const noexcept
+{
+	return instanceHandle_;
+}
+
+// Message Handlers
 LRESULT CALLBACK Window::handleMsgSetup(const HWND hWnd, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES // defined in LoggingConfig.h
@@ -362,44 +399,3 @@ LRESULT Window::handleMsgImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
-Window::HResultException::HResultException(const int line, const char* file, const HRESULT hresult) noexcept
-	:
-	Exception(line, file),
-	hresult_(hresult)
-{}
-
-const char* Window::HResultException::what() const noexcept
-{
-	std::ostringstream out;
-	out << "[Error Code] " << getErrorCode() << "\n"
-		<< "[Description] " << getErrorDescription() << "\n"
-		<< getOriginString();
-	whatBuffer_ = out.str();
-	return whatBuffer_.c_str();
-}
-
-const char* Window::HResultException::getType() const noexcept
-{
-	return "Atum Window Exception";
-}
-
-std::string Window::Exception::translateErrorCode(const HRESULT result) noexcept
-{
-	std::string message = std::system_category().message(result);
-	return message;
-}
-
-HRESULT Window::HResultException::getErrorCode() const noexcept
-{
-	return hresult_;
-}
-
-std::string Window::HResultException::getErrorDescription() const noexcept
-{
-	return translateErrorCode(hresult_);
-}
-
-const char* Window::NoGfxException::getType() const noexcept
-{
-	return "Atum Window Exception [No Graphics]";
-}

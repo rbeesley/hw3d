@@ -35,6 +35,7 @@ constexpr int HEIGHT = 720;
 
 constexpr float aspectRatio = static_cast<float>(WIDTH) / static_cast<float>(HEIGHT);
 
+// --- Exception Definitions ---
 App::AppException::AppException(const int line, const char* file, const std::string& msg) noexcept
 	: Exception(line, file)
 {
@@ -46,50 +47,7 @@ const char* App::AppException::getType() const noexcept
 	return "Atum Application Exception";
 }
 
-void App::configureImGui()
-{
-	// Configure Dear ImGui
-	PLOGI << "Configure Dear ImGui";
-
-	PLOGD << "Set Dear ImGui flags";
-	ImGuiIO& imGuiIo = ImGui::GetIO(); (void)imGuiIo;
-	imGuiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	imGuiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-#ifdef IMGUI_DOCKING
-	imGuiIo.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-	imGuiIo.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-	//imGuiIo.ConfigViewportsNoAutoMerge = true;
-	//imGuiIo.ConfigViewportsNoTaskBarIcon = true;
-	//imGuiIo.ConfigViewportsNoDefaultParent = true;
-	//imGuiIo.ConfigDockingAlwaysTabBar = true;
-	//imGuiIo.ConfigDockingTransparentPayload = true;
-	//imGuiIo.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;     // FIXME-DPI: Experimental. THIS CURRENTLY DOESN'T WORK AS EXPECTED. DON'T USE IN USER APP!
-	//imGuiIo.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports; // FIXME-DPI: Experimental.
-#endif
-
-	// Setup Dear ImGui style
-	ImGui::StyleColorsDark();
-	//ImGui::StyleColorsLight();
-
-#ifdef IMGUI_DOCKING
-	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-	ImGuiStyle& style = ImGui::GetStyle();
-	if (imGuiIo.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-	{
-		style.WindowRounding = 0.0f;
-		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-	}
-#endif
-
-	PLOGI << "Setup Dear ImGui Platform backend";
-#ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "ImGui_ImplWin32_Init()";
-#endif
-
-	window_->initializeImGuiPlatform();
-	graphics_->initalizeImGuiRenderer();
-}
-
+// --- Lifecycle ---
 App::App(bool allowConsoleLogging)
 	: window_(std::make_unique<Window>(WIDTH, HEIGHT, TEXT("Atum D3D Window")))
 	, stop_(false)
@@ -172,8 +130,8 @@ App::~App()
 	//graphics_->renderImGuiPlatform();
 #endif
 
-	graphics_->shutdownImGuiRenderer();
-	window_->shutdownImGuiPlatform();
+	Graphics::ImGui::Shutdown();
+	Window::ImGui::Shutdown();
 
 #ifdef LOG_GRAPHICS_CALLS
 	PLOGV << "ImGui::DestroyContext()";
@@ -187,105 +145,7 @@ App::~App()
 	PLOGI << "App destroyed";
 }
 
-void App::populateDrawables()
-{
-	const auto rng_seed = std::random_device{}();
-	PLOGI << "mt19937 rng seed: " << rng_seed;
-
-#define PROTOTYPE_DRAWABLE false // if set to true, don't use the factory and draw a single drawable
-#if (PROTOTYPE_DRAWABLE)
-	PLOGD << "Draw a Prototype Drawable";
-	std::mt19937 rng_{ rng_seed };
-	std::uniform_real_distribution<float> distanceDistribution_{ 0.0f, 0.0f };
-	//std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, PI * 2.0f };
-	std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, 0.0f };
-	std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, PI * 0.5f };
-	//std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, 0.0f };
-	//std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, PI * 0.08f };
-	std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, 0.0f };
-	drawables_.emplace_back(
-		std::make_unique<SkinnedBox>(
-			*graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
-			sphericalCoordinateMovementOfDrawableDistribution_
-		));
-#else
-	class DrawableFactory
-	{
-	public:
-		DrawableFactory(Graphics& graphics, const unsigned int rng_seed)
-			:
-			graphics_(graphics),
-			rng_(rng_seed)
-		{}
-
-		int count = 0;
-		std::unique_ptr<Drawable> operator()()
-		{
-			switch (drawableTypeDistribution_(rng_))
-			{
-			case 0:
-#ifdef LOG_GRAPHICS_CALLS
-				LOGV << "Drawable <Pyramid>     #" << ++count;
-#endif
-				return std::make_unique<Pyramid>(
-					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
-					sphericalCoordinateMovementOfDrawableDistribution_
-				);
-			case 1:
-#ifdef LOG_GRAPHICS_CALLS
-				LOGV << "Drawable <Box>         #" << ++count;
-#endif
-				return std::make_unique<Box>(
-					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
-					sphericalCoordinateMovementOfDrawableDistribution_, zAxisDistortionDistribution_
-				);
-			case 2:
-#ifdef LOG_GRAPHICS_CALLS
-				LOGV << "Drawable <Melon>       #" << ++count;
-#endif
-				return std::make_unique<Melon>(
-					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
-					sphericalCoordinateMovementOfDrawableDistribution_, latitudeDistribution_, longitudeDistribution_
-				);
-			case 3:
-#ifdef LOG_GRAPHICS_CALLS
-				LOGV << "Drawable <Sheet>       #" << ++count;
-#endif
-				return std::make_unique<Sheet>(
-					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_, sphericalCoordinateMovementOfDrawableDistribution_
-				);
-			case 4:
-#ifdef LOG_GRAPHICS_CALLS
-				LOGV << "Drawable <SkinnedBox> #" << ++count;
-#endif
-				return std::make_unique<SkinnedBox>(
-					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
-					sphericalCoordinateMovementOfDrawableDistribution_
-				);
-			default:
-				assert(false && "bad drawable type in factory");
-				return {};
-			}
-		}	private:
-			Graphics& graphics_;
-			std::mt19937 rng_;
-			std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, PI * 2.0f };				// adist
-			std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, PI * 0.5f };						// ddist
-			std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, PI * 0.08f };	// odist
-			std::uniform_real_distribution<float> distanceDistribution_{ 6.0f, 20.0f };									// rdist
-			std::uniform_real_distribution<float> zAxisDistortionDistribution_{ 0.4f, 3.0f };								// bdist
-			std::uniform_int_distribution<int> latitudeDistribution_{ 5, 20 };												// latdist
-			std::uniform_int_distribution<int> longitudeDistribution_{ 10, 40 };											// longdist
-			std::uniform_int_distribution<int> drawableTypeDistribution_{ 0, 4 };											// typedist
-	};
-
-	drawables_.reserve(NUMBER_OF_DRAWABLES);
-
-	PLOGD << "Populating pool of drawables";
-	std::generate_n(std::back_inserter(drawables_), NUMBER_OF_DRAWABLES, DrawableFactory(*graphics_, rng_seed));
-#endif
-}
-
+// --- Main Loop ---
 int App::run()
 {
 	bool showDemoWindow = true;
@@ -350,19 +210,11 @@ int App::run()
 			}
 			continue;
 		}
+
 		// Start the Dear ImGui frame
 		PLOGD << "Start the Dear ImGui frame";
-#ifdef LOG_GRAPHICS_CALLS
-		PLOGV << "ImGui_ImplDX11_NewFrame()";
-#endif
-		ImGui_ImplDX11_NewFrame();
-#ifdef LOG_GRAPHICS_CALLS
-		PLOGV << "ImGui_ImplWin32_NewFrame()";
-#endif
-		ImGui_ImplWin32_NewFrame();
-#ifdef LOG_GRAPHICS_CALLS
-		PLOGV << "ImGui::NewFrame()";
-#endif
+		Graphics::ImGui::NewFrame();
+		Window::ImGui::NewFrame();
 		ImGui::NewFrame();
 
 		// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
@@ -425,76 +277,48 @@ int App::run()
 	return 0;
 }
 
-void App::renderFrame(const ImVec4& clearColor)
+// --- ImGui Configuration ---
+void App::configureImGui() const
 {
-	const auto dt = timer_.mark();
-	PLOGD << "Fetch Dear ImGui IO";
-	const ImGuiIO& io = ImGui::GetIO(); (void)io;
+	// Configure Dear ImGui
+	PLOGI << "Configure Dear ImGui";
 
-	PLOGD << "Clear the buffer";
-	graphics_->clearBuffer(clearColor);
-
-#define CAMERA_ZOOM false
-#if (CAMERA_ZOOM)
-	static float timeAccumulator = 0.0f;
-	timeAccumulator += dt;
-
-	// Zoom oscillates between - 10 and -10 over 5 seconds
-	float zoomAmplitude = 16.0f; // range of movement
-	float zoomBase = -8.0f;     // center position
-	float zoomSpeed = DirectX::XM_2PI / 5.0f; // full cycle every 5 seconds
-
-	float zoomZ = zoomBase + std::sin(timeAccumulator * zoomSpeed) * (zoomAmplitude / 2.0f);
-
-	auto camera = graphics_->getCamera();
-	DirectX::XMFLOAT3 pos = camera->getPosition();
-	pos.z = zoomZ;
-	camera->setPosition(pos);
+	PLOGD << "Set Dear ImGui flags";
+	ImGuiIO& imGuiIo = ImGui::GetIO(); (void)imGuiIo;
+	imGuiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	imGuiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+#ifdef IMGUI_DOCKING
+	imGuiIo.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+	imGuiIo.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+	//imGuiIo.ConfigViewportsNoAutoMerge = true;
+	//imGuiIo.ConfigViewportsNoTaskBarIcon = true;
+	//imGuiIo.ConfigViewportsNoDefaultParent = true;
+	//imGuiIo.ConfigDockingAlwaysTabBar = true;
+	//imGuiIo.ConfigDockingTransparentPayload = true;
+	//imGuiIo.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;     // FIXME-DPI: Experimental. THIS CURRENTLY DOESN'T WORK AS EXPECTED. DON'T USE IN USER APP!
+	//imGuiIo.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports; // FIXME-DPI: Experimental.
 #endif
 
-	PLOGD << "Draw all drawables";
-	for (const auto& drawable : drawables_)
-	{
-		//drawable->update(keyboard->isKeyPressed(VK_SPACE) ? 0.0f : dt);
-		drawable->update(dt);
-		drawable->draw(*graphics_);
-	}
-
-	PLOGV << "ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData())";
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	// Setup Dear ImGui style
+	ImGui::StyleColorsDark();
+	//ImGui::StyleColorsLight();
 
 #ifdef IMGUI_DOCKING
-	// Update and Render additional Platform Windows
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
+	ImGuiStyle& style = ImGui::GetStyle();
+	if (imGuiIo.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
-		PLOGV << "ImGui::UpdatePlatformWindows()";
-		ImGui::UpdatePlatformWindows();
-		PLOGV << "ImGui::RenderPlatformWindowsDefault()";
-		ImGui::RenderPlatformWindowsDefault();
+		style.WindowRounding = 0.0f;
+		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
 #endif
+
+	PLOGI << "Setup Dear ImGui Platform backend";
+	Window::ImGui::Init(window_->getHandle());
+	Graphics::ImGui::Init(graphics_->getDevice(), graphics_->getDeviceContext());
 }
 
-std::optional<unsigned int> App::processMessages()
-{
-	MSG msg;
-	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-	{
-#ifdef LOG_WINDOW_MESSAGES
-		PLOGV << windowsMessageMap(msg.message, msg.lParam, msg.wParam).c_str();
-#endif
-		if (msg.message == WM_QUIT)
-		{
-			return msg.message;
-		}
-
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-
-	return {};
-}
-
+// --- Message Handling ---
 LRESULT App::handleMsg(const HWND hWnd, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
 {
 	if (msg == WM_NCCREATE) {
@@ -575,39 +399,39 @@ LRESULT App::handleMsgImpl(const HWND hWnd, const UINT msg, const WPARAM wParam,
 		// If Dear ImGui didn't process the mouse message, Mouse processes it.
 		if (const auto window = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA)))  // NOLINT(performance-no-int-to-ptr)
 		{
-				const auto [x, y] = MAKEPOINTS(lParam);
-				const auto [width, height] = window->getDimensions();
-				// mouse is inside client region
-				if (x >= 0 && x < width && y >= 0 && y < height)
+			const auto [x, y] = MAKEPOINTS(lParam);
+			const auto [width, height] = window->getDimensions();
+			// mouse is inside client region
+			if (x >= 0 && x < width && y >= 0 && y < height)
+			{
+				// but internal state is still outside client region
+				if (!mouse_->isInWindow())
 				{
-					// but internal state is still outside client region
-					if (!mouse_->isInWindow())
-					{
-						// fix the state
-						mouse_->onMouseEnter(x, y);
-						SetCapture(hWnd);
-					}
-					else
-					{
-						mouse_->onMouseMove(x, y);
-					}
+					// fix the state
+					mouse_->onMouseEnter(x, y);
+					SetCapture(hWnd);
 				}
-				// mouse is outside client region and internal state places it inside client region
-				else if (mouse_->isInWindow())
+				else
 				{
-					// because a button is being held down we want to keep track of the mouse position outside the client region boundaries
-					if (mouse_->isLeftPressed() || mouse_->isRightPressed() || mouse_->isMiddlePressed() || mouse_->isX1Pressed() || mouse_->isX2Pressed())
-					{
-						mouse_->onMouseMove(x, y);
-					}
-					// but no buttons ARE being held down
-					else
-					{
-						// fix the state
-						ReleaseCapture();
-						mouse_->onMouseLeave();
-					}
+					mouse_->onMouseMove(x, y);
 				}
+			}
+			// mouse is outside client region and internal state places it inside client region
+			else if (mouse_->isInWindow())
+			{
+				// because a button is being held down we want to keep track of the mouse position outside the client region boundaries
+				if (mouse_->isLeftPressed() || mouse_->isRightPressed() || mouse_->isMiddlePressed() || mouse_->isX1Pressed() || mouse_->isX2Pressed())
+				{
+					mouse_->onMouseMove(x, y);
+				}
+				// but no buttons ARE being held down
+				else
+				{
+					// fix the state
+					ReleaseCapture();
+					mouse_->onMouseLeave();
+				}
+			}
 		}
 		break;
 		// All other mouse events can be handled by the Mouse itself
@@ -648,4 +472,175 @@ LRESULT App::handleMsgImpl(const HWND hWnd, const UINT msg, const WPARAM wParam,
 		break;
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+// --- Helpers ---
+std::optional<unsigned int> App::processMessages()
+{
+	MSG msg;
+	while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+	{
+#ifdef LOG_WINDOW_MESSAGES
+		PLOGV << windowsMessageMap(msg.message, msg.lParam, msg.wParam).c_str();
+#endif
+		if (msg.message == WM_QUIT)
+		{
+			return msg.message;
+		}
+
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	return {};
+}
+
+void App::renderFrame(const ImVec4& clearColor)
+{
+	const auto dt = timer_.mark();
+	PLOGD << "Fetch Dear ImGui IO";
+	const ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+	PLOGD << "Clear the buffer";
+	graphics_->clearBuffer(clearColor);
+
+#define CAMERA_ZOOM false
+#if (CAMERA_ZOOM)
+	static float timeAccumulator = 0.0f;
+	timeAccumulator += dt;
+
+	// Zoom oscillates between - 10 and -10 over 5 seconds
+	float zoomAmplitude = 16.0f; // range of movement
+	float zoomBase = -8.0f;     // center position
+	float zoomSpeed = DirectX::XM_2PI / 5.0f; // full cycle every 5 seconds
+
+	float zoomZ = zoomBase + std::sin(timeAccumulator * zoomSpeed) * (zoomAmplitude / 2.0f);
+
+	auto camera = graphics_->getCamera();
+	DirectX::XMFLOAT3 pos = camera->getPosition();
+	pos.z = zoomZ;
+	camera->setPosition(pos);
+#endif
+
+	PLOGD << "Draw all drawables";
+	for (const auto& drawable : drawables_)
+	{
+		//drawable->update(keyboard->isKeyPressed(VK_SPACE) ? 0.0f : dt);
+		drawable->update(dt);
+		drawable->draw(*graphics_);
+	}
+
+	PLOGV << "ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData())";
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+#ifdef IMGUI_DOCKING
+	// Update and Render additional Platform Windows
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	{
+		PLOGV << "ImGui::UpdatePlatformWindows()";
+		ImGui::UpdatePlatformWindows();
+		PLOGV << "ImGui::RenderPlatformWindowsDefault()";
+		ImGui::RenderPlatformWindowsDefault();
+	}
+#endif
+}
+
+void App::populateDrawables()
+{
+	const auto rng_seed = std::random_device{}();
+	PLOGI << "mt19937 rng seed: " << rng_seed;
+
+#define PROTOTYPE_DRAWABLE false // if set to true, don't use the factory and draw a single drawable
+#if (PROTOTYPE_DRAWABLE)
+	PLOGD << "Draw a Prototype Drawable";
+	std::mt19937 rng_{ rng_seed };
+	std::uniform_real_distribution<float> distanceDistribution_{ 0.0f, 0.0f };
+	//std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, PI * 2.0f };
+	std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, 0.0f };
+	std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, PI * 0.5f };
+	//std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, 0.0f };
+	//std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, PI * 0.08f };
+	std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, 0.0f };
+	drawables_.emplace_back(
+		std::make_unique<SkinnedBox>(
+			*graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
+			sphericalCoordinateMovementOfDrawableDistribution_
+		));
+#else
+	class DrawableFactory
+	{
+	public:
+		DrawableFactory(Graphics& graphics, const unsigned int rng_seed)
+			:
+			graphics_(graphics),
+			rng_(rng_seed)
+		{
+		}
+
+		int count = 0;
+		std::unique_ptr<Drawable> operator()()
+		{
+			switch (drawableTypeDistribution_(rng_))
+			{
+			case 0:
+#ifdef LOG_GRAPHICS_CALLS
+				LOGV << "Drawable <Pyramid>     #" << ++count;
+#endif
+				return std::make_unique<Pyramid>(
+					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
+					sphericalCoordinateMovementOfDrawableDistribution_
+				);
+			case 1:
+#ifdef LOG_GRAPHICS_CALLS
+				LOGV << "Drawable <Box>         #" << ++count;
+#endif
+				return std::make_unique<Box>(
+					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
+					sphericalCoordinateMovementOfDrawableDistribution_, zAxisDistortionDistribution_
+				);
+			case 2:
+#ifdef LOG_GRAPHICS_CALLS
+				LOGV << "Drawable <Melon>       #" << ++count;
+#endif
+				return std::make_unique<Melon>(
+					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
+					sphericalCoordinateMovementOfDrawableDistribution_, latitudeDistribution_, longitudeDistribution_
+				);
+			case 3:
+#ifdef LOG_GRAPHICS_CALLS
+				LOGV << "Drawable <Sheet>       #" << ++count;
+#endif
+				return std::make_unique<Sheet>(
+					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_, sphericalCoordinateMovementOfDrawableDistribution_
+				);
+			case 4:
+#ifdef LOG_GRAPHICS_CALLS
+				LOGV << "Drawable <SkinnedBox> #" << ++count;
+#endif
+				return std::make_unique<SkinnedBox>(
+					graphics_, rng_, distanceDistribution_, sphericalCoordinatePositionDistribution_, rotationOfDrawableDistribution_,
+					sphericalCoordinateMovementOfDrawableDistribution_
+				);
+			default:
+				assert(false && "bad drawable type in factory");
+				return {};
+			}
+		}	private:
+			Graphics& graphics_;
+			std::mt19937 rng_;
+			std::uniform_real_distribution<float> sphericalCoordinatePositionDistribution_{ 0.0f, PI * 2.0f };				// adist
+			std::uniform_real_distribution<float> rotationOfDrawableDistribution_{ 0.0f, PI * 0.5f };						// ddist
+			std::uniform_real_distribution<float> sphericalCoordinateMovementOfDrawableDistribution_{ 0.0f, PI * 0.08f };	// odist
+			std::uniform_real_distribution<float> distanceDistribution_{ 6.0f, 20.0f };									// rdist
+			std::uniform_real_distribution<float> zAxisDistortionDistribution_{ 0.4f, 3.0f };								// bdist
+			std::uniform_int_distribution<int> latitudeDistribution_{ 5, 20 };												// latdist
+			std::uniform_int_distribution<int> longitudeDistribution_{ 10, 40 };											// longdist
+			std::uniform_int_distribution<int> drawableTypeDistribution_{ 0, 4 };											// typedist
+	};
+
+	drawables_.reserve(NUMBER_OF_DRAWABLES);
+
+	PLOGD << "Populating pool of drawables";
+	std::generate_n(std::back_inserter(drawables_), NUMBER_OF_DRAWABLES, DrawableFactory(*graphics_, rng_seed));
+#endif
 }

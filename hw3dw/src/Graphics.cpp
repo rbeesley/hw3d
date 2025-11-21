@@ -2,7 +2,6 @@
 #include "Graphics.hpp"
 #include "GraphicsThrowMacros.hpp"
 #include "DXErr.h"
-#include "backends/imgui_impl_dx11.h"
 
 #include "Logging.hpp"
 
@@ -35,6 +34,9 @@ namespace dx = DirectX;
 #endif
 #endif
 
+// -----------------------------
+// Lifecycle
+// -----------------------------
 Graphics::Graphics(HWND parent, int width, int height) :
 	parent_(parent),
 	width_(static_cast<float>(width)),
@@ -180,84 +182,26 @@ Graphics::Graphics(HWND parent, int width, int height) :
 	deviceContext_->RSSetViewports(1u, &viewport);
 }
 
-bool Graphics::initalizeImGuiRenderer()
+Graphics::~Graphics()
 {
-	PLOGD << "Setup Dear ImGui Render backend";
-#ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "ImGui_ImplDX11_Init";
-#endif
-	return ImGui_ImplDX11_Init(device_.Get(), deviceContext_.Get());
-}
-
-LRESULT Graphics::handleMsg([[maybe_unused]] HWND window, const UINT msg, [[maybe_unused]] const WPARAM wParam, [[maybe_unused]] const LPARAM lParam) noexcept
-{
-#ifdef LOG_WINDOW_MESSAGES
-	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
-#endif
-
-	// This is where Dear ImGui gets the first opportunity to handle keyboard messages
-	const auto& io = ImGui::GetIO();
-
-	switch(msg)
-	{
-	case WM_KEYDOWN:
-			// If Dear ImGui wants to capture the keyboard, then we want to cancel further processing in App
-		if (const auto& io = ImGui::GetIO(); io.WantCaptureKeyboard)
-		{
-			// If it wants to capture the keyboard, then we want to cancel further processing in App
-			return 1;
-		}
-		break;
-	case WM_MOUSEMOVE:
-	case WM_LBUTTONDOWN:
-	case WM_RBUTTONDOWN:
-	case WM_MBUTTONDOWN:
-	case WM_XBUTTONDOWN:
-	case WM_LBUTTONUP:
-	case WM_RBUTTONUP:
-	case WM_MBUTTONUP:
-	case WM_XBUTTONUP:
-	case WM_MOUSEWHEEL:
-			// If Dear ImGui wants to capture the mouse, then we want to cancel further processing in App
-		if (const auto& io = ImGui::GetIO(); io.WantCaptureMouse)
-		{
-			// If it wants to capture the mouse, then we want to cancel further processing in App
-			return 1;
-		}
-		break;
-	default:
-		break;
+	deviceContext_->ClearState();
+	deviceContext_->Flush();
+#if (IS_DEBUG)
+	Microsoft::WRL::ComPtr<ID3D11Debug> debug;
+	if (SUCCEEDED(device_->QueryInterface(__uuidof(ID3D11Debug), &debug))) {
+		debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
 	}
-	return 0;
-}
-// ImGui::CreateRenderTarget()
 
-void Graphics::createRenderTarget()
-{
-	HRESULT hresult;
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wlanguage-extension-token"
-#endif
-	PLOGD << "Get the address of the back buffer";
-	wrl::ComPtr<ID3D11Resource> backBuffer;
-#ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "swapChain_->GetBuffer(0, IID_PPV_ARGS(&backBuffer))";
-#endif
-	GFX_THROW_INFO(swapChain_->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
-
-	PLOGD << "Use the back buffer address to create the render target";
-#ifdef LOG_GRAPHICS_CALLS
-	PLOGV << "device_->CreateRenderTargetView(backBuffer.Get(), nullptr, renderTargetView_.GetAddressOf())";
-#endif
-	GFX_THROW_INFO(device_->CreateRenderTargetView(backBuffer.Get(), nullptr, renderTargetView_.GetAddressOf()));
-// end
-#ifdef __clang__
-#pragma clang diagnostic pop
+	//for (auto message : infoManager_.getMessages())
+	//{
+	//	PLOGI << message;
+	//}
 #endif
 }
 
+// -----------------------------
+// Frame Management
+// -----------------------------
 bool Graphics::beginFrame(const unsigned int targetWidth, const unsigned int targetHeight)
 {
 	// Handle window being minimized or screen locked
@@ -276,14 +220,14 @@ bool Graphics::beginFrame(const unsigned int targetWidth, const unsigned int tar
 	{
 
 		if (swapChain_)
-// ImGui::CleanupRenderTarget()
+			// ImGui::CleanupRenderTarget()
 		{
 			Microsoft::WRL::ComPtr<ID3D11Debug> D3D11Debug;
 			device_->QueryInterface(IID_PPV_ARGS(&D3D11Debug));
 			D3D11Debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
 			renderTargetView_.Reset();
 			renderTargetView_->Release();
-// end
+			// end
 
 			HRESULT hresult;
 			// Preserve the existing buffer count and format
@@ -295,7 +239,7 @@ bool Graphics::beginFrame(const unsigned int targetWidth, const unsigned int tar
 
 			// Get buffer and create a render-target-view.
 			ID3D11Texture2D* buffer;
-// end
+			// end
 			GFX_THROW_INFO(swapChain_->GetBuffer(0, IID_PPV_ARGS(&buffer)));
 
 			GFX_THROW_INFO(device_->CreateRenderTargetView(buffer, nullptr, renderTargetView_.GetAddressOf()));
@@ -365,6 +309,9 @@ void Graphics::clearBuffer(const float red, const float green, const float blue,
 	deviceContext_->ClearDepthStencilView(depthStencilView_.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0u);
 }
 
+// -----------------------------
+// Rendering
+// -----------------------------
 // ReSharper disable once CppMemberFunctionMayBeConst
 void Graphics::drawIndexed(const UINT count) noexcept(!IS_DEBUG)
 {
@@ -374,6 +321,9 @@ void Graphics::drawIndexed(const UINT count) noexcept(!IS_DEBUG)
 	GFX_THROW_INFO_ONLY(deviceContext_->DrawIndexed(count, 0u, 0u));
 }
 
+// -----------------------------
+// Camera & Projection
+// -----------------------------
 void Graphics::setCamera(std::unique_ptr<Camera> camera) noexcept
 {
 	activeCamera_ = std::move(camera);
@@ -384,16 +334,59 @@ Camera* Graphics::getCamera() const noexcept
 	return activeCamera_.get();
 }
 
-void Graphics::setProjection(DirectX::FXMMATRIX& projection) noexcept
+void Graphics::setProjection(dx::FXMMATRIX& projection) noexcept
 {
 	projection_ = projection;
 }
 
-DirectX::XMMATRIX Graphics::getProjection() const noexcept
+dx::XMMATRIX Graphics::getProjection() const noexcept
 {
 	return projection_;
 }
 
+// -----------------------------
+// Message Handling
+// -----------------------------
+LRESULT Graphics::handleMsg([[maybe_unused]] HWND window, const UINT msg, [[maybe_unused]] const WPARAM wParam, [[maybe_unused]] const LPARAM lParam) noexcept
+{
+#ifdef LOG_WINDOW_MESSAGES
+	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
+#endif
+
+	switch(msg)
+	{
+	case WM_KEYDOWN:
+		if (const auto& io = ::ImGui::GetIO(); io.WantCaptureKeyboard)
+		{
+			// If Dear ImGui wants to capture the keyboard, then we want to cancel further processing in App
+			return 1;
+		}
+		break;
+	case WM_MOUSEMOVE:
+	case WM_LBUTTONDOWN:
+	case WM_RBUTTONDOWN:
+	case WM_MBUTTONDOWN:
+	case WM_XBUTTONDOWN:
+	case WM_LBUTTONUP:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONUP:
+	case WM_XBUTTONUP:
+	case WM_MOUSEWHEEL:
+		if (const auto& io = ::ImGui::GetIO(); io.WantCaptureMouse)
+		{
+			// If Dear ImGui wants to capture the mouse, then we want to cancel further processing in App
+			return 1;
+		}
+		break;
+	default:
+		break;
+	}
+	return 0;
+}
+
+// -----------------------------
+// Accessors
+// -----------------------------
 ID3D11Device* Graphics::getDevice() const noexcept
 {
 	return device_.Get();
@@ -404,34 +397,40 @@ ID3D11DeviceContext* Graphics::getDeviceContext() const noexcept
 	return deviceContext_.Get();
 }
 
-Graphics::~Graphics()
+// -----------------------------
+// Internal Helpers
+// -----------------------------
+// ImGui::CreateRenderTarget()
+void Graphics::createRenderTarget()
 {
-	deviceContext_->ClearState();
-	deviceContext_->Flush();
-#if (IS_DEBUG)
-	Microsoft::WRL::ComPtr<ID3D11Debug> debug;
-	if (SUCCEEDED(device_->QueryInterface(__uuidof(ID3D11Debug), &debug))) {
-		debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL | D3D11_RLDO_IGNORE_INTERNAL);
-	}
+	HRESULT hresult;
 
-	//for (auto message : infoManager_.getMessages())
-	//{
-	//	PLOGI << message;
-	//}
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wlanguage-extension-token"
+#endif
+	PLOGD << "Get the address of the back buffer";
+	wrl::ComPtr<ID3D11Resource> backBuffer;
+#ifdef LOG_GRAPHICS_CALLS
+	PLOGV << "swapChain_->GetBuffer(0, IID_PPV_ARGS(&backBuffer))";
+#endif
+	GFX_THROW_INFO(swapChain_->GetBuffer(0, IID_PPV_ARGS(&backBuffer)));
+
+	PLOGD << "Use the back buffer address to create the render target";
+#ifdef LOG_GRAPHICS_CALLS
+	PLOGV << "device_->CreateRenderTargetView(backBuffer.Get(), nullptr, renderTargetView_.GetAddressOf())";
+#endif
+	GFX_THROW_INFO(device_->CreateRenderTargetView(backBuffer.Get(), nullptr, renderTargetView_.GetAddressOf()));
+// end
+#ifdef __clang__
+#pragma clang diagnostic pop
 #endif
 }
 
-void Graphics::renderImGuiPlatform()
-{
-	ImGui::RenderPlatformWindowsDefault();
-}
-
-void Graphics::shutdownImGuiRenderer()
-{
-	ImGui_ImplDX11_Shutdown();
-}
-
-// Graphics Exception
+// -----------------------------
+// Graphics Exceptions
+// -----------------------------
+// Exception Helpers
 std::string Graphics::GraphicsException::toNarrow(const wchar_t* s, const char fallback, const std::locale& loc) noexcept
 {
 	std::ostringstream out;
@@ -441,6 +440,10 @@ std::string Graphics::GraphicsException::toNarrow(const wchar_t* s, const char f
 	return out.str();
 }
 
+// -----------------------------
+// Exception Types
+// -----------------------------
+// HResult Exception
 Graphics::HResultException::HResultException(const int line, const char* file, const HRESULT hresult, const std::vector<std::string>& infoMessages) noexcept
 	:
 	GraphicsException(line, file),
@@ -507,6 +510,7 @@ std::string Graphics::HResultException::getErrorInfo() const noexcept
 	return infoMessage_;
 }
 
+// Info Exception
 Graphics::InfoException::InfoException(const int line, const char* file, const std::vector<std::string>& infoMessages) noexcept
 	:
 	GraphicsException(line, file)
@@ -542,6 +546,7 @@ std::string Graphics::InfoException::getErrorInfo() const noexcept
 	return infoMessage_;
 }
 
+// Device Removed Exception
 const char* Graphics::DeviceRemovedException::getType() const noexcept
 {
 	return "Atum Graphics Exception [Device Removed] (DXGI_ERROR_DEVICE_REMOVED)";
