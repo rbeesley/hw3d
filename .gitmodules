@@ -5,3 +5,6 @@
 	path = hw3dw/3rdParty/imgui
 	url = git@github.com:ocornut/imgui.git
 	branch = docking
+[submodule "hw3dw/3rdParty/windows_thunks"]
+	path = hw3dw/3rdParty/windows_thunks
+	url = git@github.com:tobias-loew/windows_thunks.git
