@@ -8,3 +8,9 @@
 [submodule "hw3dw/3rdParty/windows_thunks"]
 	path = hw3dw/3rdParty/windows_thunks
 	url = git@github.com:tobias-loew/windows_thunks.git
+[submodule "hw3dw/3rdParty/boost/type_traits"]
+	path = hw3dw/3rdParty/boost/type_traits
+	url = git@github.com:boostorg/type_traits.git
+[submodule "hw3dw/3rdParty/boost/mpl"]
+	path = hw3dw/3rdParty/boost/mpl
+	url = git@github.com:boostorg/mpl.git
