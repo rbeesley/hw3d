@@ -14,3 +14,6 @@
 [submodule "hw3dw/3rdParty/boost/mpl"]
 	path = hw3dw/3rdParty/boost/mpl
 	url = git@github.com:boostorg/mpl.git
+[submodule "hw3dw/3rdParty/boost/function_types"]
+	path = hw3dw/3rdParty/boost/function_types
+	url = git@github.com:boostorg/function_types.git
