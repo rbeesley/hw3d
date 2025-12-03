@@ -20,3 +20,6 @@
 [submodule "hw3dw/3rdParty/boost/config"]
 	path = hw3dw/3rdParty/boost/config
 	url = git@github.com:boostorg/config.git
+[submodule "hw3dw/3rdParty/boost/preprocessor"]
+	path = hw3dw/3rdParty/boost/preprocessor
+	url = git@github.com:boostorg/preprocessor.git
