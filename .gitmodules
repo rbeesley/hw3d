@@ -26,3 +26,6 @@
 [submodule "hw3dw/3rdParty/boost/detail"]
 	path = hw3dw/3rdParty/boost/detail
 	url = git@github.com:boostorg/detail.git
+[submodule "hw3dw/3rdParty/boost/static_assert"]
+	path = hw3dw/3rdParty/boost/static_assert
+	url = git@github.com:boostorg/static_assert.git
