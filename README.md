@@ -2,7 +2,13 @@
 Based on ChiliTomatoNoodle's [C++ 3D DirectX Programming tutorial](https://www.youtube.com/playlist?list=PLqCJpWy5Fohd3S7ICFXwUomYW0Wv67pDD). This project follow the same basic milestones, but this implementation adds additional capabilites and architecture not used by the source tutorial.
 
 Checkout the source, including submodules:
+ - https:  
+`git clone --recurse-submodules -- https://github.com/rbeesley/hw3d.git`
+
+ - ssh:  
 `git clone --recurse-submodules -- git@github.com:rbeesley/hw3d.git`
+
+Submodules are added using https, so they should work universally.
 
 ## Solution structure
 The solution has two projects, hw3d and hw3dw. The file naming convention loosely follows the binary names generated with an Unreal project.
