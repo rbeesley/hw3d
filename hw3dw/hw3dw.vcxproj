@@ -103,7 +103,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;$(ProjectDir)3rdParty\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;$(ProjectDir)3rdParty\imgui;$(ProjectDir)3rdParty\boost\mpl\include;$(ProjectDir)3rdParty\boost\type_traits\include;$(ProjectDir)3rdParty\boost\function_types\include;$(ProjectDir)3rdParty\boost\config\include;$(ProjectDir)3rdParty\boost\preprocessor\include;$(ProjectDir)3rdParty\boost\detail\include;$(ProjectDir)3rdParty\boost\static_assert\include;$(ProjectDir)3rdParty\windows_thunks\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -124,7 +124,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;$(ProjectDir)3rdParty\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;$(ProjectDir)3rdParty\imgui;$(ProjectDir)3rdParty\boost\mpl\include;$(ProjectDir)3rdParty\boost\type_traits\include;$(ProjectDir)3rdParty\boost\function_types\include;$(ProjectDir)3rdParty\boost\config\include;$(ProjectDir)3rdParty\boost\preprocessor\include;$(ProjectDir)3rdParty\boost\detail\include;$(ProjectDir)3rdParty\boost\static_assert\include;$(ProjectDir)3rdParty\windows_thunks\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -150,7 +150,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;$(ProjectDir)3rdParty\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;$(ProjectDir)3rdParty\imgui;$(ProjectDir)3rdParty\boost\mpl\include;$(ProjectDir)3rdParty\boost\type_traits\include;$(ProjectDir)3rdParty\boost\function_types\include;$(ProjectDir)3rdParty\boost\config\include;$(ProjectDir)3rdParty\boost\preprocessor\include;$(ProjectDir)3rdParty\boost\detail\include;$(ProjectDir)3rdParty\boost\static_assert\include;$(ProjectDir)3rdParty\windows_thunks\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -173,7 +173,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <FloatingPointModel>Fast</FloatingPointModel>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;$(ProjectDir)3rdParty\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)3rdParty;$(ProjectDir)lib\DXErr;$(ProjectDir)3rdParty\imgui;$(ProjectDir)3rdParty\boost\mpl\include;$(ProjectDir)3rdParty\boost\type_traits\include;$(ProjectDir)3rdParty\boost\function_types\include;$(ProjectDir)3rdParty\boost\config\include;$(ProjectDir)3rdParty\boost\preprocessor\include;$(ProjectDir)3rdParty\boost\detail\include;$(ProjectDir)3rdParty\boost\static_assert\include;$(ProjectDir)3rdParty\windows_thunks\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

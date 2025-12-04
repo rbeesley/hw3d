@@ -1,7 +1,31 @@
 [submodule "hw3dw/3rdParty/plog"]
 	path = hw3dw/3rdParty/plog
-	url = git@github.com:rbeesley/plog.git
+	url = https://github.com/rbeesley/plog.git
 [submodule "hw3dw/3rdParty/imgui"]
 	path = hw3dw/3rdParty/imgui
-	url = git@github.com:ocornut/imgui.git
+	url = https://github.com/ocornut/imgui.git
 	branch = docking
+[submodule "hw3dw/3rdParty/windows_thunks"]
+	path = hw3dw/3rdParty/windows_thunks
+	url = https://github.com/tobias-loew/windows_thunks.git
+[submodule "hw3dw/3rdParty/boost/type_traits"]
+	path = hw3dw/3rdParty/boost/type_traits
+	url = https://github.com/boostorg/type_traits.git
+[submodule "hw3dw/3rdParty/boost/mpl"]
+	path = hw3dw/3rdParty/boost/mpl
+	url = https://github.com/boostorg/mpl.git
+[submodule "hw3dw/3rdParty/boost/function_types"]
+	path = hw3dw/3rdParty/boost/function_types
+	url = https://github.com/boostorg/function_types.git
+[submodule "hw3dw/3rdParty/boost/config"]
+	path = hw3dw/3rdParty/boost/config
+	url = https://github.com/boostorg/config.git
+[submodule "hw3dw/3rdParty/boost/preprocessor"]
+	path = hw3dw/3rdParty/boost/preprocessor
+	url = https://github.com/boostorg/preprocessor.git
+[submodule "hw3dw/3rdParty/boost/detail"]
+	path = hw3dw/3rdParty/boost/detail
+	url = https://github.com/boostorg/detail.git
+[submodule "hw3dw/3rdParty/boost/static_assert"]
+	path = hw3dw/3rdParty/boost/static_assert
+	url = https://github.com/boostorg/static_assert.git

@@ -17,14 +17,10 @@
 #include "SkinnedBox.hpp"
 #include "Surface.hpp"
 
-#define IMGUI_DOCKING
-
 #if defined(LOG_WINDOW_MESSAGES) || defined(LOG_WINDOW_MOUSE_MESSAGES) // defined in LoggingConfig.hpp
 #include "WindowsMessageMap.hpp"
 const static class WindowsMessageMap windowsMessageMap;
 #endif
-
-extern bool g_allowConsoleLogging;
 
 constexpr size_t NUMBER_OF_DRAWABLES = 180;
 
@@ -34,6 +30,8 @@ constexpr int WIDTH = 1280;
 constexpr int HEIGHT = 720;
 
 constexpr float aspectRatio = static_cast<float>(WIDTH) / static_cast<float>(HEIGHT);
+
+HWND App::s_mainWindow = nullptr;
 
 // --- Exception Definitions ---
 App::AppException::AppException(const int line, const char* file, const std::string& msg) noexcept
@@ -54,14 +52,19 @@ App::App(bool allowConsoleLogging)
 {
 	PLOGI << "Constructing App";
 
+	// Create a small context that holds pointers to App and Window.
+	// This context is passed to CreateWindowEx via Window::create and stored in GWLP_USERDATA.
+	auto ctx = new Window::WndContext{ static_cast<void*>(this), nullptr };
+	window_->create(ctx);
+
 	if (!window_->getHandle())
 	{
 		throw APP_EXCEPT("Failed to create Window");
 	}
 
-	graphics_ = &window_->getGraphics();
-	mouse_ = &window_->getMouse();
-	keyboard_ = &window_->getKeyboard();
+	graphics_ = &(window_->getGraphics());
+	mouse_ = &(window_->getMouse());
+	keyboard_ = &(window_->getKeyboard());
 
 #if (IS_DEBUG)
 	if (allowConsoleLogging)
@@ -284,19 +287,19 @@ void App::configureImGui() const
 	PLOGI << "Configure Dear ImGui";
 
 	PLOGD << "Set Dear ImGui flags";
-	ImGuiIO& imGuiIo = ImGui::GetIO(); (void)imGuiIo;
-	imGuiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	imGuiIo.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 #ifdef IMGUI_DOCKING
-	imGuiIo.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-	imGuiIo.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
-	//imGuiIo.ConfigViewportsNoAutoMerge = true;
-	//imGuiIo.ConfigViewportsNoTaskBarIcon = true;
-	//imGuiIo.ConfigViewportsNoDefaultParent = true;
-	//imGuiIo.ConfigDockingAlwaysTabBar = true;
-	//imGuiIo.ConfigDockingTransparentPayload = true;
-	//imGuiIo.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;     // FIXME-DPI: Experimental. THIS CURRENTLY DOESN'T WORK AS EXPECTED. DON'T USE IN USER APP!
-	//imGuiIo.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports; // FIXME-DPI: Experimental.
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+	//io.ConfigViewportsNoAutoMerge = true;
+	//io.ConfigViewportsNoTaskBarIcon = true;
+	//io.ConfigViewportsNoDefaultParent = true;
+	//io.ConfigDockingAlwaysTabBar = true;
+	//io.ConfigDockingTransparentPayload = true;
+	//io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleFonts;     // FIXME-DPI: Experimental. THIS CURRENTLY DOESN'T WORK AS EXPECTED. DON'T USE IN USER APP!
+	//io.ConfigFlags |= ImGuiConfigFlags_DpiEnableScaleViewports; // FIXME-DPI: Experimental.
 #endif
 
 	// Setup Dear ImGui style
@@ -306,7 +309,7 @@ void App::configureImGui() const
 #ifdef IMGUI_DOCKING
 	// When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
 	ImGuiStyle& style = ImGui::GetStyle();
-	if (imGuiIo.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
 		style.WindowRounding = 0.0f;
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
@@ -319,24 +322,19 @@ void App::configureImGui() const
 }
 
 // --- Message Handling ---
-LRESULT App::handleMsg(const HWND hWnd, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
+// Thin wrapper used by lunaticpp::thunk instantiation.
+// Keep this non-noexcept so the thunk template's static_assert passes.
+LRESULT App::thunkEntry(const HWND hWnd, const UINT msg, const WPARAM wParam, const LPARAM lParam)
 {
-	if (msg == WM_NCCREATE) {
-		CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(lParam);
-		App* app = static_cast<App*>(cs->lpCreateParams);
-		SetWindowLongPtr(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(app));
-	}
-
-	App* app = reinterpret_cast<App*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
-	if (app) {
-		return app->handleMsgImpl(hWnd, msg, wParam, lParam);
-	}
-
-	return DefWindowProc(hWnd, msg, wParam, lParam);
+#ifdef LOG_WINDOW_MESSAGES
+	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
+#endif
+	// Forward to the real instance handler which may be noexcept.
+	return WndProcHandler(hWnd, msg, wParam, lParam);
 }
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
-LRESULT App::handleMsgImpl(const HWND hWnd, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
+LRESULT App::WndProcHandler(const HWND hWnd, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES
 	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
@@ -347,12 +345,44 @@ LRESULT App::handleMsgImpl(const HWND hWnd, const UINT msg, const WPARAM wParam,
 		PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
 	}
 #endif
-#ifdef LOG_GRAPHICS_MESSAGES
-	PLOGV << "ImGui_ImplWin32_WndProcHandler";
-#endif
-	if (ImGui_ImplWin32_WndProcHandler(hWnd, msg, wParam, lParam))
+
+	// Dear ImGui gets the first opportunity to handle mouse and keyboard messages
+	// We call the ImGui handler here and later we check to see if ImGui wanted to capture the mouse or keyboard
+	switch (msg)
 	{
-		return true;
+		/* ImGui */
+	case WM_MOUSEMOVE:
+	case WM_NCMOUSEMOVE:
+	case WM_MOUSELEAVE:
+	case WM_NCMOUSELEAVE:
+	case WM_DESTROY:
+	case WM_LBUTTONDOWN: case WM_LBUTTONDBLCLK:
+	case WM_RBUTTONDOWN: case WM_RBUTTONDBLCLK:
+	case WM_MBUTTONDOWN: case WM_MBUTTONDBLCLK:
+	case WM_XBUTTONDOWN: case WM_XBUTTONDBLCLK:
+	case WM_LBUTTONUP:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONUP:
+	case WM_XBUTTONUP:
+	case WM_MOUSEWHEEL:
+	case WM_MOUSEHWHEEL:
+	case WM_KEYDOWN:
+	case WM_KEYUP:
+	case WM_SYSKEYDOWN:
+	case WM_SYSKEYUP:
+	case WM_SETFOCUS:
+	case WM_KILLFOCUS:
+	case WM_INPUTLANGCHANGE:
+	case WM_CHAR:
+	case WM_SETCURSOR:
+	case WM_DEVICECHANGE:
+	case WM_DISPLAYCHANGE:
+		if (window_ && Window::ImGui::WndProcHandler(hWnd, msg, wParam, lParam)) {
+			return 0;
+		}
+		break;
+	default:
+		break;
 	}
 
 	switch (msg)
@@ -371,7 +401,10 @@ LRESULT App::handleMsgImpl(const HWND hWnd, const UINT msg, const WPARAM wParam,
 	case WM_SYSCOMMAND:
 	case WM_DESTROY:
 	case WM_DPICHANGED:
-		return window_->forwardMsg(hWnd, msg, wParam, lParam);
+		if (window_ && window_->WndProcHandler(hWnd, msg, wParam, lParam)) {
+			return 0;
+		}
+		break;
 
 		/* Keyboard */
 	case WM_KEYDOWN:
@@ -379,62 +412,32 @@ LRESULT App::handleMsgImpl(const HWND hWnd, const UINT msg, const WPARAM wParam,
 	case WM_KEYUP:
 	case WM_SYSKEYUP:
 	case WM_CHAR:
-		// Dear ImGui, a member of Graphics, gets the first opportunity to handle keyboard messages
-		if (graphics_->handleMsg(hWnd, msg, wParam, lParam))
+		// Dear ImGui gets the first opportunity to handle keyboard messages
+		if (Window::ImGui::IsImGuiReady() && ::ImGui::GetIO().WantCaptureKeyboard)
 		{
 			return 0;
 		}
 		// If Dear ImGui didn't process the keyboard message, Keyboard processes it.
-		keyboard_->handleMsg(hWnd, msg, wParam, lParam);
-		break;
-
-		/* Mouse */
-		// WM_MOUSEMOVE is dependent on both the Window and the Mouse, so it is handled entirely in the App class
-	case WM_MOUSEMOVE:
-		// Dear ImGui, a member of Graphics, gets the first opportunity to handle Mouse messages
-		if (graphics_->handleMsg(hWnd, msg, wParam, lParam))
+		if (keyboard_ && keyboard_->WndProcHandler(hWnd, msg, wParam, lParam))
 		{
 			return 0;
 		}
-		// If Dear ImGui didn't process the mouse message, Mouse processes it.
-		if (const auto window = reinterpret_cast<Window*>(GetWindowLongPtr(hWnd, GWLP_USERDATA)))  // NOLINT(performance-no-int-to-ptr)
+		break;
+
+		/* Mouse */
+	case WM_MOUSEMOVE:
+		// WM_MOUSEMOVE requires access to both the mouse and window, so it is handled by the window class
+		// Dear ImGui gets the first opportunity to handle mouse messages
+		if (Window::ImGui::IsImGuiReady() && ::ImGui::GetIO().WantCaptureMouse)
 		{
-			const auto [x, y] = MAKEPOINTS(lParam);
-			const auto [width, height] = window->getDimensions();
-			// mouse is inside client region
-			if (x >= 0 && x < width && y >= 0 && y < height)
-			{
-				// but internal state is still outside client region
-				if (!mouse_->isInWindow())
-				{
-					// fix the state
-					mouse_->onMouseEnter(x, y);
-					SetCapture(hWnd);
-				}
-				else
-				{
-					mouse_->onMouseMove(x, y);
-				}
-			}
-			// mouse is outside client region and internal state places it inside client region
-			else if (mouse_->isInWindow())
-			{
-				// because a button is being held down we want to keep track of the mouse position outside the client region boundaries
-				if (mouse_->isLeftPressed() || mouse_->isRightPressed() || mouse_->isMiddlePressed() || mouse_->isX1Pressed() || mouse_->isX2Pressed())
-				{
-					mouse_->onMouseMove(x, y);
-				}
-				// but no buttons ARE being held down
-				else
-				{
-					// fix the state
-					ReleaseCapture();
-					mouse_->onMouseLeave();
-				}
-			}
+			return 0;
+		}
+		// If Dear ImGui didn't process the mouse message, Window processes it.
+		if (window_ && window_->WndProcHandler(hWnd, msg, wParam, lParam))
+		{
+			return 0;
 		}
 		break;
-		// All other mouse events can be handled by the Mouse itself
 	case WM_LBUTTONDOWN:
 	case WM_RBUTTONDOWN:
 	case WM_MBUTTONDOWN:
@@ -445,13 +448,16 @@ LRESULT App::handleMsgImpl(const HWND hWnd, const UINT msg, const WPARAM wParam,
 	case WM_XBUTTONUP:
 	case WM_MOUSEWHEEL:
 	case WM_MOUSEHWHEEL:
-		// Dear ImGui, a member of Graphics, gets the first opportunity to handle Mouse messages
-		if (graphics_->handleMsg(hWnd, msg, wParam, lParam))
+		// Dear ImGui gets the first opportunity to handle mouse messages
+		if (Window::ImGui::IsImGuiReady() && ::ImGui::GetIO().WantCaptureMouse)
 		{
 			return 0;
 		}
-		// If Dear ImGui didn't process the mouse message, Mouse processes it.
-		mouse_->handleMsg(hWnd, msg, wParam, lParam);
+		// If Dear ImGui didn't process the mouse message, Window processes it.
+		if (mouse_ && mouse_->WndProcHandler(hWnd, msg, wParam, lParam))
+		{
+			return 0;
+		}
 		break;
 
 		/* App custom */
@@ -460,6 +466,7 @@ LRESULT App::handleMsgImpl(const HWND hWnd, const UINT msg, const WPARAM wParam,
 		break;
 	case WM_APP_CLOSE:
 		PLOGW << "Received WM_APP_CLOSE message";
+		::PostQuitMessage(0);
 		break;
 	case WM_APP_CONSOLE_CLOSE:
 		PLOGW << "Handling WM_APP_CONSOLE_CLOSE message";
@@ -467,11 +474,23 @@ LRESULT App::handleMsgImpl(const HWND hWnd, const UINT msg, const WPARAM wParam,
 		break;
 	case WM_APP_WINDOW_CLOSE:
 		PLOGW << "Received WM_APP_WINDOW_CLOSE message";
+		::PostQuitMessage(0);
 		break;
 	default:
 		break;
 	}
 	return DefWindowProc(hWnd, msg, wParam, lParam);
+}
+
+// --- Accessors ---
+void App::setMainWindowHandle(HWND mainWindow)
+{
+	s_mainWindow = std::ref(mainWindow);
+}
+
+HWND App::getMainWindowHandle()
+{
+	return s_mainWindow;
 }
 
 // --- Helpers ---
@@ -486,6 +505,31 @@ std::optional<unsigned int> App::processMessages()
 		if (msg.message == WM_QUIT)
 		{
 			return msg.message;
+		}
+
+		// If this is a thread message (no HWND) that we want handled by our window,
+		// repost it to the Window's HWND so DispatchMessage will call the WndProc.
+		// Example: forward WM_APP_WINDOW_CLOSE posted with ::PostMessage(nullptr, ...)
+		if (msg.hwnd == nullptr) {
+			PLOGV << "Received thread message (no HWND)";
+			if (const auto hWnd = getMainWindowHandle(); hWnd != nullptr)
+			{
+				switch (msg.message)
+				{
+				case WM_APP:
+				case WM_APP_CLOSE:
+				case WM_APP_CONSOLE_CLOSE:
+				case WM_APP_WINDOW_CLOSE:
+					::PostMessage(hWnd, msg.message, msg.wParam, msg.lParam);
+					// Do not DispatchMessage the original thread message (we reposted it).
+					// Continue to next message.
+					continue;
+
+				default:
+					// For other thread messages you don't want forwarded, let them be dispatched normally.
+					break;
+				}
+			}
 		}
 
 		TranslateMessage(&msg);
@@ -525,8 +569,8 @@ void App::renderFrame(const ImVec4& clearColor)
 	PLOGD << "Draw all drawables";
 	for (const auto& drawable : drawables_)
 	{
-		//drawable->update(keyboard->isKeyPressed(VK_SPACE) ? 0.0f : dt);
-		drawable->update(dt);
+		drawable->update(keyboard_->isKeyPressed(VK_SPACE) ? 0.0f : dt);
+		//drawable->update(dt);
 		drawable->draw(*graphics_);
 	}
 

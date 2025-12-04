@@ -11,7 +11,6 @@
 
 // Global Variables:
 HINSTANCE g_rootInstance; // current instance
-bool g_allowConsoleLogging = false;
 
 std::vector<std::wstring> splitCommandLine(LPWSTR commandLine);
 bool isNumber(const std::wstring& str);
@@ -54,6 +53,8 @@ int APIENTRY WinMain(
 		std::wstring commandLine(lpCommandLine, lpCommandLine + strlen(lpCommandLine));
 		std::vector<std::wstring> args = splitCommandLine(&commandLine[0]);
 
+		bool allowConsoleLogging = false;
+
 #if (IS_DEBUG)
 		const DWORD processId = GetCurrentProcessId();
 		const auto [parentProcessId, parentProcessName] = getParentProcessInfo(processId);
@@ -62,7 +63,7 @@ int APIENTRY WinMain(
 		if (parentProcessName.find(L"msvsmon.exe") != std::wstring::npos)
 		{
 			PLOGI << "Launched from Visual Studio.";
-			g_allowConsoleLogging = TRUE;
+			allowConsoleLogging = true;
 		}
 		else if (!args.empty() && args.size() >= 2 && args[0].compare(L"--pid") == 0 && isNumber(args[1]))
 		{
@@ -72,12 +73,12 @@ int APIENTRY WinMain(
 			if (parentProcessId == commandLineParentProcessId)
 			{
 				PLOGI << "Launched from command line wrapper.";
-				g_allowConsoleLogging = TRUE;
+				allowConsoleLogging = true;
 			}
 		}
 #endif
 
-		App app(g_allowConsoleLogging);
+		App app(allowConsoleLogging);
 		PLOGI << "Running App";
 		return app.run();
 

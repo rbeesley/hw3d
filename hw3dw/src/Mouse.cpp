@@ -11,7 +11,7 @@ const static WindowsMessageMap windowsMessageMap;
 
 #if defined(LOG_MOUSE_MESSAGES) // defined in LoggingConfig.h
 #include <format>
-#include "VirtualKeyMap.h"
+#include "VirtualKeyMap.hpp"
 
 const static VirtualKeyMap virtualKeyMap;
 #endif
@@ -47,7 +47,7 @@ void Mouse::clear() noexcept
 	eventBuffer_ = std::queue<Event>();
 }
 
-LRESULT Mouse::handleMsg([[maybe_unused]] HWND window, const UINT msg, const WPARAM wParam, LPARAM l_param) noexcept
+LRESULT Mouse::WndProcHandler([[maybe_unused]] HWND window, const UINT msg, const WPARAM wParam, LPARAM l_param) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES
 	PLOGV << windowsMessageMap(msg, l_param, wParam).c_str();

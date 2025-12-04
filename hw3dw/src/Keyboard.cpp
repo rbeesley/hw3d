@@ -11,7 +11,7 @@ const static WindowsMessageMap windowsMessageMap;
 
 #if defined(LOG_KEYBOARD_MESSAGES) || defined(LOG_KEYBOARD_CHARS)  // defined in LoggingConfig.h
 #include <format>
-#include "VirtualKeyMap.h"
+#include "VirtualKeyMap.hpp"
 
 const static VirtualKeyMap virtualKeyMap;
 #endif
@@ -44,7 +44,7 @@ void Keyboard::clearEventBuffer() noexcept
 	eventBuffer_ = std::queue<Event>();
 }
 
-LRESULT Keyboard::handleMsg([[maybe_unused]] HWND window, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
+LRESULT Keyboard::WndProcHandler([[maybe_unused]] HWND window, const UINT msg, const WPARAM wParam, const LPARAM lParam) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES
 	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();

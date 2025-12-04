@@ -29,9 +29,6 @@ HINSTANCE Console::ConsoleClass::getInstance() noexcept
 	return consoleClass_.instanceHandle_;
 }
 
-
-extern bool g_allowConsoleLogging;
-
 bool Console::freeConsole_ = true;
 HWND Console::appWindowHandle_;
 
