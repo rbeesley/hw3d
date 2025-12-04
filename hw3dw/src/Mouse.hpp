@@ -102,7 +102,7 @@ private:
 
 public:
 	struct Position { int x, y; };
-	LRESULT handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM l_param) noexcept;
+	LRESULT WndProcHandler(HWND window, UINT msg, WPARAM wParam, LPARAM l_param) noexcept;
 	[[nodiscard]] std::pair<int, int> getPos() const noexcept;
 	[[nodiscard]] Position pos() const noexcept;
 	[[nodiscard]] int getPosX() const noexcept;

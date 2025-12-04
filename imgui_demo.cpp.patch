@@ -1,0 +1,22 @@
+diff --git "a/imgui_demo.cpp" "b/imgui_demo.cpp"
+index 05b39a39f..c407e031e 100644
+--- "a/imgui_demo.cpp"
++++ "b/imgui_demo.cpp"
+@@ -114,6 +114,8 @@ Index of this file:
+ #include <stdio.h>          // vsnprintf, sscanf, printf
+ #include <stdlib.h>         // NULL, malloc, free, atoi
+ #include <stdint.h>         // intptr_t
++
++#include "src/AtumWindows.hpp"
+ #if !defined(_MSC_VER) || _MSC_VER >= 1800
+ #include <inttypes.h>       // PRId64/PRIu64, not avail in some MinGW headers.
+ #endif
+@@ -8391,7 +8393,7 @@ static void ShowExampleMenuFile()
+     }
+     if (ImGui::MenuItem("Checked", NULL, true)) {}
+     ImGui::Separator();
+-    if (ImGui::MenuItem("Quit", "Alt+F4")) {}
++    if (ImGui::MenuItem("Quit", "Alt+F4")) { ::PostMessage(nullptr, WM_APP_CLOSE, WPARAM(0), LPARAM(0)); }
+ }
+ 
+ //-----------------------------------------------------------------------------

@@ -67,7 +67,7 @@ private:
 	[[nodiscard]] bool isKeyEmpty() const noexcept;
 	void clearEventBuffer() noexcept;
 public:
-	LRESULT handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+	LRESULT WndProcHandler(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 	[[nodiscard]] bool isKeyPressed(unsigned char keyCode) const noexcept;
 	void onKeyPressed(unsigned char keyCode) noexcept;
 	void onKeyReleased(unsigned char keyCode) noexcept;

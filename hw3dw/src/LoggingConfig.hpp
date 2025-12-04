@@ -34,3 +34,6 @@
 
 /* Log the Graphics calls - App.cpp, Drawable.cpp, DrawableStaticStorage.hpp, Graphics.cpp, Window.cpp  */
 //#define LOG_GRAPHICS_CALLS
+
+/* Log Dear ImGui calls - App.cpp */
+//#define LOG_IMGUI_CALLS

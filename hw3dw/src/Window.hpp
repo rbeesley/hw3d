@@ -10,7 +10,19 @@
 #include "Mouse.hpp"
 #include "Keyboard.hpp"
 
-#include "backends/imgui_impl_win32.h"
+#include "imgui/backends/imgui_impl_win32.h"
+
+// -----------------------------
+// windows_thunks forward declarations (global scope)
+// -----------------------------
+#include "windows_thunks/include/thunks.hpp"
+extern "C" {
+    // Opaque handle type returned by the thunk library
+    typedef void* ThunkHandle;
+
+    // Function pointer type returned by CreateWindowProcThunk (a WNDPROC)
+    typedef LRESULT(CALLBACK* ThunkWndProc)(HWND, UINT, WPARAM, LPARAM);
+} // extern "C"
 
 // -----------------------------
 // Window Class Declaration
@@ -32,12 +44,18 @@ public:
         static void NewFrame() { ImGui_ImplWin32_NewFrame(); }
         static void Init(HWND hwnd) { ImGui_ImplWin32_Init(hwnd); }
         static void Shutdown() { ImGui_ImplWin32_Shutdown(); }
+        static bool IsImGuiReady();
         static void UpdatePlatformWindows() { ::ImGui::UpdatePlatformWindows(); }
         static void RenderPlatformWindowsDefault() { ::ImGui::RenderPlatformWindowsDefault(); }
+        static LRESULT WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
     };
 
     // Message Handling
-    LRESULT forwardMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+    LRESULT CALLBACK WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+    struct WndContext {
+        void* appPtr;    // App*
+        void* windowPtr; // Window* (filled by Window::create)
+    };
 
     // Accessors
     [[nodiscard]] HWND getHandle() const noexcept;
@@ -46,9 +64,9 @@ public:
     Keyboard& getKeyboard() const noexcept;
 
     // Window Management
+    void create(void* createParams);
     void setTitle(const std::wstring& title) const;
     HWND setActive(HWND window) const;
-    void createWindow(LPCWSTR name);
 
     // Dimensions and Position
     struct WindowDimensions { LONG width; LONG height; };
@@ -107,15 +125,17 @@ private:
         HINSTANCE instanceHandle_;
     };
 
+    // Window Management
+    HWND createWindow(void* createParams);
+
     // Message Handlers
-    static LRESULT CALLBACK handleMsgSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-    static LRESULT CALLBACK handleMsgThunk(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-    LRESULT CALLBACK handleMsgImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+    static LRESULT CALLBACK WndProcHandlerSetup(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 
     // Members
     HWND windowHandle_;
     LONG width_;
     LONG height_;
+    LPCWSTR name_;
     std::unique_ptr<WindowClass> windowClass_;
     std::unique_ptr<Graphics> graphics_;
     std::unique_ptr<Mouse> mouse_;
@@ -125,6 +145,7 @@ private:
     int y_;
     bool inSizeMove_;
     bool minimized_;
+    bool isDestroying_ = false;
     LONG targetWidth_ = 0;
     LONG targetHeight_ = 0;
 };

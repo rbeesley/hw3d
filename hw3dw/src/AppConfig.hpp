@@ -1,4 +1,5 @@
 #pragma once
+#define IMGUI_DOCKING
 #define MAX_FPS 0 // Set to 0 to disable
 
 #if defined(MAX_FPS) && (MAX_FPS > 0)

@@ -7,7 +7,8 @@
 #include <d3d11.h>
 #include <DirectXMath.h>
 #include <locale>
-#include "backends/imgui_impl_dx11.h"
+
+#include "imgui/backends/imgui_impl_dx11.h"
 
 struct ImVec4;
 
@@ -63,7 +64,7 @@ public:
     // -----------------------------
     // Message Handling
     // -----------------------------
-    LRESULT handleMsg(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+    LRESULT WndProcHandler(HWND window, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
 
     // -----------------------------
     // Accessors

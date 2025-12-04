@@ -347,41 +347,13 @@ dx::XMMATRIX Graphics::getProjection() const noexcept
 // -----------------------------
 // Message Handling
 // -----------------------------
-LRESULT Graphics::handleMsg([[maybe_unused]] HWND window, const UINT msg, [[maybe_unused]] const WPARAM wParam, [[maybe_unused]] const LPARAM lParam) noexcept
+LRESULT Graphics::WndProcHandler([[maybe_unused]] HWND window, const UINT msg, [[maybe_unused]] const WPARAM wParam, [[maybe_unused]] const LPARAM lParam) noexcept
 {
 #ifdef LOG_WINDOW_MESSAGES
 	PLOGV << windowsMessageMap(msg, lParam, wParam).c_str();
 #endif
-
-	switch(msg)
-	{
-	case WM_KEYDOWN:
-		if (const auto& io = ::ImGui::GetIO(); io.WantCaptureKeyboard)
-		{
-			// If Dear ImGui wants to capture the keyboard, then we want to cancel further processing in App
-			return 1;
-		}
-		break;
-	case WM_MOUSEMOVE:
-	case WM_LBUTTONDOWN:
-	case WM_RBUTTONDOWN:
-	case WM_MBUTTONDOWN:
-	case WM_XBUTTONDOWN:
-	case WM_LBUTTONUP:
-	case WM_RBUTTONUP:
-	case WM_MBUTTONUP:
-	case WM_XBUTTONUP:
-	case WM_MOUSEWHEEL:
-		if (const auto& io = ::ImGui::GetIO(); io.WantCaptureMouse)
-		{
-			// If Dear ImGui wants to capture the mouse, then we want to cancel further processing in App
-			return 1;
-		}
-		break;
-	default:
-		break;
-	}
-	return 0;
+	// Right now this WndProcHandler doesn't do anything, so return 1.
+	return 1;
 }
 
 // -----------------------------

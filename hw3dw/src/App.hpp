@@ -23,7 +23,7 @@ public:
     };
 
     // Lifecycle
-    App(bool allowConsoleLogging);
+    explicit App(bool allowConsoleLogging);
     ~App();
 
     App(const App&) = delete;
@@ -38,8 +38,11 @@ public:
     void configureImGui() const;
 
     // Message handling
-    static LRESULT handleMsg(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
-    LRESULT CALLBACK handleMsgImpl(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+    LRESULT thunkEntry(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+    LRESULT WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam) noexcept;
+
+    static void setMainWindowHandle(HWND mainWindow);
+    static HWND getMainWindowHandle();
 
 private:
     // Helpers
@@ -48,6 +51,7 @@ private:
     void populateDrawables();
 
     // Members
+    static HWND s_mainWindow;
     std::unique_ptr<Window> window_;
     Graphics* graphics_;
     Mouse* mouse_;
