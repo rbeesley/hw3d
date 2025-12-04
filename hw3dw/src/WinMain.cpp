@@ -53,12 +53,13 @@ int APIENTRY WinMain(
 		std::wstring commandLine(lpCommandLine, lpCommandLine + strlen(lpCommandLine));
 		std::vector<std::wstring> args = splitCommandLine(&commandLine[0]);
 
+		bool allowConsoleLogging = false;
+
 #if (IS_DEBUG)
 		const DWORD processId = GetCurrentProcessId();
 		const auto [parentProcessId, parentProcessName] = getParentProcessInfo(processId);
 		PLOGI << "Parent Process ID  (from process query info): " << parentProcessId;
 
-		bool allowConsoleLogging = false;
 		if (parentProcessName.find(L"msvsmon.exe") != std::wstring::npos)
 		{
 			PLOGI << "Launched from Visual Studio.";
